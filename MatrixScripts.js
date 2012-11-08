@@ -24,7 +24,7 @@ function updateStudentSheets() {
     Browser.msgBox("Cannot use Settings or Student sheets as templates.");
     return;
   }
-  var cells = templateSheet.getRange(1, 1, templateSheet.getLastRow(), templateSheet.getLastColumn());
+  var cells = SpreadsheetApp.getActiveRange();
 
   // Get the student sheets and start processing them.
   var studentInfo = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
@@ -34,15 +34,18 @@ function updateStudentSheets() {
     // Skip the update if a flag is set to skip.
     if (studentInfo.getRange(studentRow, 3).getValue() == "update") {
       // For debugging/tracking: print out the student name.
+      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
 
       // Get the target spreadsheet to update.
-      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
       var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
 
-      // Crawl through the template sheet and find cells that should be updated in the target sheet.
-      for (var row = 1; row <= templateSheet.getLastRow(); row++) {
-        for (var column = 1; column <= templateSheet.getLastColumn(); column++) {
-          var thisCellColor = cells.getCell(row, column).getBackgroundColor();
+      // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
+      for (var row = cells.getRow(); row <= cells.getLastRow(); row++) {
+        for (var column = cells.getColumn(); column <= cells.getLastColumn(); column++) {
+          // Load the background color for the source cell. We need to compensate row and column numbers, since we only search in the active selection.
+          var thisCellColor = cells.getCell(row - cells.getRow() + 1, column - cells.getColumn() + 1).getBackgroundColor();
+Browser.msgBox(thisCellColor);
+return;
           if (cells.getCell(row, column).getBackgroundColor() == colorUnlocked || cells.getCell(row, column).getBackgroundColor() == colorCritical || cells.getCell(row, column).getBackgroundColor() == colorOk) {
           Browser.msgBox("I am.");
             var targetCellColor = targetSheet.getRange(row, column).getBackgroundColor();
