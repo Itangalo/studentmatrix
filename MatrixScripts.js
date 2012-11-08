@@ -49,12 +49,9 @@ function updateStudentSheets() {
             thisCellColor = colorUnlocked;
           }
           if (thisCellColor == colorUnlocked || thisCellColor == colorCritical || thisCellColor == colorOk) {
-          Browser.msgBox("I am.");
             var targetCellColor = targetSheet.getRange(row, column).getBackgroundColor();
             if (targetCellColor != colorOk) {
               targetSheet.getRange(row, column).setBackgroundColor(thisCellColor);
-Browser.msgBox(thisCellColor);
-return;
             }
           }
         }
