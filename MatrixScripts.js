@@ -44,13 +44,17 @@ function updateStudentSheets() {
         for (var column = cells.getColumn(); column <= cells.getLastColumn(); column++) {
           // Load the background color for the source cell. We need to compensate row and column numbers, since we only search in the active selection.
           var thisCellColor = cells.getCell(row - cells.getRow() + 1, column - cells.getColumn() + 1).getBackgroundColor();
-Browser.msgBox(thisCellColor);
-return;
-          if (cells.getCell(row, column).getBackgroundColor() == colorUnlocked || cells.getCell(row, column).getBackgroundColor() == colorCritical || cells.getCell(row, column).getBackgroundColor() == colorOk) {
+          // We don't want to automatically approve cells, only unlock them.
+          if (thisCellColor == colorOk) {
+            thisCellColor = colorUnlocked;
+          }
+          if (thisCellColor == colorUnlocked || thisCellColor == colorCritical || thisCellColor == colorOk) {
           Browser.msgBox("I am.");
             var targetCellColor = targetSheet.getRange(row, column).getBackgroundColor();
-            if (targetSheet.getRange(row, column).getBackgroundColor() == colorUntested || targetSheet.getRange(row, column).getBackgroundColor() == colorUnlocked) {
-              targetSheet.getRange(row, column).setBackgroundColor(cells.getCell(row, column).getBackgroundColor());
+            if (targetCellColor != colorOk) {
+              targetSheet.getRange(row, column).setBackgroundColor(thisCellColor);
+Browser.msgBox(thisCellColor);
+return;
             }
           }
         }
