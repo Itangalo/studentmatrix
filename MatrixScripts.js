@@ -34,7 +34,7 @@ function updateStudentSheets() {
     // Skip the update if a flag is set to skip.
     if (studentInfo.getRange(studentRow, 3).getValue() == "update") {
       // For debugging/tracking: print out the student name.
-      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
+//      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
 
       // Get the target spreadsheet to update.
       var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
@@ -81,7 +81,7 @@ function createStudentSheets() {
     // If the student doesn't have any spreadsheet yet, create one.
     if (infoSheet.getRange(row, 4).isBlank()) {
       Browser.msgBox("Creating spreadsheet for " + infoSheet.getRange(row, 1).getValue());
-      var studentSheet = templateSpreadsheet.copy(infoSheet.getRange(row, 1).getValue());
+      var studentSheet = templateSpreadsheet.copy(infoSheet.getRange(row, 1).getValue() + spreadsheetSuffix);
       // Flag this row for force update.
       infoSheet.getRange(row, 3).setValue("1");
     }
@@ -92,7 +92,7 @@ function createStudentSheets() {
 
     // If the student doesn't have any text document yet, create one.
     if (infoSheet.getRange(row, 7).isBlank()) {
-      var studentDocument = documentTemplate.makeCopy(infoSheet.getRange(row, 1).getValue() + spreadsheetSuffix);
+      var studentDocument = documentTemplate.makeCopy(infoSheet.getRange(row, 1).getValue());
     }
     // We might need to load the student text document if we didn't just create it.
     else if (infoSheet.getRange(row, 3).getValue() == "1") {
