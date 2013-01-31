@@ -91,7 +91,13 @@ function updateCellContent() {
       // Get the target spreadsheet to update.
       var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
 //      var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), cells.getNumRows(), cells.getNumColumns());
-      var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
+//      var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
+      if (cells.getFormula() != "") {
+        var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setFormula(cells.getFormula());
+      }
+      else {
+        var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
+      }
 //      cells.copyValuesToRange(targetSheet, cells.getColumn(), cells.getLastColumn(), cells.getRow(), cells.getLastRow());
 
     }
@@ -182,7 +188,7 @@ function onOpen() {
     functionName : "updateStudentSheets"
   },
   {
-    name : "Change text in selected cells",
+    name : "Set content of student sheets for the selected cell",
     functionName : "updateCellContent"
   },
   {
