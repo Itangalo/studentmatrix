@@ -63,6 +63,44 @@ function updateStudentSheets() {
 };
 
 /**
+ * Change the content of the selected cell, in all student sheets.
+ */
+function updateCellContent() {
+  // Get some data from the settings tab.
+  var infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
+  var mainSheetName = infoSheet.getRange(2, 2).getValue();
+
+  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  if (templateSheet.getName() == "Settings" || templateSheet.getName() == "Students") {
+    Browser.msgBox("Cannot use Settings or Student sheets as templates.");
+    return;
+  }
+  var cells = SpreadsheetApp.getActiveRange();
+
+  // Get the student sheets and start processing them.
+  var studentInfo = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+
+  // Update each of the target sheets.
+  for (var studentRow = 2; studentRow <= studentInfo.getLastRow(); studentRow++) {
+    // Only update if the flag is set to 'update'.
+    if (studentInfo.getRange(studentRow, 3).getValue() == "update") {
+      // For debugging/tracking: print out the student name.
+//      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
+
+      // Get the target spreadsheet to update.
+      var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
+//      var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), cells.getNumRows(), cells.getNumColumns());
+      var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
+//      cells.copyValuesToRange(targetSheet, cells.getColumn(), cells.getLastColumn(), cells.getRow(), cells.getLastRow());
+
+    }
+  }
+
+  return;
+};
+
+/**
  * Creates new spreadsheets for students who don't already have one.
  */
 function createStudentSheets() {
@@ -142,6 +180,10 @@ function onOpen() {
   var entries = [{
     name : "Update student cell colors for selection",
     functionName : "updateStudentSheets"
+  },
+  {
+    name : "Change text in selected cells",
+    functionName : "updateCellContent"
   },
   {
     name : "Add new template sheet",
