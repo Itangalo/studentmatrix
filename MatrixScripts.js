@@ -91,10 +91,10 @@ function updateCellContent() {
       // Get the target spreadsheet to update.
       var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
       if (cells.getFormula() != "") {
-        var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setFormula(cells.getFormula());
+        targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setFormula(cells.getFormula());
       }
       else {
-        var destination = targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
+        targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
       }
     }
   }
@@ -215,7 +215,7 @@ function createStudentSheets() {
 function onOpen() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet();
   var entries = [{
-    name : "Update student cell colors for selection",
+    name : "Unlock student cell colors for selection",
     functionName : "updateStudentSheets"
   },
   {
