@@ -5,33 +5,46 @@
  * spreadsheet is opened.
  */
 function onOpen() {
-  
-  var menuEntries = [];
-  // When the user clicks on "addMenuExample" then "Menu Entry 1", the function function1 is executed.
-  menuEntries.push({name: "Menu Entry 1", functionName: "function1"});
-  menuEntries.push(null); // line separator
-  menuEntries.push({name: "Menu Entry 2", functionName: "function2"});
-
   var menuEntries = [];
   menuEntries.push({name : "Unlock student cell colors for selection", functionName : "studentMatrixUnlock"});
   menuEntries.push({name : "Force student cell colors to selected cells", functionName : "studentMatrixSetColor"});
-  menuEntries.push(null);
+  menuEntries.push(null); // line separator
   menuEntries.push({name : "Set content of student cells", functionName : "studentMatrixSetContent"});
   menuEntries.push({name : "Add new template sheet", functionName : "studentMatrixAddTemplateSheet"});
-  menuEntries.push(null);
+  menuEntries.push(null); // line separator
   menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
-  menuEntries.push(null);
+  menuEntries.push(null); // line separator
   menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheets"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
-  
+
+  menuEntries.push({name : "tmp", functionName : "tmp"});
   SpreadsheetApp.getActiveSpreadsheet().addMenu("Matrix stuff", menuEntries);
 };
+
+function tmp() {
+  if (studentMatrixCheckUpdateTrigger(2)) {
+    Browser.msgBox("True.");
+  }
+  else {
+    Browser.msgBox("Not true.");
+  }
+}
 
 /**
  * Show help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.0 \n\ralpha. \n\r Newline.");
+  Browser.msgBox("Version 1.0 alpha.");
+}
+
+/**
+ * Check if a student row is marked for update.
+ */
+function studentMatrixCheckUpdateTrigger(row) {
+  if (SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).getValue() == 1) {
+    return true;
+  }
+  return false;
 }
 
 /**
