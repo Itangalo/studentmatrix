@@ -22,7 +22,8 @@ function onOpen() {
 };
 
 function tmp() {
-  var sheet = studentMatrixCheckUpdateTrigger(2);
+  Browser.msgBox(studentMatrixGetConfig("spreadsheetTemplate"));
+  var sheet = studentMatrixGetStudentSheet(2);
   if (sheet == false) {
     Browser.msgBox("Not true.");
   }
@@ -39,21 +40,38 @@ function studentMatrixHelp() {
 }
 
 /**
- * Check if a student row is marked for update.
+ * Check if a student row is marked for update and, if so, return the related student sheet.
  */
-function studentMatrixCheckUpdateTrigger(row) {
+function studentMatrixGetStudentSheet(row) {
   if (SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).getValue() == 1) {
     var sheetKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 4).getValue();
     try {
       var sheet = SpreadsheetApp.openById(sheetKey);
     }
     catch (err) {
-      Browser.msgBox("Bad sheet key on row " + row);
+      Browser.msgBox("Bad sheet key on row " + row + ". Skipping.");
       return false;
     }
     return sheet;
   }
   return false;
+}
+
+function studentMatrixConfig() {
+  var config = [];
+  config['spreadsheetTemplate'] = {name : "Key for spreadsheet tempalte", row : 2};
+  config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 3};
+  config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 4};
+  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 5};
+  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 6};
+  config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 7};
+  return config;
+}
+
+function studentMatrixGetConfig(entry) {
+  var config = studentMatrixConfig();
+  var row = config[entry]['row'];
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
 }
 
 /**
