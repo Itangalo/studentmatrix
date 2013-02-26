@@ -1,8 +1,12 @@
+/**
+ * Display help link and version information.
+ */
+function studentMatrixHelp() {
+  Browser.msgBox("Version 1.0 alpha.");
+}
 
 /**
- * Adds a custom menu to the active spreadsheet.
- * The onOpen() function, when defined, is automatically invoked whenever the
- * spreadsheet is opened.
+ * Adds a custom menu to the active spreadsheet on opening the spreadsheet.
  */
 function onOpen() {
   var menuEntries = [];
@@ -14,7 +18,7 @@ function onOpen() {
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
   menuEntries.push(null); // line separator
-  menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheets"});
+  menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
 
   menuEntries.push({name : "tmp", functionName : "tmp"});
@@ -32,11 +36,28 @@ function tmp() {
   }
 }
 
-/**
- * Show help link and version information.
- */
-function studentMatrixHelp() {
-  Browser.msgBox("Version 1.0 alpha.");
+function studentMatrixConfig() {
+  var config = [];
+  config['editorMails'] = {name : "Emails for editors", row : 2};
+
+  config['spreadsheetTemplate'] = {name : "Key for spreadsheet template", row : 4};
+  config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 5};
+  config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 6};
+  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 7};
+  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 8};
+  config['spreadsheetPublic'] = {name : "Make spreadsheets viewable by anyone", row : 9};
+  config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 10};
+  config['spreadsheetStudentEditable'] = {name : "Add student edit permission to sheet", row : 11};
+
+  config['documentEnable'] = {name : "Also create student documents", row : 13};
+  config['documentTemplate'] = {name : "Key for document template", row : 14};
+  config['documentSuffix'] = {name : "Suffix for document titles", row : 15};
+  config['documentPublic'] = {name : "Make documents viewable by anyone", row : 16};
+  config['documentViewable'] = {name : "Add student view permission to document", row : 17};
+  config['documentCommentable'] = {name : "Add student comment permission to document", row : 18};
+  config['documentEditable'] = {name : "Add student edit permission to document", row : 19};
+
+  return config;
 }
 
 /**
@@ -57,21 +78,59 @@ function studentMatrixGetStudentSheet(row) {
   return false;
 }
 
-function studentMatrixConfig() {
-  var config = [];
-  config['spreadsheetTemplate'] = {name : "Key for spreadsheet tempalte", row : 2};
-  config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 3};
-  config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 4};
-  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 5};
-  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 6};
-  config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 7};
-  return config;
-}
-
+/**
+ * Returns the config for a given entry, as set in the config tab.
+ */
 function studentMatrixGetConfig(entry) {
   var config = studentMatrixConfig();
   var row = config[entry]['row'];
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
+}
+
+function studentMatrixCreateSettingsSheet() {
+  // Create a new sheet for settings, if there isn't already one.
+  configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config");
+  if (configSheet == null) {
+    configSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("config");
+  }
+  else {
+    var response = Browser.msgBox("Config sheet already exists. Rewrite it?", Browser.Buttons.OK_CANCEL);
+    if (response == "cancel") {
+      return;
+    }
+  }
+  // Set column headers.
+  configSheet.setFrozenRows(1);
+  configSheet.getRange(1, 1).setValue("Setting");
+  configSheet.getRange(1, 2).setValue("Value");
+  // Set the names of the settings.
+  var config = studentMatrixConfig();
+  for (var entry in config) {
+    configSheet.getRange(config[entry]["row"], 1).setValue(config[entry]["name"]);
+  }
+
+  // Create a new sheet for students, if there isn't already one.
+  studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
+  if (studentSheet == null) {
+    studentSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("students");
+  }
+  else {
+    var response = Browser.msgBox("Student sheet already exists. Rewrite it?", Browser.Buttons.OK_CANCEL);
+    if (response == "cancel") {
+      return;
+    }
+  }
+  // Set column headers.
+  studentSheet.getRange(1, 1).setValue("Update");
+  studentSheet.getRange(1, 2).setValue("Student name/id");
+  studentSheet.getRange(1, 3).setValue("Student email");
+  studentSheet.getRange(1, 4).setValue("Student matrix key");
+  studentSheet.hideColumns(4);
+  studentSheet.getRange(1, 5).setValue("Student document key");
+  studentSheet.hideColumns(5);
+  studentSheet.getRange(1, 6).setValue("Student matrix link");
+  studentSheet.getRange(1, 7).setValue("Student document link");
+  studentSheet.setFrozenRows(1);
 }
 
 /**
