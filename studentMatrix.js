@@ -22,11 +22,12 @@ function onOpen() {
 };
 
 function tmp() {
-  if (studentMatrixCheckUpdateTrigger(2)) {
-    Browser.msgBox("True.");
+  var sheet = studentMatrixCheckUpdateTrigger(2);
+  if (sheet == false) {
+    Browser.msgBox("Not true.");
   }
   else {
-    Browser.msgBox("Not true.");
+    Browser.msgBox(sheet);
   }
 }
 
@@ -42,7 +43,15 @@ function studentMatrixHelp() {
  */
 function studentMatrixCheckUpdateTrigger(row) {
   if (SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).getValue() == 1) {
-    return true;
+    var sheetKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 4).getValue();
+    try {
+      var sheet = SpreadsheetApp.openById(sheetKey);
+    }
+    catch (err) {
+      Browser.msgBox("Bad sheet key on row " + row);
+      return false;
+    }
+    return sheet;
   }
   return false;
 }
