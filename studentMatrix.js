@@ -38,23 +38,24 @@ function tmp() {
 function studentMatrixConfig() {
   var config = [];
   config['editorMails'] = {name : "Emails for editors", row : 2};
+  config['verboseCreation'] = {name : "Alert for each new file created", row : 3};
 
-  config['spreadsheetTemplate'] = {name : "Key for spreadsheet template", row : 4};
-  config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 5};
-  config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 6};
-  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 7};
-  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 8};
-  config['spreadsheetPublic'] = {name : "Make spreadsheets viewable by anyone", row : 9};
-  config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 10};
-  config['spreadsheetStudentEditable'] = {name : "Add student edit permission to sheet", row : 11};
+  config['spreadsheetTemplate'] = {name : "Key for spreadsheet template", row : 5};
+  config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 6};
+  config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 7};
+  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 8};
+  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 9};
+  config['spreadsheetPublic'] = {name : "Make spreadsheets viewable by anyone", row : 10};
+  config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 11};
+  config['spreadsheetStudentEditable'] = {name : "Add student edit permission to sheet", row : 12};
 
-  config['documentEnable'] = {name : "Also create student documents", row : 13};
-  config['documentTemplate'] = {name : "Key for document template", row : 14};
-  config['documentSuffix'] = {name : "Suffix for document titles", row : 15};
-  config['documentPublic'] = {name : "Make documents viewable by anyone", row : 16};
-  config['documentViewable'] = {name : "Add student view permission to document", row : 17};
-  config['documentCommentable'] = {name : "Add student comment permission to document", row : 18};
-  config['documentEditable'] = {name : "Add student edit permission to document", row : 19};
+  config['documentEnable'] = {name : "Also create student documents", row : 14};
+  config['documentTemplate'] = {name : "Key for document template", row : 15};
+  config['documentSuffix'] = {name : "Suffix for document titles", row : 16};
+  config['documentPublic'] = {name : "Make documents viewable by anyone (not used)", row : 17};
+  config['documentViewable'] = {name : "Add student view permission to document", row : 18};
+  config['documentCommentable'] = {name : "Add student comment permission to document (not used)", row : 19};
+  config['documentEditable'] = {name : "Add student edit permission to document", row : 20};
 
   return config;
 }
@@ -164,18 +165,26 @@ function studentMatrixCreateSettingsSheet() {
  */
 function studentMatrixCreateStudentSheets() {
   var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  var editorMails = studentMatrixGetConfig("editorMails").split(" ");
+  var verboseCreation = studentMatrixGetConfig("verboseCreation");
+
   var templateSheetKey = studentMatrixGetConfig("spreadsheetTemplate");
-//  var templateSheets = SpreadsheetApp.openById(templateSheetKey).getSheets();
   var spreadsheetSuffix = studentMatrixGetConfig("spreadsheetSuffix");
   var spreadsheetPublic = studentMatrixGetConfig("spreadsheetPublic");
   var spreadsheetViewable = studentMatrixGetConfig("spreadsheetStudentViewable");
   var spreadsheetEditable = studentMatrixGetConfig("spreadsheetStudentEditable");
   var templateSpreadsheet = SpreadsheetApp.openById(templateSheetKey);
   
-//  var documentTemplateKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(11, 2).getValue();
-//  var documentTemplate = DocsList.getFileById(documentTemplateKey);
-//  var documentSuffix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(12, 2).getValue();
-  var editorMails = studentMatrixGetConfig("editorMails").split(" ");
+  var documentEnable = studentMatrixGetConfig("documentEnable");
+  if (documentEnable == 1) {
+    var documentTemplateKey = studentMatrixGetConfig("documentTemplate");
+    var documentTemplate = DocsList.getFileById(documentTemplateKey);
+    var documentSuffix = studentMatrixGetConfig("documentSuffix");
+    var documentPublic = studentMatrixGetConfig("documentPublic");
+    var documentViewable = studentMatrixGetConfig("documentViewable");
+    var documentCommentable = studentMatrixGetConfig("documentCommentable");
+    var documentEditable = studentMatrixGetConfig("documentEditable");
+  }
 
   // Go through all the students and create new stuff as necessary.
   for (var row = 2; row <= studentSheet.getLastRow(); row++) {
@@ -184,7 +193,9 @@ function studentMatrixCreateStudentSheets() {
 
       // If the student doesn't have any spreadsheet yet, create one.
       if (studentSheet.getRange(row, 4).isBlank()) {
-        Browser.msgBox("Creating spreadsheet for " + studentSheet.getRange(row, 2).getValue());
+        if (verboseCreation == 1) {
+          Browser.msgBox("Creating spreadsheet for " + studentSheet.getRange(row, 2).getValue());
+        }
         var newSheet = templateSpreadsheet.copy(studentSheet.getRange(row, 2).getValue() + spreadsheetSuffix);
         // Set links/references to the new sheet.
         studentSheet.getRange(row, 4).setValue(newSheet.getId());
@@ -208,28 +219,45 @@ function studentMatrixCreateStudentSheets() {
         newSheet = SpreadsheetApp.openById(studentSheet.getRange(row, 4).getValue());
         studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
       }
+      
+      // Do similar procedure for documents.
+      if (documentEnable == 1) {
+        if (studentSheet.getRange(row, 5).isBlank()) {
+          if (verboseCreation == 1) {
+            Browser.msgBox("Creating document for " + studentSheet.getRange(row, 2).getValue());
+          }
+          
+          var newDocument = documentTemplate.makeCopy(studentSheet.getRange(row, 2).getValue() + documentSuffix);
+          // Set links/references to the new document.
+          studentSheet.getRange(row, 5).setValue(newDocument.getId());
+          studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
+          
+          // Apply extra permissons according to settings.
+          newDocument.addEditors(editorMails);
+// This function isn't available for documents, it seems.
+//          if (documentPublic == 1) {
+//            newDocument.setAnonymousAccess(true, false);
+//          }
+          if (documentViewable == 1) {
+            newDocument.addViewer(studentSheet.getRange(row, 3).getValue());
+          }
+// And there doesn't seem to be any API for adding people who can comment, either. :-(
+//          if (documentCommentable == 1) {
+//            newDocument.addCommentator(studentSheet.getRange(row, 3).getValue());
+//          }
+          if (documentEditable == 1) {
+            newDocument.addEditor(studentSheet.getRange(row, 3).getValue());
+          }
+        }
+
+        // If there is a document key but no link, create a link.
+        if (studentSheet.getRange(row, 7).isBlank() && !studentSheet.getRange(row, 5).isBlank()) {
+          newDocument = DocsList.getFileById(studentSheet.getRange(row, 5).getValue());
+          studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
+        }
+      }
     }
   }
-
-    // If the student doesn't have any text document yet, create one.
-//    if (infoSheet.getRange(row, 7).isBlank()) {
-//      var studentDocument = documentTemplate.makeCopy(infoSheet.getRange(row, 1).getValue());
-//    }
-    // We might need to load the student text document if we didn't just create it.
-//    else if (infoSheet.getRange(row, 3).getValue() == "1") {
-//      var studentDocument = DocsList.getFileById(infoSheet.getRange(row, 7).getValue());
-//    }
-    
-
-
-      // Update the sheet information, in case it is missing.
-//      infoSheet.getRange(row, 7).setValue(studentDocument.getId());
-//      infoSheet.getRange(row, 8).setValue(studentDocument.getUrl());
-
-      // Add short URLs for easier sharing.
-      // This probably requires a Google API key. :-(
-//      var shortSheetUrl = UrlShortener.newUrl().setLongUrl(studentSheet.getUrl());
-//      infoSheet.getRange(row, 6).setValue(UrlShortener.Url.insert(shortSheetUrl));
 }
 
 /**
