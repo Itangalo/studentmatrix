@@ -2,7 +2,7 @@
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.0-beta. Help not yet available, sorry.");
+  Browser.msgBox("Version 1.1-beta. Help not yet available, sorry.");
 }
 
 /**
@@ -29,25 +29,103 @@ function onOpen() {
  */
 function studentMatrixConfig() {
   var config = [];
-  config['editorMails'] = {name : "Emails for editors", row : 2};
-  config['verboseCreation'] = {name : "Alert for each new file created", row : 3};
+  // Global settings.
+  config['resetUpdateColumn'] = {
+    name : "Reset update flag after update",
+    description : "Set to 1 to change update column to datestamp when finished.",
+    row : 2,
+  };
+  config['editorMails'] = {
+    name : "Emails for editors",
+    description : "Must be gmail addresses. Separate with space.",
+    row : 3
+  };
+  config['verboseCreation'] = {
+    name : "Alert for each new file created",
+    description : "Set to 1 to get a popup box confirming each new created file.",
+    row : 4
+  };
 
-  config['spreadsheetTemplate'] = {name : "Key for spreadsheet template", row : 5};
-  config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 6};
-  config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 7};
-  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 8, special : "read from background"};
-  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 9, special : "read from background"};
-  config['spreadsheetPublic'] = {name : "Make spreadsheets viewable by anyone", row : 10};
-  config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 11};
-  config['spreadsheetStudentEditable'] = {name : "Add student edit permission to sheet", row : 12};
+  // Settings for spreadsheets.
+  config['spreadsheetTemplate'] = {
+    name : "Key for spreadsheet template",
+    description : "The key for the spreadsheet copied when creating new student sheets. Found in sheet URL.",
+    row : 6
+  };
+  config['spreadsheetTab'] = {
+    name : "Name of tab with matrix",
+    description : "The name of the tab containing the actual matrix. Case sensitive.",
+    row : 7
+  };
+  config['spreadsheetSuffix'] = {
+    name : "Suffix for spreadsheet titles",
+    description : "Anything added here will be appended to the student name when creating spreadsheet titles.",
+    row : 8
+  };
+  config['spreadsheetColorUnlocked'] = {
+    name : "Color for unlocked matrix cells",
+    description : "Set background color on this cell to the one you wish to use for unlocked cells which are not yet approved.",
+    row : 9,
+    special : "read from background"
+  };
+  config['spreadsheetColorOk'] = {
+    name : "Color for approved matrix cells",
+    description : "Set background color on this cell to the one you wish to use for approved cells.",
+    row : 10,
+    special : "read from background"
+  };
+  config['spreadsheetPublic'] = {
+    name : "Make spreadsheets viewable by anyone",
+    description : "Set to 1 to make new spreadsheets accessible for anyone.",
+    row : 11
+  };
+  config['spreadsheetStudentViewable'] = {
+    name : "Add student view permission to sheet",
+    description : "Set to 1 to add the student email to list of users with view access. Requires gmail address.",
+    row : 12
+  };
+  config['spreadsheetStudentEditable'] = {
+    name : "Add student edit permission to sheet",
+    description : "Set to 1 to add the student email to list of users with edit access. Requires gmail address.",
+    row : 13
+  };
 
-  config['documentEnable'] = {name : "Also create student documents", row : 14};
-  config['documentTemplate'] = {name : "Key for document template", row : 15};
-  config['documentSuffix'] = {name : "Suffix for document titles", row : 16};
-  config['documentPublic'] = {name : "Make documents viewable by anyone (not used)", row : 17};
-  config['documentViewable'] = {name : "Add student view permission to document", row : 18};
-  config['documentCommentable'] = {name : "Add student comment permission to document (not used)", row : 19};
-  config['documentEditable'] = {name : "Add student edit permission to document", row : 20};
+  // Settings for documents.
+  config['documentEnable'] = {
+    name : "Also create student documents",
+    description : "Set to 1 to have StudentMatrix also create a Google document for each student, not only spreadsheets.",
+    row : 15
+  };
+  config['documentTemplate'] = {
+    name : "Key for document template",
+    description : "The key for the document to copy to each student. Key is found in the document URL.",
+    row : 16
+  };
+  config['documentSuffix'] = {
+    name : "Suffix for document titles",
+    description : "Anything added here will be appended to the student name when creating title for the document.",
+    row : 17
+  };
+  config['documentPublic'] = {
+    name : "Make documents viewable by anyone (not used)",
+    description : "There are not yet API functions for Google documents to allow this. Sorry.",
+    row : 18
+  };
+  config['documentViewable'] = {
+    name : "Add student view permission to document",
+    description : "Set to 1 to add the student email to the list of users allowed to view new documents. Requires gmail address.",
+    row : 19
+  };
+  config['documentCommentable'] = {
+    name : "Add student comment permission to document (not used)",
+    description : "There are not yet API functions for Google documents to allow this. Sorry.",
+    row : 20
+  };
+  config['documentEditable'] = {
+    name : "Add student edit permission to document",
+    description : "Set to 1 to add the student email to the list of users allowed to edit new documents. Requires gmail address.",
+    row : 21
+  };
 
   return config;
 }
@@ -62,6 +140,19 @@ function studentMatrixGetConfig(entry) {
     return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getBackground();
   }
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
+}
+
+function studentMatrixMarkDone(row, status) {
+  Browser.msgBox("Row: " + row + ". Status: " + status);
+  if (studentMatrixGetConfig("resetUpdateColumn") == 1) {
+    if (status == false) {
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).setValue("fail");
+    }
+    else {
+      var now = new Date;
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).setValue(now);
+    }
+  }
 }
 
 /**
@@ -81,8 +172,10 @@ function studentMatrixGetStudentSheet(row, fetch) {
       }
       catch (err) {
         Browser.msgBox("Bad sheet key on row " + row + ". Skipping.");
+        studentMatrixMarkDone(row, false);
         return false;
       }
+      studentMatrixMarkDone(row, true);
       return sheet;
     }
 
@@ -94,12 +187,15 @@ function studentMatrixGetStudentSheet(row, fetch) {
       }
       catch (err) {
         Browser.msgBox("Bad document key on row " + row + ". Skipping.");
+        studentMatrixMarkDone(row, false);
         return false;
       }
+      studentMatrixMarkDone(row, true);
       return document;
     }
 
     // No specific type of file should be returned – just return that this row should be updated.
+    studentMatrixMarkDone(row, true);
     return true;
   }
   // Not marked for update.
@@ -123,12 +219,17 @@ function studentMatrixCreateSettingsSheet() {
   }
   // Set column headers.
   configSheet.setFrozenRows(1);
+  configSheet.getRange("A:A").clear();
+  configSheet.setColumnWidth(1, 300);
   configSheet.getRange(1, 1).setValue("Setting");
   configSheet.getRange(1, 2).setValue("Value");
   // Set the names of the settings.
   var config = studentMatrixConfig();
   for (var entry in config) {
     configSheet.getRange(config[entry]["row"], 1).setValue(config[entry]["name"]);
+    if (config[entry]["description"]) {
+      configSheet.getRange(config[entry]["row"], 1).setComment(config[entry]["description"]);
+    }
   }
   
   // Create a new sheet for students, if there isn't already one.
