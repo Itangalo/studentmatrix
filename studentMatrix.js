@@ -306,8 +306,28 @@ function studentMatrixSetContent() {
 };
 
 /**
- * Update colors in student sheets according to a reference sheet.
+ * Change the colors of the selected cells, in all student sheets marked for update.
  */
+function studentMatrixSetColor() {
+  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+    Browser.msgBox("Cannot use config or student sheets as templates.");
+    return;
+  }
+  var sourceCells = SpreadsheetApp.getActiveRange();
+
+  // Update the target sheets marked for update.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
+    }
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet.getRange(sourceCells.getRow(), sourceCells.getColumn(), sourceCells.getNumRows(), sourceCells.getNumColumns()).setBackgroundColors(sourceCells.getBackgrounds());
+  }
+};
+
 function updateStudentSheets() {
   // Get some data from the settings tab.
   var infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
@@ -355,41 +375,6 @@ function updateStudentSheets() {
           }
         }
       }
-    }
-  }
-
-  return;
-};
-
-/**
- * Change the color of the selected cell, in all student sheets.
- */
-function updateCellColor() {
-  // Get some data from the settings tab.
-  var infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
-  var mainSheetName = infoSheet.getRange(2, 2).getValue();
-
-  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
-  var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "Settings" || templateSheet.getName() == "Students") {
-    Browser.msgBox("Cannot use Settings or Student sheets as templates.");
-    return;
-  }
-  var cells = SpreadsheetApp.getActiveRange();
-
-  // Get the student sheets and start processing them.
-  var studentInfo = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-
-  // Update each of the target sheets.
-  for (var studentRow = 2; studentRow <= studentInfo.getLastRow(); studentRow++) {
-    // Only update if the flag is set to 'update'.
-    if (studentInfo.getRange(studentRow, 3).getValue() == "update") {
-      // For debugging/tracking: print out the student name.
-//      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
-
-      // Get the target spreadsheet to update.
-      var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
-      targetSheet.getRange(cells.getRow(), cells.getColumn(), cells.getNumRows(), cells.getNumColumns()).setBackgroundColors(cells.getBackgrounds());
     }
   }
 
