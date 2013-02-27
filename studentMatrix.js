@@ -231,7 +231,7 @@ function studentMatrixCreateSettingsSheet() {
       configSheet.getRange(config[entry]["row"], 1).setComment(config[entry]["description"]);
     }
   }
-  
+
   // Create a new sheet for students, if there isn't already one.
   studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
   if (studentSheet == null) {
@@ -270,7 +270,7 @@ function studentMatrixCreateStudentSheets() {
   var spreadsheetViewable = studentMatrixGetConfig("spreadsheetStudentViewable");
   var spreadsheetEditable = studentMatrixGetConfig("spreadsheetStudentEditable");
   var templateSpreadsheet = SpreadsheetApp.openById(templateSheetKey);
-  
+
   var documentEnable = studentMatrixGetConfig("documentEnable");
   if (documentEnable == 1) {
     var documentTemplateKey = studentMatrixGetConfig("documentTemplate");
@@ -296,7 +296,7 @@ function studentMatrixCreateStudentSheets() {
         // Set links/references to the new sheet.
         studentSheet.getRange(row, 4).setValue(newSheet.getId());
         studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
-        
+
         // Apply extra permissons according to settings.
         newSheet.addEditor(editorMails);
         if (spreadsheetPublic == 1) {
@@ -315,19 +315,19 @@ function studentMatrixCreateStudentSheets() {
         newSheet = SpreadsheetApp.openById(studentSheet.getRange(row, 4).getValue());
         studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
       }
-      
+
       // Do similar procedure for documents.
       if (documentEnable == 1) {
         if (studentSheet.getRange(row, 5).isBlank()) {
           if (verboseCreation == 1) {
             Browser.msgBox("Creating document for " + studentSheet.getRange(row, 2).getValue());
           }
-          
+
           var newDocument = documentTemplate.makeCopy(studentSheet.getRange(row, 2).getValue() + documentSuffix);
           // Set links/references to the new document.
           studentSheet.getRange(row, 5).setValue(newDocument.getId());
           studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
-          
+
           // Apply extra permissons according to settings.
           newDocument.addEditors(editorMails);
 // This function isn't available for documents, it seems.
