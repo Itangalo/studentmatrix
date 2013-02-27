@@ -26,8 +26,7 @@ function onOpen() {
 };
 
 function tmp() {
-  Browser.msgBox(studentMatrixGetConfig("spreadsheetTemplate"));
-  var sheet = studentMatrixGetStudentSheet(2);
+  var sheet = studentMatrixGetStudentSheet(2, "document");
   if (sheet == false) {
     Browser.msgBox("Not true.");
   }
@@ -61,25 +60,49 @@ function studentMatrixConfig() {
 }
 
 /**
- * Check if a student row is marked for update and, if so, return the related student sheet.
+ * Check if a student row is marked for update.
+ *
+ * If marked for update, the "fetch" parameter can be used to load a related student file:
+ *   - "sheet" will load a spreadsheet, using sheet ID from column 4.
+ *   - "document" will load a document, using sheet ID from column 5.
  */
-function studentMatrixGetStudentSheet(row) {
+function studentMatrixGetStudentSheet(row, fetch) {
   if (SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).getValue() == 1) {
-    var sheetKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 4).getValue();
-    try {
-      var sheet = SpreadsheetApp.openById(sheetKey);
+    // If asked to return a sheet, try loading and returning it.
+    if (fetch == "sheet") {
+      var sheetKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 4).getValue();
+      try {
+        var sheet = SpreadsheetApp.openById(sheetKey);
+      }
+      catch (err) {
+        Browser.msgBox("Bad sheet key on row " + row + ". Skipping.");
+        return false;
+      }
+      return sheet;
     }
-    catch (err) {
-      Browser.msgBox("Bad sheet key on row " + row + ". Skipping.");
-      return false;
+
+    // If asked to return a document, try loading and returning it.
+    if (fetch == "document") {
+      var documentKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 5).getValue();
+      try {
+        var document = DocsList.getFileById(documentKey);
+      }
+      catch (err) {
+        Browser.msgBox("Bad document key on row " + row + ". Skipping.");
+        return false;
+      }
+      return document;
     }
-    return sheet;
+
+    // No specific type of file should be returned – just return that this row should be updated.
+    return true;
   }
+  // Not marked for update.
   return false;
 }
 
 /**
- * Returns the config for a given entry, as set in the config tab.
+ * Returns the config for a given entry, as set on the config tab.
  */
 function studentMatrixGetConfig(entry) {
   var config = studentMatrixConfig();
@@ -87,6 +110,9 @@ function studentMatrixGetConfig(entry) {
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
 }
 
+/**
+ * Creates tabs (spreadsheets) called "config" and "students", and populates with relevant information.
+ */
 function studentMatrixCreateSettingsSheet() {
   // Create a new sheet for settings, if there isn't already one.
   configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config");
@@ -131,6 +157,79 @@ function studentMatrixCreateSettingsSheet() {
   studentSheet.getRange(1, 6).setValue("Student matrix link");
   studentSheet.getRange(1, 7).setValue("Student document link");
   studentSheet.setFrozenRows(1);
+}
+
+/**
+ * Creates new spreadsheets/documents for students who don't already have one.
+ */
+function studentMatrixCreateStudentSheets() {
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  var templateSheetKey = studentMatrixGetConfig("spreadsheetTemplate");
+//  var templateSheets = SpreadsheetApp.openById(templateSheetKey).getSheets();
+  var spreadsheetSuffix = studentMatrixGetConfig("spreadsheetSuffix");
+  var spreadsheetPublic = studentMatrixGetConfig("spreadsheetPublic");
+  var spreadsheetViewable = studentMatrixGetConfig("spreadsheetStudentViewable");
+  var spreadsheetEditable = studentMatrixGetConfig("spreadsheetStudentEditable");
+  var templateSpreadsheet = SpreadsheetApp.openById(templateSheetKey);
+  
+//  var documentTemplateKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(11, 2).getValue();
+//  var documentTemplate = DocsList.getFileById(documentTemplateKey);
+//  var documentSuffix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(12, 2).getValue();
+  var editorMails = studentMatrixGetConfig("editorMails").split(" ");
+
+  // Go through all the students and create new stuff as necessary.
+  for (var row = 2; row <= studentSheet.getLastRow(); row++) {
+    // Check if the row is marked for update.
+    if (studentMatrixGetStudentSheet(row, "")) {
+
+      // If the student doesn't have any spreadsheet yet, create one.
+      if (studentSheet.getRange(row, 4).isBlank()) {
+        Browser.msgBox("Creating spreadsheet for " + studentSheet.getRange(row, 2).getValue());
+        var newSheet = templateSpreadsheet.copy(studentSheet.getRange(row, 2).getValue() + spreadsheetSuffix);
+        // Set links/references to the new sheet.
+        studentSheet.getRange(row, 4).setValue(newSheet.getId());
+        studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
+        
+        // Apply extra permissons according to settings.
+        newSheet.addEditor(editorMails);
+        if (spreadsheetPublic == 1) {
+          newSheet.setAnonymousAccess(true, false);
+        }
+        if (spreadsheetViewable == 1) {
+          newSheet.addViewer(studentSheet.getRange(row, 3).getValue());
+        }
+        if (spreadsheetEditable == 1) {
+          newSheet.addEditor(studentSheet.getRange(row, 3).getValue());
+        }
+      }
+
+      // If there is a sheet key but no link, create a link.
+      if (studentSheet.getRange(row, 6).isBlank() && !studentSheet.getRange(row, 4).isBlank()) {
+        newSheet = SpreadsheetApp.openById(studentSheet.getRange(row, 4).getValue());
+        studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
+      }
+    }
+  }
+
+    // If the student doesn't have any text document yet, create one.
+//    if (infoSheet.getRange(row, 7).isBlank()) {
+//      var studentDocument = documentTemplate.makeCopy(infoSheet.getRange(row, 1).getValue());
+//    }
+    // We might need to load the student text document if we didn't just create it.
+//    else if (infoSheet.getRange(row, 3).getValue() == "1") {
+//      var studentDocument = DocsList.getFileById(infoSheet.getRange(row, 7).getValue());
+//    }
+    
+
+
+      // Update the sheet information, in case it is missing.
+//      infoSheet.getRange(row, 7).setValue(studentDocument.getId());
+//      infoSheet.getRange(row, 8).setValue(studentDocument.getUrl());
+
+      // Add short URLs for easier sharing.
+      // This probably requires a Google API key. :-(
+//      var shortSheetUrl = UrlShortener.newUrl().setLongUrl(studentSheet.getUrl());
+//      infoSheet.getRange(row, 6).setValue(UrlShortener.Url.insert(shortSheetUrl));
 }
 
 /**
@@ -271,71 +370,3 @@ function updateCellColor() {
 
   return;
 };
-
-/**
- * Creates new spreadsheets for students who don't already have one.
- */
-function createStudentSheets() {
-  var infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-  var templateSheetKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(1, 2).getValue();
-  var templateSheets = SpreadsheetApp.openById(templateSheetKey).getSheets();
-  var templateSpreadsheet = SpreadsheetApp.openById(templateSheetKey);
-  var spreadsheetSuffix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(3, 2).getValue();
-  var documentTemplateKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(11, 2).getValue();
-  var documentTemplate = DocsList.getFileById(documentTemplateKey);
-  var documentSuffix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(12, 2).getValue();
-  var coeditorEmails = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings").getRange(8, 2).getValue();
-
-  // Go through all the students and make updates.
-  for (var row = 2; row <= infoSheet.getLastRow(); row++) {
-    // If the student doesn't have any spreadsheet yet, create one.
-    if (infoSheet.getRange(row, 4).isBlank()) {
-      Browser.msgBox("Creating spreadsheet for " + infoSheet.getRange(row, 1).getValue());
-      var studentSheet = templateSpreadsheet.copy(infoSheet.getRange(row, 1).getValue() + spreadsheetSuffix);
-      // Flag this row for force update.
-      infoSheet.getRange(row, 3).setValue("1");
-    }
-    // We might need to load the student spreadsheet if we didn't just create it.
-    else if (infoSheet.getRange(row, 3).getValue() == "1") {
-      var studentSheet = SpreadsheetApp.openById(infoSheet.getRange(row, 4).getValue());
-    }
-
-    // If the student doesn't have any text document yet, create one.
-    if (infoSheet.getRange(row, 7).isBlank()) {
-      var studentDocument = documentTemplate.makeCopy(infoSheet.getRange(row, 1).getValue());
-    }
-    // We might need to load the student text document if we didn't just create it.
-    else if (infoSheet.getRange(row, 3).getValue() == "1") {
-      var studentDocument = DocsList.getFileById(infoSheet.getRange(row, 7).getValue());
-    }
-    
-    // Update all the rows that need updates.
-    if (infoSheet.getRange(row, 3).getValue() == "1") {
-
-      // Make sure the student can view the spreadsheet and document
-      try {
-        studentSheet.addViewer(infoSheet.getRange(row, 2).getValue());
-        studentDocument.addViewer(infoSheet.getRange(row, 2).getValue());
-        studentSheet.addEditor(coeditorEmails);
-        studentDocument.addEditor(coeditorEmails);
-      }
-      catch (err) {
-        Browser.msgBox(err);
-      }
-
-      // Update the sheet information, in case it is missing.
-      infoSheet.getRange(row, 4).setValue(studentSheet.getId());
-      infoSheet.getRange(row, 5).setValue(studentSheet.getUrl());
-      infoSheet.getRange(row, 7).setValue(studentDocument.getId());
-      infoSheet.getRange(row, 8).setValue(studentDocument.getUrl());
-
-      // Add short URLs for easier sharing.
-      // This probably requires a Google API key. :-(
-//      var shortSheetUrl = UrlShortener.newUrl().setLongUrl(studentSheet.getUrl());
-//      infoSheet.getRange(row, 6).setValue(UrlShortener.Url.insert(shortSheetUrl));
-      
-      // This row no longer needs update.
-      infoSheet.getRange(row, 3).setValue("");
-    }
-  }
-}
