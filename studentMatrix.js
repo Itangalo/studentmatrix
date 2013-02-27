@@ -143,7 +143,6 @@ function studentMatrixGetConfig(entry) {
 }
 
 function studentMatrixMarkDone(row, status) {
-  Browser.msgBox("Row: " + row + ". Status: " + status);
   if (studentMatrixGetConfig("resetUpdateColumn") == 1) {
     if (status == false) {
       SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).setValue("fail");
