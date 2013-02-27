@@ -2,7 +2,7 @@
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.1-beta. Help not yet available, sorry. See https://github.com/Itangalo/studentmatrix for more information.");
+  Browser.msgBox("Version 1.1-beta. See https://github.com/Itangalo/studentmatrix for project information and documentation.");
 }
 
 /**
@@ -297,7 +297,12 @@ function studentMatrixCreateStudentSheets() {
         studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
 
         // Apply extra permissons according to settings.
-        newSheet.addEditor(editorMails);
+        try {
+          newSheet.addEditor(editorMails);
+        }
+        catch (err) {
+          Browser.msgBox("Could not add the editor emails: " + editorMails);
+        }
         if (spreadsheetPublic == 1) {
           newSheet.setAnonymousAccess(true, false);
         }
