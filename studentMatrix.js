@@ -2,7 +2,7 @@
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.0 alpha.");
+  Browser.msgBox("Version 1.0-beta. Help not yet available, sorry.");
 }
 
 /**
@@ -21,20 +21,12 @@ function onOpen() {
   menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
 
-  menuEntries.push({name : "tmp", functionName : "tmp"});
   SpreadsheetApp.getActiveSpreadsheet().addMenu("Matrix stuff", menuEntries);
 };
 
-function tmp() {
-  var sheet = studentMatrixGetStudentSheet(2, "document");
-  if (sheet == false) {
-    Browser.msgBox("Not true.");
-  }
-  else {
-    Browser.msgBox(sheet);
-  }
-}
-
+/**
+ * Declares the settings used by StudentMatrix.
+ */
 function studentMatrixConfig() {
   var config = [];
   config['editorMails'] = {name : "Emails for editors", row : 2};
@@ -58,6 +50,18 @@ function studentMatrixConfig() {
   config['documentEditable'] = {name : "Add student edit permission to document", row : 20};
 
   return config;
+}
+
+/**
+ * Returns the config for a given entry, as set on the config tab.
+ */
+function studentMatrixGetConfig(entry) {
+  var config = studentMatrixConfig();
+  var row = config[entry]['row'];
+  if (config[entry]['special'] == "read from background") {
+    return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getBackground();
+  }
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
 }
 
 /**
@@ -100,18 +104,6 @@ function studentMatrixGetStudentSheet(row, fetch) {
   }
   // Not marked for update.
   return false;
-}
-
-/**
- * Returns the config for a given entry, as set on the config tab.
- */
-function studentMatrixGetConfig(entry) {
-  var config = studentMatrixConfig();
-  var row = config[entry]['row'];
-  if (config[entry]['special'] == "read from background") {
-    return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getBackground();
-  }
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
 }
 
 /**
