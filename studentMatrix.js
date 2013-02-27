@@ -263,9 +263,8 @@ function studentMatrixCreateStudentSheets() {
 /**
  * Adds a new sheet, cloned from the template specified in the settings.
  */
-function addTemplateSheet() {
-  var settings = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
-  SpreadsheetApp.openById(settings.getRange(1, 2).getValue()).getSheetByName(settings.getRange(2, 2).getValue()).copyTo(SpreadsheetApp.getActiveSpreadsheet());
+function studentMatrixAddTemplateSheet() {
+  SpreadsheetApp.openById(studentMatrixGetConfig("spreadsheetTemplate")).getSheetByName(studentMatrixGetConfig("spreadsheetTab")).copyTo(SpreadsheetApp.getActiveSpreadsheet());
 }
 
 /**
