@@ -43,8 +43,8 @@ function studentMatrixConfig() {
   config['spreadsheetTemplate'] = {name : "Key for spreadsheet template", row : 5};
   config['spreadsheetTab'] = {name : "Name of tab with matrix", row : 6};
   config['spreadsheetSuffix'] = {name : "Suffix for spreadsheet titles", row : 7};
-  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 8};
-  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 9};
+  config['spreadsheetColorUnlocked'] = {name : "Color for unlocked matrix cells", row : 8, special : "read from background"};
+  config['spreadsheetColorOk'] = {name : "Color for approved matrix cells", row : 9, special : "read from background"};
   config['spreadsheetPublic'] = {name : "Make spreadsheets viewable by anyone", row : 10};
   config['spreadsheetStudentViewable'] = {name : "Add student view permission to sheet", row : 11};
   config['spreadsheetStudentEditable'] = {name : "Add student edit permission to sheet", row : 12};
@@ -108,6 +108,9 @@ function studentMatrixGetStudentSheet(row, fetch) {
 function studentMatrixGetConfig(entry) {
   var config = studentMatrixConfig();
   var row = config[entry]['row'];
+  if (config[entry]['special'] == "read from background") {
+    return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getBackground();
+  }
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
 }
 
@@ -135,7 +138,7 @@ function studentMatrixCreateSettingsSheet() {
   for (var entry in config) {
     configSheet.getRange(config[entry]["row"], 1).setValue(config[entry]["name"]);
   }
-
+  
   // Create a new sheet for students, if there isn't already one.
   studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
   if (studentSheet == null) {
@@ -328,55 +331,45 @@ function studentMatrixSetColor() {
   }
 };
 
-function updateStudentSheets() {
-  // Get some data from the settings tab.
-  var infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
-  var mainSheetName = infoSheet.getRange(2, 2).getValue();
-  var colorUntested = infoSheet.getRange(4, 2).getBackgroundColor();
-  var colorUnlocked = infoSheet.getRange(5, 2).getBackgroundColor();
-  var colorOk = infoSheet.getRange(6, 2).getBackgroundColor();
-  var colorCritical = infoSheet.getRange(7, 2).getBackgroundColor();
-
+/**
+ * Turn any non-approved cells in selection to unlocked color, in all student sheets marked for update.
+ *
+ * Only cells color-coded as unlocked or approved will be included in this operation.
+ */
+function studentMatrixUnlock() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "Settings" || templateSheet.getName() == "Students") {
-    Browser.msgBox("Cannot use Settings or Student sheets as templates.");
+  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+    Browser.msgBox("Cannot use config or student sheets as templates.");
     return;
   }
-  var cells = SpreadsheetApp.getActiveRange();
+  var sourceCells = SpreadsheetApp.getActiveRange();
 
-  // Get the student sheets and start processing them.
-  var studentInfo = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  // Get some settings data.
+  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
 
-  // Update each of the target sheets.
-  for (var studentRow = 2; studentRow <= studentInfo.getLastRow(); studentRow++) {
-    // Skip the update if a flag is set to skip.
-    if (studentInfo.getRange(studentRow, 3).getValue() == "update") {
-      // For debugging/tracking: print out the student name.
-//      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
+  // Update the target sheets marked for update.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
+    }
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
 
-      // Get the target spreadsheet to update.
-      var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
-
-      // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
-      for (var row = cells.getRow(); row <= cells.getLastRow(); row++) {
-        for (var column = cells.getColumn(); column <= cells.getLastColumn(); column++) {
-          // Load the background color for the source cell. We need to compensate row and column numbers, since we only search in the active selection.
-          var thisCellColor = cells.getCell(row - cells.getRow() + 1, column - cells.getColumn() + 1).getBackgroundColor();
-          // We don't want to automatically approve cells, only unlock them.
-          if (thisCellColor == colorOk) {
-            thisCellColor = colorUnlocked;
-          }
-          if (thisCellColor == colorUnlocked || thisCellColor == colorCritical || thisCellColor == colorOk) {
-            var targetCellColor = targetSheet.getRange(row, column).getBackgroundColor();
-            if (targetCellColor != colorOk) {
-              targetSheet.getRange(row, column).setBackgroundColor(thisCellColor);
-            }
+    // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
+    var backgrounds = sourceCells.getBackgrounds();
+    for (var row in backgrounds) {
+      for (var column in backgrounds[row]) {
+        if (backgrounds[row][column] == colorUnlocked || backgrounds[row][column] == colorOk) {
+          var targetRow = parseInt(row) + parseInt(sourceCells.getRow());
+          var targetColumn = parseInt(column) + parseInt(sourceCells.getColumn());
+          // Don't forget to check if the cell was already ok – we don't want to mark it not ok.
+          if (targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() != colorOk) {
+            targetSheet.getRange(targetRow, targetColumn).setBackgroundColor(colorUnlocked);
           }
         }
       }
     }
   }
-
-  return;
 };
