@@ -2,7 +2,7 @@
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.1-beta. Help not yet available, sorry.");
+  Browser.msgBox("Version 1.1-beta. Help not yet available, sorry. See https://github.com/Itangalo/studentmatrix for more information.");
 }
 
 /**
