@@ -268,6 +268,44 @@ function studentMatrixAddTemplateSheet() {
 }
 
 /**
+ * Change the content of the selected cells, in all student sheets marked for update.
+ */
+function studentMatrixSetContent() {
+  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+    Browser.msgBox("Cannot use config or student sheets as templates.");
+    return;
+  }
+  var sourceCells = SpreadsheetApp.getActiveRange();
+
+  // Update the target sheets marked for update.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
+    }
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+
+    // Get the target spreadsheet to update.
+    cells = sourceCells.getValues();
+    for (var row in cells) {
+      for (var column in cells[row]) {
+        // For some reason we need to parse these variables to integers to make things work.
+        var targetRow = parseInt(row) + parseInt(sourceCells.getRow());
+        var targetColumn = parseInt(column) + parseInt(sourceCells.getColumn());
+        if (sourceCells.getFormulas()[row][column] != "") {
+          targetSheet.getRange(targetRow, targetColumn).setFormula(sourceCells.getFormulas()[row][column]);
+        }
+        else {
+          targetSheet.getRange(targetRow, targetColumn).setValue(sourceCells.getValues()[row][column]);
+        }
+      }
+    }
+  }
+};
+
+/**
  * Update colors in student sheets according to a reference sheet.
  */
 function updateStudentSheets() {
@@ -316,46 +354,6 @@ function updateStudentSheets() {
             }
           }
         }
-      }
-    }
-  }
-
-  return;
-};
-
-/**
- * Change the content of the selected cell, in all student sheets.
- */
-function updateCellContent() {
-  // Get some data from the settings tab.
-  var infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
-  var mainSheetName = infoSheet.getRange(2, 2).getValue();
-
-  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
-  var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "Settings" || templateSheet.getName() == "Students") {
-    Browser.msgBox("Cannot use Settings or Student sheets as templates.");
-    return;
-  }
-  var cells = SpreadsheetApp.getActiveRange();
-
-  // Get the student sheets and start processing them.
-  var studentInfo = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-
-  // Update each of the target sheets.
-  for (var studentRow = 2; studentRow <= studentInfo.getLastRow(); studentRow++) {
-    // Only update if the flag is set to 'update'.
-    if (studentInfo.getRange(studentRow, 3).getValue() == "update") {
-      // For debugging/tracking: print out the student name.
-//      Browser.msgBox("Updating matrix for " + studentInfo.getRange(studentRow, 1).getValue() + ".");
-
-      // Get the target spreadsheet to update.
-      var targetSheet = SpreadsheetApp.openById(studentInfo.getRange(studentRow, 4).getValue()).getSheetByName(mainSheetName);
-      if (cells.getFormula() != "") {
-        targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setFormula(cells.getFormula());
-      }
-      else {
-        targetSheet.getRange(cells.getRow(), cells.getColumn(), 1, 1).setValue(cells.getValue());
       }
     }
   }
