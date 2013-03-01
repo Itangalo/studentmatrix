@@ -2,7 +2,14 @@
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.1-beta. See https://github.com/Itangalo/studentmatrix for project information and documentation.");
+  Browser.msgBox("Version 1.2-beta. See https://github.com/Itangalo/studentmatrix for project information and documentation. Some Swedish video guides can be found at http://tinyurl.com/studentmatrix-videor.");
+}
+
+/**
+ * Runs the onOpen scripts for adding menus also on install.
+ */
+function onInstall() {
+  onOpen();
 }
 
 /**
@@ -461,7 +468,7 @@ function studentMatrixUnlock() {
         if (backgrounds[row][column] == colorUnlocked || backgrounds[row][column] == colorOk) {
           var targetRow = parseInt(row) + parseInt(sourceCells.getRow());
           var targetColumn = parseInt(column) + parseInt(sourceCells.getColumn());
-          // Don't forget to check if the cell was already ok – we don't want to mark it not ok.
+          // Don't forget to check if the cell was already ok – we don't want to mark it not ok.
           if (targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() != colorOk) {
             targetSheet.getRange(targetRow, targetColumn).setBackgroundColor(colorUnlocked);
           }

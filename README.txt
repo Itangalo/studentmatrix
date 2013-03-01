@@ -16,6 +16,19 @@ Some things StudentMatrix can help you with:
   typically changing the color of the cells, but it could also be changing the
   cell content.
 
+You can find this project on GitHub: https://github.com/Itangalo/studentmatrix
+There is a short link available on http://tinyurl.com/studentmatrix
+
+
+Videos in Swedish
+=================
+
+There are some Swedish videos showing how to use StudentMatrix over here:
+http://tinyurl.com/studentmatrix-videor
+
+
+Written documentation
+=====================
 
 ## Starting up with StudentMatrix
 
