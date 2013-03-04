@@ -1,3 +1,7 @@
+// Written by Johan Falk, Sweden.
+// Published under GNU General Public License, version 3 (GPL-3.0)
+// See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
+
 /**
  * Display help link and version information.
  */

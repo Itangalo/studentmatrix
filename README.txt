@@ -122,3 +122,15 @@ There are a few operations you can do from the master spreadsheet.
 All of these actions depend on you marking a number of student sheets for update
 on the "students" tab. Only the rows flagged with "1" in the update column will
 be processed.
+
+
+License and stuff
+=================
+
+These scripts are written and maintained by Johan Falk, math teacher over in
+Sweden. Code is published under GNU General Public License, version 3 (GPL-3.0)
+You are free to use, study, share and improve.
+
+See license details at http://www.opensource.org/licenses/gpl-3.0.html
+
+If you want to get involved in improving these scripts, feel free to contact me!
