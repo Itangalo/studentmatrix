@@ -153,6 +153,9 @@ function studentMatrixGetConfig(entry) {
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
 }
 
+/**
+ * Sets the 'update' status for a student, after update.
+ */
 function studentMatrixMarkDone(row, status) {
   if (studentMatrixGetConfig("resetUpdateColumn") == 1) {
     if (status == false) {
@@ -312,7 +315,6 @@ function studentMatrixCreateStudentSheets() {
           newSheet.addEditor(editorMails);
         }
         catch (err) {
-          Browser.msgBox("Could not add the editor emails: " + editorMails);
         }
         if (spreadsheetPublic == 1) {
           newSheet.setAnonymousAccess(true, false);
@@ -344,7 +346,11 @@ function studentMatrixCreateStudentSheets() {
           studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
 
           // Apply extra permissons according to settings.
-          newDocument.addEditors(editorMails);
+          try {
+            newDocument.addEditors(editorMails);
+          }
+          catch (err) {
+          }
 // This function isn't available for documents, it seems.
 //          if (documentPublic == 1) {
 //            newDocument.setAnonymousAccess(true, false);
