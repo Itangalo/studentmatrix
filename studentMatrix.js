@@ -2,11 +2,15 @@
 // Published under GNU General Public License, version 3 (GPL-3.0)
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
+function studentMatrixVersion() {
+  return "1.3-beta";
+}
+
 /**
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version 1.2-beta. See https://github.com/Itangalo/studentmatrix for project information and documentation. Some Swedish video guides can be found at http://tinyurl.com/studentmatrix-videor.");
+  Browser.msgBox("Version " + studentMatrixVersion() + ". See https://github.com/Itangalo/studentmatrix for project information and documentation. Some Swedish video guides can be found at http://tinyurl.com/studentmatrix-videor.");
 }
 
 /**
@@ -28,11 +32,12 @@ function onOpen() {
   menuEntries.push({name : "Add new template sheet", functionName : "studentMatrixAddTemplateSheet"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
+  menuEntries.push({name : "Send notification with link(s)", functionName : "studentMatrixNotify"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
 
-  SpreadsheetApp.getActiveSpreadsheet().addMenu("Matrix stuff", menuEntries);
+  SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), menuEntries);
 };
 
 /**
@@ -373,6 +378,33 @@ function studentMatrixCreateStudentSheets() {
           studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
         }
       }
+    }
+  }
+}
+
+/**
+ * Sends an email to each of the students marked for update, with links to matrix + document.
+ */
+function studentMatrixNotify() {
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  var documentEnable = studentMatrixGetConfig("documentEnable");
+
+  var subject = Browser.inputBox("Email subject.");
+  var message = Browser.inputBox("Message to show before the links.");
+
+  // Go through all the students and send an email.
+  for (var row = 2; row <= studentSheet.getLastRow(); row++) {
+    // Check if the row is marked for update.
+    if (studentMatrixGetStudentSheet(row, "")) {
+      // Build a standard message containing links, to append to the customized mesasge.
+      var standardMessage = "\r\n\r\nLinks are found below.\r\n\r\n";
+      standardMessage += "Matrix: " + studentSheet.getRange(row, 6).getValue() + "\r\n";
+      if (documentEnable && !studentSheet.getRange(row, 7).isBlank()) {
+        standardMessage += "Feedback document: " + studentSheet.getRange(row, 7).getValue() + "\r\n";
+      }
+
+      // Send out the email.
+      MailApp.sendEmail(studentSheet.getRange(row, 2).getValue(), subject, message + standardMessage);
     }
   }
 }
