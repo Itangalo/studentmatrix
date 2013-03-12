@@ -404,7 +404,7 @@ function studentMatrixNotify() {
       }
 
       // Send out the email.
-      MailApp.sendEmail(studentSheet.getRange(row, 2).getValue(), subject, message + standardMessage);
+      MailApp.sendEmail(studentSheet.getRange(row, 3).getValue(), subject, message + standardMessage);
     }
   }
 }
