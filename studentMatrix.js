@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.3-beta";
+  return "1.4-beta";
 }
 
 /**
@@ -26,6 +26,7 @@ function onInstall() {
 function onOpen() {
   var menuEntries = [];
   menuEntries.push({name : "Unlock student cell colors for selection", functionName : "studentMatrixUnlock"});
+  menuEntries.push({name : "Degrade selected cells to review status", functionName : "studentMatrixReview"});
   menuEntries.push({name : "Force student cell colors to selected cells", functionName : "studentMatrixSetColor"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Set content of student cells", functionName : "studentMatrixSetContent"});
@@ -90,57 +91,63 @@ function studentMatrixConfig() {
     row : 10,
     special : "read from background"
   };
+  config['spreadsheetColorReview'] = {
+    name : "Color for cells in need of review",
+    description : "Set background color on this cell to the one you wish to use for cells that have been conquered, but then lost.",
+    row : 11,
+    special : "read from background"
+  };
   config['spreadsheetPublic'] = {
     name : "Make spreadsheets viewable by anyone",
     description : "Set to 1 to make new spreadsheets accessible for anyone.",
-    row : 11
+    row : 12
   };
   config['spreadsheetStudentViewable'] = {
     name : "Add student view permission to sheet",
     description : "Set to 1 to add the student email to list of users with view access. Requires gmail address.",
-    row : 12
+    row : 13
   };
   config['spreadsheetStudentEditable'] = {
     name : "Add student edit permission to sheet",
     description : "Set to 1 to add the student email to list of users with edit access. Requires gmail address.",
-    row : 13
+    row : 14
   };
 
   // Settings for documents.
   config['documentEnable'] = {
     name : "Also create student documents",
     description : "Set to 1 to have StudentMatrix also create a Google document for each student, not only spreadsheets.",
-    row : 15
+    row : 16
   };
   config['documentTemplate'] = {
     name : "Key for document template",
     description : "The key for the document to copy to each student. Key is found in the document URL.",
-    row : 16
+    row : 17
   };
   config['documentSuffix'] = {
     name : "Suffix for document titles",
     description : "Anything added here will be appended to the student name when creating title for the document.",
-    row : 17
+    row : 18
   };
   config['documentPublic'] = {
     name : "Make documents viewable by anyone (not used)",
     description : "There are not yet API functions for Google documents to allow this. Sorry.",
-    row : 18
+    row : 19
   };
   config['documentViewable'] = {
     name : "Add student view permission to document",
     description : "Set to 1 to add the student email to the list of users allowed to view new documents. Requires gmail address.",
-    row : 19
+    row : 20
   };
   config['documentCommentable'] = {
     name : "Add student comment permission to document (not used)",
     description : "There are not yet API functions for Google documents to allow this. Sorry.",
-    row : 20
+    row : 21
   };
   config['documentEditable'] = {
     name : "Add student edit permission to document",
     description : "Set to 1 to add the student email to the list of users allowed to edit new documents. Requires gmail address.",
-    row : 21
+    row : 22
   };
 
   return config;
@@ -478,6 +485,52 @@ function studentMatrixSetColor() {
 };
 
 /**
+ * Iterates through the selected cells and degrades student cells to review status.
+ *
+ * This function will only affect cells that are marked OK or review in the
+ * (active) template sheet, and only cells that are marked OK in the student
+ * sheets.
+ */
+function studentMatrixReview() {
+  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+    Browser.msgBox("Cannot use config or student sheets as templates.");
+    return;
+  }
+  var sourceCells = SpreadsheetApp.getActiveRange();
+
+  // Get some settings data.
+  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
+
+  // Update the target sheets marked for update.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
+    }
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+
+    // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
+    var backgrounds = sourceCells.getBackgrounds();
+    for (var row in backgrounds) {
+      for (var column in backgrounds[row]) {
+        if (backgrounds[row][column] == colorUnlocked || backgrounds[row][column] == colorOk || backgrounds[row][column] == colorReview) {
+          var targetRow = parseInt(row) + parseInt(sourceCells.getRow());
+          var targetColumn = parseInt(column) + parseInt(sourceCells.getColumn());
+          // Only update if the target cell is set to OK.
+          if (targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() == colorOk) {
+            targetSheet.getRange(targetRow, targetColumn).setBackgroundColor(colorReview);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
  * Turn any non-approved cells in selection to unlocked color, in all student sheets marked for update.
  *
  * Only cells color-coded as unlocked or approved will be included in this operation.
@@ -494,6 +547,7 @@ function studentMatrixUnlock() {
   // Get some settings data.
   var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
   var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
 
   // Update the target sheets marked for update.
   for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
@@ -511,7 +565,7 @@ function studentMatrixUnlock() {
           var targetRow = parseInt(row) + parseInt(sourceCells.getRow());
           var targetColumn = parseInt(column) + parseInt(sourceCells.getColumn());
           // Don't forget to check if the cell was already ok – we don't want to mark it not ok.
-          if (targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() != colorOk) {
+          if (targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() != colorOk && targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() != colorReview) {
             targetSheet.getRange(targetRow, targetColumn).setBackgroundColor(colorUnlocked);
           }
         }

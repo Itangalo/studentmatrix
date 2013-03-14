@@ -98,9 +98,10 @@ in each student's sheet, but StudentMatrix can help you do mass updates too.
 
 A typical use case is to use assessment matrices to indicate what knowledge and
 skills students have or haven't shown. This is typically done by color coding.
-The "config" tab has two entries for color -- one for "unlocked" cells (meaning
-tested but not approved), one for approved cells. If you use color coding, set
-the appropriate colors as cell background.
+The "config" tab has three entries for color -- one for "unlocked" cells
+(meaning tested but not approved), one for approved cells, and one for cells
+that have been approved but no longer are ok. If you use color coding, set the
+appropriate colors as cell background.
 
 Then get yourself a copy of the template sheet. This is done from the Matrix
 menu -> "Add new template sheet", and creates a copy of the template right in
@@ -112,6 +113,10 @@ There are a few operations you can do from the master spreadsheet.
   selected cells in the template, and see if any cells are marked as unlocked or
   ok. Each such cell will be marked as unlocked in the student sheets, unless it
   was already marked as ok (in which case it will be left untouched).
+* "Degrade selected cells to review status": This will scan the currently
+  selected cells in the template and see if any are marked as ok or review. Each
+  such cell will be marked for review in the student sheets, if it was
+  previously marked as ok.
 * "Force student cell colors to selected cells": This will update cell colors
   in the student sheets to match your selection, regardless of what color they
   had before. Good for marking cells as ok.
