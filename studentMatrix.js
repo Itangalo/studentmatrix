@@ -38,6 +38,8 @@ function onOpen() {
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
+  menuEntries.push(null); // line separator
+  menuEntries.push({name : "Copy Khan update values", functionName : "studentMatrixKhanCopyStatus"});
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), menuEntries);
 };
@@ -618,3 +620,17 @@ function studentMatrixUnlock() {
     }
   }
 };
+
+/**
+ * Temporary function only. Copies some values from one sheet to another.
+ */
+function studentMatrixKhanCopyStatus() {
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
+
+  templateSheet.getRange(2, 1, templateSheet.getLastRow() - 2).copyValuesToRange(studentSheet, 1, 1, 2, templateSheet.getLastRow());
+  return;
+  
+  for (var studentRow = 2; studentRow <= studentSheet.getLastRow(); studentRow++) {
+  }
+}
