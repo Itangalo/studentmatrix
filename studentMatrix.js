@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.4-beta";
+  return "1.5-beta";
 }
 
 /**
@@ -27,6 +27,7 @@ function onOpen() {
   var menuEntries = [];
   menuEntries.push({name : "Unlock student cell colors for selection", functionName : "studentMatrixUnlock"});
   menuEntries.push({name : "Degrade selected cells to review status", functionName : "studentMatrixReview"});
+  menuEntries.push({name : "Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
   menuEntries.push({name : "Force student cell colors to selected cells", functionName : "studentMatrixSetColor"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Set content of student cells", functionName : "studentMatrixSetContent"});
@@ -481,6 +482,50 @@ function studentMatrixSetColor() {
     }
     targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
     targetSheet.getRange(sourceCells.getRow(), sourceCells.getColumn(), sourceCells.getNumRows(), sourceCells.getNumColumns()).setBackgroundColors(sourceCells.getBackgrounds());
+  }
+};
+
+/**
+ * Turn any non-review cells in selection to OK color, in all student sheets marked for update.
+ *
+ * Only cells color-coded as approved will be included in this operation.
+ */
+function studentMatrixSoftOk() {
+  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+    Browser.msgBox("Cannot use config or student sheets as templates.");
+    return;
+  }
+  var sourceCells = SpreadsheetApp.getActiveRange();
+
+  // Get some settings data.
+  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
+
+  // Update the target sheets marked for update.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
+    }
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+
+    // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
+    var backgrounds = sourceCells.getBackgrounds();
+    for (var row in backgrounds) {
+      for (var column in backgrounds[row]) {
+        if (backgrounds[row][column] == colorOk) {
+          var targetRow = parseInt(row) + parseInt(sourceCells.getRow());
+          var targetColumn = parseInt(column) + parseInt(sourceCells.getColumn());
+          // Don't forget to check if the cell was already ok – we don't want to mark it not ok.
+          if (targetSheet.getRange(targetRow, targetColumn).getBackgroundColor() != colorReview) {
+            targetSheet.getRange(targetRow, targetColumn).setBackgroundColor(colorOk);
+          }
+        }
+      }
+    }
   }
 };
 
