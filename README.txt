@@ -117,17 +117,20 @@ There are a few operations you can do from the master spreadsheet.
   selected cells in the template and see if any are marked as ok or review. Each
   such cell will be marked for review in the student sheets, if it was
   previously marked as ok.
+* "Mark cells ok": This will scan the currently selected cells in the template,
+  and see if any cells are marked ok. Each such cell will also be marked ok in
+  for all the selected students.
 * "Mark cells ok, unless marked for review": This will scan the currently
   selected cells in the template, and see if any cells are marked ok. Each such
   cell will be compared against cells in student matrices, which will be marked
   ok unless it is currentlgy set to "review". (This somewhat awkward condition
   may be useful when updating matrices based on results on Khan Academy.)
-* "Force student cell colors to selected cells": This will update cell colors
-  in the student sheets to match your selection, regardless of what color they
-  had before. Good for marking cells as ok.
+
+* "Set colors of student cells": This will update cell colors in the student
+  sheets to match your selection, regardless of what color they had before.
 * "Set content of student cells": This changes the actual content in student
-  sheets, to match the selection in the template. Good if you want to make
-  changes in all the student sheets.
+  sheets, to match the selection in the template. Good if you want to fix typos
+  or make other changes.
 
 All of these actions depend on you marking a number of student sheets for update
 on the "students" tab. Only the rows flagged with "1" in the update column will
