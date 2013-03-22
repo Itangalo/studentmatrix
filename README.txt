@@ -137,6 +137,22 @@ on the "students" tab. Only the rows flagged with "1" in the update column will
 be processed.
 
 
+Some other available actions
+============================
+
+There are some other actions you can find from the StudentMatrix menu.
+
+* "Count cell status": To use this, select a number of cells in a template
+  first. The action will count the selected cells for all selected students, and
+  write out the number of cells marked ok/review/unlocked in the student tab in
+  the master document.
+* "Send notification with link(s)": This action will send an email to each
+  selected student, containing a link to each student's matrix. If documents are
+  enabled, a link to the feedback document will be included too. You will be
+  prompted for email subject and any message to prepend to the links. (This
+  action will probably be extended, see issue at
+  https://github.com/Itangalo/studentmatrix/issues/3 .)
+
 License and stuff
 =================
 

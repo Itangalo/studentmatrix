@@ -34,8 +34,9 @@ function onOpen() {
   menuEntries.push({name : "Set content of student cells", functionName : "studentMatrixSetContent"});
   menuEntries.push({name : "Add new template sheet", functionName : "studentMatrixAddTemplateSheet"});
   menuEntries.push(null); // line separator
-  menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
+  menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
   menuEntries.push({name : "Send notification with link(s)", functionName : "studentMatrixNotify"});
+  menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
@@ -282,6 +283,9 @@ function studentMatrixCreateSettingsSheet() {
   studentSheet.hideColumns(5);
   studentSheet.getRange(1, 6).setValue("Student matrix link");
   studentSheet.getRange(1, 7).setValue("Student document link");
+  studentSheet.getRange(1, 8).setValue("OK count");
+  studentSheet.getRange(1, 9).setValue("Review count");
+  studentSheet.getRange(1, 10).setValue("Unlocked count");
   studentSheet.setFrozenRows(1);
 }
 
@@ -392,6 +396,68 @@ function studentMatrixCreateStudentSheets() {
     }
   }
 }
+
+/**
+ * Creats sums of cell status based on student sheets, for selected range.
+ *
+ * This function checks all the selected students, for the selected cells, and
+ * counts the number of ok cells, review-marked cells and unlocked cells. The
+ * result is stored in the student tab of the master document.
+ */
+function studentMatrixCount() {
+  // Load the active sheet, used for reference, and make sure it not one of the special sheets.
+  var templateSheet = SpreadsheetApp.getActiveSheet();
+  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+    Browser.msgBox("Cannot use config or student sheets as templates.");
+    return;
+  }
+  var sourceCells = SpreadsheetApp.getActiveRange();
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+
+  // Get some settings data.
+  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
+
+  // Loop through the selected students.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      // If the student isn't included in the action, remove any entries on this row.
+      studentSheet.getRange(studentRow, 8).setValue("");
+      studentSheet.getRange(studentRow, 9).setValue("");
+      studentSheet.getRange(studentRow, 10).setValue("");
+      continue;
+    }
+    var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getRange(sourceCells.getA1Notation());
+    
+    var unlockedCount = 0;
+    var okCount = 0;
+    var reviewCount = 0;
+
+    // Crawl through the selection in the student matrix count cells with matching background colors.
+    var backgrounds = targetRange.getBackgrounds();
+    for (var row in backgrounds) {
+      for (var column in backgrounds[row]) {
+        switch (backgrounds[row][column]) {
+          case colorUnlocked:
+            unlockedCount++;
+            break;
+          case colorOk:
+            okCount++;
+            break;
+          case colorReview:
+            reviewCount++;
+            break;
+        }
+      }
+    }
+    // Write out the count in the student tab.
+    studentSheet.getRange(studentRow, 8).setValue(okCount);
+    studentSheet.getRange(studentRow, 9).setValue(reviewCount);
+    studentSheet.getRange(studentRow, 10).setValue(unlockedCount);
+  }
+};
 
 /**
  * Sends an email to each of the students marked for update, with links to matrix + document.
