@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.6-beta";
+  return "1.7-beta";
 }
 
 /**
@@ -42,6 +42,7 @@ function onOpen() {
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Copy Khan update values", functionName : "studentMatrixKhanCopyStatus"});
+  menuEntries.push({name : "Run Khan updates", functionName : "khanUpdate"});
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), menuEntries);
 };
@@ -155,7 +156,25 @@ function studentMatrixConfig() {
     row : 22
   };
 
-  return config;
+  // Settings for Khan Academy stuff.
+  config['KhanConsumerKey'] = {
+    name : "Khan Academy API consumer key",
+    row : 24
+  };
+  config['KhanConsumerSecret'] = {
+    name : "Khan Academy API secret",
+    row : 25
+  };
+  config['KhanToken'] = {
+    name : "Khan Academy API token",
+    row : 26
+  };
+  config['KhanTokenSecret'] = {
+    name : "Khan Academy API token secret",
+    row : 27
+  };
+
+return config;
 }
 
 /**

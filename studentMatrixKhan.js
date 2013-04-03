@@ -1,11 +1,11 @@
 /**
  * Adds a custom menu to the active spreadsheet on opening the spreadsheet.
  */
-function onOpen() {
-  var menuEntries = [];
-  menuEntries.push({name : "Khan updates", functionName : "khanUpdate"});
-  SpreadsheetApp.getActiveSpreadsheet().addMenu("Khan stuff", menuEntries);
-};
+//function onOpen() {
+//  var menuEntries = [];
+//  menuEntries.push({name : "Khan updates", functionName : "khanUpdate"});
+//  SpreadsheetApp.getActiveSpreadsheet().addMenu("Khan stuff", menuEntries);
+//};
 
 /**
  * Reads status for Khan Academy exercises and updates student matrices accordingly.
@@ -14,10 +14,10 @@ function khanUpdate() {
   // Get some settings data.
   // Todo: Have these settings read from a not-so-public place.
   var accessor = {
-    consumerKey : SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(1, 5).getValue(),
-    consumerSecret : SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(2, 5).getValue(),
-    token : SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(3, 5).getValue(),
-    tokenSecret : SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(4, 5).getValue(),
+    consumerKey : studentMatrixGetConfig("KhanConsumerKey"),
+    consumerSecret : studentMatrixGetConfig("KhanConsumerSecret"),
+    token : studentMatrixGetConfig("KhanToken"),
+    tokenSecret : studentMatrixGetConfig("KhanTokenSecret"),
   };
   var url = "https://www.khanacademy.org/api/v1/user";
   var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
