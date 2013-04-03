@@ -12,6 +12,11 @@
  */
 function khanUpdate() {
   // Get some settings data.
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
+
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+
   // Todo: Have these settings read from a not-so-public place.
   var accessor = {
     consumerKey : studentMatrixGetConfig("KhanConsumerKey"),
@@ -19,11 +24,7 @@ function khanUpdate() {
     token : studentMatrixGetConfig("KhanToken"),
     tokenSecret : studentMatrixGetConfig("KhanTokenSecret"),
   };
-  var url = "https://www.khanacademy.org/api/v1/user";
-  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
-  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
-
-  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  var url = "https://www.khanacademy.org/api/v1/user/exercises";
 
   // Loop through the selected students.
   for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
@@ -37,26 +38,57 @@ function khanUpdate() {
       ["email", studentSheet.getRange(studentRow, 11).getValue()],
     ]
 
-    // Get the student results from Khan Academy.
+    // Get the student results from Khan Academy. Note that this collects a pretty huge object
+    // -- this is necessary to be able to check if an exercise is in review status.
     var result = JSON.parse(OAuthConnect(url, parameters, accessor));
-    var proficiencies = result.all_proficient_exercises;
 
     // Read the required Khan Academy exercises associated with matrix cells.
     var exerciseSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises");
     var requiredExercises = exerciseSheet.getRange(2, 2, exerciseSheet.getLastRow() - 1, exerciseSheet.getLastColumn()).getValues();
     // Loop through the stated exercises, checking if they are completed or not.
     for (row in requiredExercises) {
-      var proficient = true;
+      // The totalState can be in four modes: 3 (unknown), 2 (proficient), 1 (review), and 0 (not proficient).
+      var totalState = 3;
       for (column in requiredExercises[row]) {
-        if (requiredExercises[row][column] != "" && proficiencies.indexOf(requiredExercises[row][column]) == -1) {
-          proficient = false;
+        if (requiredExercises[row][column] != "") {
+          // Go through the whole damn list of exercises returned from Khan Academy. A lot.
+          for (exercise in result) {
+            if (result[exercise]["exercise"] == requiredExercises[row][column]) {
+              // If we find the matching exercise, its status can be used to lower the state of the
+              // cell we are testing for, but never to raise it. That is, if we require proficiency in
+              // two exercises, it is not enough to be proficient in one.
+              if (result[exercise]["exercise_states"]["proficient"] == false) {
+                totalState = 0;
+                continue;
+              }
+              else if (result[exercise]["exercise_states"]["reviewing"] == true && totalState > 1) {
+                totalState = 1;
+                continue;
+              }
+              else if (result[exercise]["exercise_states"]["proficient"] == true && totalState > 2) {
+                totalState = 2;
+                continue;
+              }
+            }
+            if (totalState == 0) {
+              continue;
+            }
+          }
+        }
+        if (totalState == 0) {
+          continue;
         }
       }
-      if (proficient == true) {
+      if (totalState == 1 || totalState == 2) {
         // The row needs to be casted as an integer, or it will be treated as a string.
         var rowInt = parseInt(row);
+        // The name of the cell to update is found here.
         var targetCell = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getRange(rowInt + 2, 1).getValue();
-        targetSheet.getRange(targetCell).setBackgroundColor(colorOk);
+
+        // Check for the target cell state, compare against the result of this update.
+        if (totalState == 2 || targetSheet.getRange(targetCell).getBackgroundColor() != colorReview) {
+          targetSheet.getRange(targetCell).setBackgroundColor(colorOk);
+        }
       }
     }
   }
