@@ -3,21 +3,15 @@
  */
 function onOpen() {
   var menuEntries = [];
-  menuEntries.push({name : "TMP", functionName : "tmp"});
-  menuEntries.push({name : "Khan Connect", functionName : "khanconnect"});
-  menuEntries.push({name : "Khan Shortcut", functionName : "khanshort"});
-  menuEntries.push({name : "Tweet", functionName : "tweet"});
+  menuEntries.push({name : "Khan updates", functionName : "khanUpdate"});
   SpreadsheetApp.getActiveSpreadsheet().addMenu("Khan stuff", menuEntries);
 };
 
 /**
- * Temporary stuff, for executing code easily while developing.
+ * Reads status for Khan Academy exercises and updates student matrices accordingly.
  */
-function tmp() {
-  var resultingUrl = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(4, 5).getValue();
-  var tokenSecret = resultingUrl.substring(73, 89);
-  var token = resultingUrl.substring(102, 118);
-
+function khanUpdate() {
+  // Get some settings data.
   // Todo: Have these settings read from a not-so-public place.
   var accessor = {
     consumerKey : SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(1, 5).getValue(),
@@ -26,29 +20,44 @@ function tmp() {
     tokenSecret : SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(4, 5).getValue(),
   };
   var url = "https://www.khanacademy.org/api/v1/user";
-  var parameters = [
-//    ["email", "student@school.org"],
-  ]
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
 
-  // Get the student results from Khan Academy.
-  var result = JSON.parse(OAuthConnect(url, parameters, accessor));
-  var proficiencies = result.all_proficient_exercises;
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
 
-  // Read the required Khan Academy exercises associated with matrix cells.
-  var exerciseSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises");
-  var requiredExercises = exerciseSheet.getRange(2, 2, exerciseSheet.getLastRow() - 1, exerciseSheet.getLastColumn()).getValues();
-  // Loop through the stated exercises, checking if they are completed or not.
-  for (row in requiredExercises) {
-    var proficient = true;
-    for (column in requiredExercises[row]) {
-      if (requiredExercises[row][column] != "" && proficiencies.indexOf(requiredExercises[row][column]) == -1) {
-        proficient = false;
-      }
+  // Loop through the selected students.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
     }
-    if (proficient == true) {
-      // The row needs to be casted as an integer, or it will be treated as a string.
-      var rowInt = parseInt(row);
-      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getRange(rowInt + 2, 1).setBackground("green");
+    var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+
+    var parameters = [
+      ["email", studentSheet.getRange(studentRow, 11).getValue()],
+    ]
+
+    // Get the student results from Khan Academy.
+    var result = JSON.parse(OAuthConnect(url, parameters, accessor));
+    var proficiencies = result.all_proficient_exercises;
+
+    // Read the required Khan Academy exercises associated with matrix cells.
+    var exerciseSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises");
+    var requiredExercises = exerciseSheet.getRange(2, 2, exerciseSheet.getLastRow() - 1, exerciseSheet.getLastColumn()).getValues();
+    // Loop through the stated exercises, checking if they are completed or not.
+    for (row in requiredExercises) {
+      var proficient = true;
+      for (column in requiredExercises[row]) {
+        if (requiredExercises[row][column] != "" && proficiencies.indexOf(requiredExercises[row][column]) == -1) {
+          proficient = false;
+        }
+      }
+      if (proficient == true) {
+        // The row needs to be casted as an integer, or it will be treated as a string.
+        var rowInt = parseInt(row);
+        var targetCell = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getRange(rowInt + 2, 1).getValue();
+        targetSheet.getRange(targetCell).setBackgroundColor(colorOk);
+      }
     }
   }
 }
