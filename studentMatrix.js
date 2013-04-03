@@ -305,6 +305,7 @@ function studentMatrixCreateSettingsSheet() {
   studentSheet.getRange(1, 8).setValue("OK count");
   studentSheet.getRange(1, 9).setValue("Review count");
   studentSheet.getRange(1, 10).setValue("Unlocked count");
+  studentSheet.getRange(1, 11).setValue("Khan Academy ID");
   studentSheet.setFrozenRows(1);
 }
 
