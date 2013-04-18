@@ -194,6 +194,12 @@ function khanGoals() {
         goalSheet.getRange(goalRow, goalColumn).setBackgroundRGB(colorInt[0], colorInt[1], colorInt[2]);
       }
     }
+
+    // We've reached the last goal. Let's check this one, too. (Since it isn't checked when
+    // stepping to a next goal.)
+    if (allProficient && allFound) {
+      goalSheet.getRange(goalRow, 1).setBackgroundColor(colorOk);
+    }
   }
 }
 
