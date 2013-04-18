@@ -9,15 +9,20 @@ large-ish number of students, without having to do more than necessary amount of
 repetetive manual work.
 
 Some things StudentMatrix can help you with:
-* Create matrices for a whole class at once, and share each matrix (spreadsheet)
-  with the relevant student.
+* Create matrices (spreadsheets) for a whole class at once, and share each
+  matrix with the relevant student.
 * Create a feedback document for each student, too.
 * Select a number of students and do updates to selected matrix cells. This is
   typically changing the color of the cells, but it could also be changing the
   cell content.
+* Get quick sums of how the students are doing with some parts of the matrix.
+* Make automatic updates of student cells based on progress on Khan Academy
+  (see http://www.khanacademy.org/exercisedashboard).
 
 You can find this project on GitHub: https://github.com/Itangalo/studentmatrix
 There is a short link available on http://tinyurl.com/studentmatrix
+There is a Google spreadsheed available for copy and quick-start at
+http://tinyurl.com/studentmatrix-master
 
 
 Videos in Swedish
@@ -132,9 +137,9 @@ There are a few operations you can do from the master spreadsheet.
   sheets, to match the selection in the template. Good if you want to fix typos
   or make other changes.
 
-All of these actions depend on you marking a number of student sheets for update
-on the "students" tab. Only the rows flagged with "1" in the update column will
-be processed.
+Note: All of these actions depend on you marking a number of student sheets for
+update on the "students" tab. Only the rows flagged with "1" in the update
+column will be processed.
 
 
 Some other available actions
@@ -142,6 +147,10 @@ Some other available actions
 
 There are some other actions you can find from the StudentMatrix menu.
 
+* "Send email to students": This sends out an email to students, based on a
+  template in a Google document. The template to use is set on the config tab.
+  See http://preview.tinyurl.com/studentmatrix-mail for an example and
+  instructions for how to create your own template.
 * "Count cell status": To use this, select a number of cells in a template
   first. The action will count the selected cells for all selected students, and
   write out the number of cells marked ok/review/unlocked in the student tab in
@@ -152,6 +161,34 @@ There are some other actions you can find from the StudentMatrix menu.
   prompted for email subject and any message to prepend to the links. (This
   action will probably be extended, see issue at
   https://github.com/Itangalo/studentmatrix/issues/3 .)
+
+
+Khan Academy integration
+========================
+
+StudentMatrix integrates with Khan Academy in two ways:
+
+* "Run Khan updates": This will read information from the tab "Khan exercises"
+  in the master spreadsheet, and mark cells OK in student sheets if they have
+  completed ALL the exercises listed for each cell. An exception is made if the
+  student cell is marked for review -- if so, the exercises on Khan Academy must
+  not only be completed, but also NOT marked for review.
+* "Update Khan goals": This will read information from the tab "Khan goals"
+  and update the tab "Khan goals" on student sheets. On the student sheets, the
+  tab will show each listed goal together with the exercises set for that goal.
+  Each exercise will be displayed with how many times the student have tried
+  that particular exercise, and a proficiency level (0-100%). The background
+  color will be set to the same percentage of the OK color. Finally, the goal
+  will be colored as OK if all its exercises are at 100%.
+
+To use these actions, you will need API keys for Khan Academy, and enter them
+into your config. That will have to be done manually -- sorry.
+
+These two features are still kind of experimental, and will not appear in the
+menu unless you add a sheet with the name "Khan exercises". If you want to get
+started quickly, just copy the spreadsheet found at
+http://tinyurl.com/studentmatrix-master
+
 
 License and stuff
 =================

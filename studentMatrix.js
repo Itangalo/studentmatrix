@@ -34,7 +34,7 @@ function onOpen() {
   menuEntries.push({name : "Set content of student cells", functionName : "studentMatrixSetContent"});
   menuEntries.push({name : "Add new template sheet", functionName : "studentMatrixAddTemplateSheet"});
   menuEntries.push(null); // line separator
-  menuEntries.push({name : "Send notification with link(s)", functionName : "studentMatrixNotify"});
+  menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
   menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
   menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
   menuEntries.push(null); // line separator
