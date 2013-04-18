@@ -95,6 +95,114 @@ function khanUpdate() {
 }
 
 /**
+ * Update the "Khan goals" tab for students. (Create it, if need be.)
+ */
+function khanGoals() {
+  // Get some settings data.
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  var khanGoals = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan goals");
+  // Get color values, and convert to numbers to allow shading unlocked to ok.
+  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
+  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
+  var colorOkInt = [
+    parseInt(colorOk.substr(1,2),16),
+    parseInt(colorOk.substr(3,2),16),
+    parseInt(colorOk.substr(5,2),16)
+  ];
+  var colorUnlockedInt = [
+    parseInt(colorUnlocked.substr(1,2),16),
+    parseInt(colorUnlocked.substr(3,2),16),
+    parseInt(colorUnlocked.substr(5,2),16)
+  ];
+
+  // Todo: Have these settings read from a not-so-public place.
+  var accessor = {
+    consumerKey : studentMatrixGetConfig("KhanConsumerKey"),
+    consumerSecret : studentMatrixGetConfig("KhanConsumerSecret"),
+    token : studentMatrixGetConfig("KhanToken"),
+    tokenSecret : studentMatrixGetConfig("KhanTokenSecret"),
+  };
+  var url = "https://www.khanacademy.org/api/v1/user/exercises";
+
+  // Loop through the selected students.
+  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+    if (targetSheet == false) {
+      continue;
+    }
+
+    // Get the student's results from Khan Academy.
+    var parameters = [
+      ["email", studentSheet.getRange(studentRow, 11).getValue()],
+    ]
+    var KhanResults = JSON.parse(OAuthConnect(url, parameters, accessor));
+
+    // Load the tab with goals from the student's sheet.
+    var goalSheet = targetSheet.getSheetByName("Khan goals");
+    try {
+      // Try accessing the sheet name, to see if the sheet exists.
+      var tmp = goalSheet.getName();
+    }
+    catch (err) {
+      // There is no tab for Khan goals. Let's create one.
+      goalSheet = targetSheet.insertSheet().setName("Khan goals");
+    }
+
+    // Walk through the goals set up in "Khan goals" in the master sheet.
+    var goals = khanGoals.getSheetValues(2, 1, khanGoals.getLastRow(), 3);
+    var goalRow = 1;
+    for (var searchRow in goals) {
+      // Check if the search row contains a new goal.
+      if (goals[searchRow][0] != "") {
+        // Check if the goal we're leaving is fulfilled.
+        if (allProficient && allFound) {
+          goalSheet.getRange(goalRow, 1).setBackgroundColor(colorOk);
+        }
+
+        // Step to a new goal, and reset some counting data.
+        goalRow++;
+        var allFound = true;
+        var goalColumn = 1;
+        var allProficient = true;
+        goalSheet.getRange(goalRow, 1).setValue(goals[searchRow][0]);
+      }
+      // Check if the search row contains a new sub goal (exercise).
+      if (goals[searchRow][1] != "" && goals[searchRow][2] != "") {
+        goalColumn++;
+        var text = goals[searchRow][1];
+        var colorInt = [255, 255, 255];
+        // Find this exercise in the Khan results. (I wish they were keyed by exercise name.)
+        var found = false;
+        for (exercise in KhanResults) {
+          if (KhanResults[exercise]["exercise"] == goals[searchRow][2]) {
+            found = true;
+            // Add some text to the exercise description, in the student's sheet.
+            text += " (Count: " + KhanResults[exercise]["total_done"];
+            text += " Progress: " + Math.round(KhanResults[exercise]["progress"] * 100) + "%)";
+            // Calculate the background color, shifting from unlocked to ok based on the progress.
+            colorInt = [
+              colorOkInt[0] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorUnlockedInt[0],
+              colorOkInt[1] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorUnlockedInt[1],
+              colorOkInt[2] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorUnlockedInt[2]
+            ];
+            if (KhanResults[exercise]["progress"] < 1) {
+              allProficient = false;
+            }
+            continue;
+          }
+        }
+        if (found == false) {
+          allFound = false;
+        }
+        // Set content and background color in the student's sheet.
+        goalSheet.getRange(goalRow, goalColumn).setFormula('=hyperlink("https://www.khanacademy.org/exercise/' + goals[searchRow][2] + '"; "' + text + '")');
+        goalSheet.getRange(goalRow, goalColumn).setBackgroundRGB(colorInt[0], colorInt[1], colorInt[2]);
+      }
+    }
+  }
+}
+
+/**
  * This function comes straight from http://oauth.googlecode.com/svn/code/javascript/
  *
  * Cred to John Kristian for providing this.

@@ -46,6 +46,7 @@ function onOpen() {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getName();
     menuEntries.push(null); // line separator
     menuEntries.push({name : "Run Khan updates", functionName : "khanUpdate"});
+    menuEntries.push({name : "Update Khan goals", functionName : "khanGoals"});
   }
   catch (err) {
   }
