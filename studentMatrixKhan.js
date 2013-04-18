@@ -103,17 +103,12 @@ function khanGoals() {
   var khanGoals = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan goals");
   // Get color values, and convert to numbers to allow shading unlocked to ok.
   var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
-  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
   var colorOkInt = [
     parseInt(colorOk.substr(1,2),16),
     parseInt(colorOk.substr(3,2),16),
     parseInt(colorOk.substr(5,2),16)
   ];
-  var colorUnlockedInt = [
-    parseInt(colorUnlocked.substr(1,2),16),
-    parseInt(colorUnlocked.substr(3,2),16),
-    parseInt(colorUnlocked.substr(5,2),16)
-  ];
+  var colorEmpty = [255, 255, 255];
 
   // Todo: Have these settings read from a not-so-public place.
   var accessor = {
@@ -181,9 +176,9 @@ function khanGoals() {
             text += " Progress: " + Math.round(KhanResults[exercise]["progress"] * 100) + "%)";
             // Calculate the background color, shifting from unlocked to ok based on the progress.
             colorInt = [
-              colorOkInt[0] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorUnlockedInt[0],
-              colorOkInt[1] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorUnlockedInt[1],
-              colorOkInt[2] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorUnlockedInt[2]
+              colorOkInt[0] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorEmpty[0],
+              colorOkInt[1] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorEmpty[1],
+              colorOkInt[2] * KhanResults[exercise]["progress"] + (1 - KhanResults[exercise]["progress"]) * colorEmpty[2]
             ];
             if (KhanResults[exercise]["progress"] < 1) {
               allProficient = false;
