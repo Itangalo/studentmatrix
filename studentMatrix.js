@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.8-beta";
+  return "1.9-beta";
 }
 
 /**
@@ -40,8 +40,15 @@ function onOpen() {
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
   menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
-  menuEntries.push(null); // line separator
-  menuEntries.push({name : "Run Khan updates", functionName : "khanUpdate"});
+
+  // Only add these entries if there is a sheet called "Khan exercises".
+  try {
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getName();
+    menuEntries.push(null); // line separator
+    menuEntries.push({name : "Run Khan updates", functionName : "khanUpdate"});
+  }
+  catch (err) {
+  }
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), menuEntries);
 };
@@ -514,7 +521,11 @@ function studentMatrixNotify() {
  * Adds a new sheet, cloned from the template specified in the settings.
  */
 function studentMatrixAddTemplateSheet() {
-  SpreadsheetApp.openById(studentMatrixGetConfig("spreadsheetTemplate")).getSheetByName(studentMatrixGetConfig("spreadsheetTab")).copyTo(SpreadsheetApp.getActiveSpreadsheet());
+  var name = Browser.inputBox("Name for new sheet.");
+  var index = SpreadsheetApp.getActive().getActiveSheet().getIndex();
+  var newSheet = SpreadsheetApp.openById(studentMatrixGetConfig("spreadsheetTemplate")).getSheetByName(studentMatrixGetConfig("spreadsheetTab")).copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(name);
+  newSheet.activate();
+  SpreadsheetApp.getActiveSpreadsheet().moveActiveSheet(index);
 }
 
 /**
