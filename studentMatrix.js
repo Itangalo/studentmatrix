@@ -33,8 +33,9 @@ function onOpen() {
   menuEntries.push({name : "Student sheets: Set colors of selected cells", functionName : "studentMatrixSetColor"});
   menuEntries.push({name : "Student sheets: Set content of selected cells", functionName : "studentMatrixSetContent"});
   menuEntries.push(null); // line separator
-  menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
   menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
+  menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
+  menuEntries.push({name : "Create new email template", functionName : "studentMatrixCreateMailTemplate"});
 
   menuEntries.push(null); // line separator
   if (studentMatrixGetConfig("version") != studentMatrixVersion()) {
@@ -52,8 +53,8 @@ function onOpen() {
   try {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getName();
     menuEntries.push(null); // line separator
-    menuEntries.push({name : "Run Khan updates", functionName : "khanUpdate"});
-    menuEntries.push({name : "Update Khan goals", functionName : "khanGoals"});
+    menuEntries.push({name : "Khan Academy: Read and update exercises", functionName : "khanUpdate"});
+    menuEntries.push({name : "Khan Academy: Read and update goals", functionName : "khanGoals"});
   }
   catch (err) {
   }
@@ -342,7 +343,8 @@ function studentMatrixCreateTemplateSheet() {
   var template = SpreadsheetApp.create(name);
   var row = studentMatrixConfig()["spreadsheetTemplate"]["row"];
   var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
-  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link);
+  // Set content of config cell, and set focus to the cell.
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link).activate();
   Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
 }
 
@@ -464,6 +466,19 @@ function studentMatrixCreateStudentSheets() {
       }
     }
   }
+}
+
+/**
+ * Creates a document template used for emails to the students.
+ */
+function studentMatrixCreateMailTemplate() {
+  var name = Browser.inputBox("Name for email template document");
+//  var template = DocumentApp.openById("1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg");
+  var template = DocsList.getFileById("1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg").makeCopy(name);
+  var row = studentMatrixConfig()["emailTemplate"]["row"];
+  var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link).activate();
+  Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
 }
 
 /**
