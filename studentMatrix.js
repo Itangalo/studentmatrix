@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.9-beta";
+  return "1.10-beta";
 }
 
 /**
@@ -25,21 +25,28 @@ function onInstall() {
  */
 function onOpen() {
   var menuEntries = [];
-  menuEntries.push({name : "Unlock student cell colors for selection", functionName : "studentMatrixUnlock"});
-  menuEntries.push({name : "Degrade selected cells to review status", functionName : "studentMatrixReview"});
-  menuEntries.push({name : "Mark cells ok", functionName : "studentMatrixOk"});
-  menuEntries.push({name : "Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
+  menuEntries.push({name : "Student sheets: Unlock selected cells", functionName : "studentMatrixUnlock"});
+  menuEntries.push({name : "Student sheets: Degrade selected cells to review status", functionName : "studentMatrixReview"});
+  menuEntries.push({name : "Student sheets: Mark cells ok", functionName : "studentMatrixOk"});
+  menuEntries.push({name : "Student sheets: Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
   menuEntries.push(null); // line separator
-  menuEntries.push({name : "Set colors of student cells", functionName : "studentMatrixSetColor"});
-  menuEntries.push({name : "Set content of student cells", functionName : "studentMatrixSetContent"});
-  menuEntries.push({name : "Add new template sheet", functionName : "studentMatrixAddTemplateSheet"});
+  menuEntries.push({name : "Student sheets: Set colors of selected cells", functionName : "studentMatrixSetColor"});
+  menuEntries.push({name : "Student sheets: Set content of selected cells", functionName : "studentMatrixSetContent"});
   menuEntries.push(null); // line separator
   menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
   menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
-  menuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
+
   menuEntries.push(null); // line separator
-  menuEntries.push({name : "Create settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
-  menuEntries.push({name : "Help and version info", functionName : "studentMatrixHelp"});
+  if (studentMatrixGetConfig("version") != studentMatrixVersion()) {
+    menuEntries.push({name : "Setup: Rewrite settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
+  }
+  if (studentMatrixGetConfig("spreadsheetTemplate") == "") {
+    menuEntries.push({name : "Setup: Create template sheet", functionName : "studentMatrixCreateTemplateSheet"});
+  }
+  menuEntries.push({name : "Setup: Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
+  menuEntries.push({name : "Setup: Copy template to master sheet", functionName : "studentMatrixAddTemplateSheet"});
+  menuEntries.push(null); // line separator
+  menuEntries.push({name : "Help", functionName : "studentMatrixHelp"});
 
   // Only add these entries if there is a sheet called "Khan exercises".
   try {
@@ -186,6 +193,12 @@ function studentMatrixConfig() {
     row : 28
   };
 
+  // Settings for version updates.
+  config['version'] = {
+    name : "Configuration version",
+    row : 30
+  };
+
 return config;
 }
 
@@ -322,6 +335,18 @@ function studentMatrixCreateSettingsSheet() {
 }
 
 /**
+ * Creates a spreadsheet for template and adds its key to the config.
+ */
+function studentMatrixCreateTemplateSheet() {
+  var name = Browser.inputBox("Name for template spreadsheet");
+  var template = SpreadsheetApp.create(name);
+  var row = studentMatrixConfig()["spreadsheetTemplate"]["row"];
+  var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link);
+  Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
+}
+
+/**
  * Creates new spreadsheets/documents for students who don't already have one.
  */
 function studentMatrixCreateStudentSheets() {
@@ -345,6 +370,18 @@ function studentMatrixCreateStudentSheets() {
     var documentViewable = studentMatrixGetConfig("documentViewable");
     var documentCommentable = studentMatrixGetConfig("documentCommentable");
     var documentEditable = studentMatrixGetConfig("documentEditable");
+  }
+
+  // This function is usually the first one you run when you set up StudentMatrix.
+  // Let's verify that the tab name for the template sheet exists, and correct the
+  // setting if not.
+  try {
+    var tmp = templateSpreadsheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getName();
+  }
+  catch (err) {
+    var row = studentMatrixConfig()["spreadsheetTab"]["row"];
+    var spreadsheetTab = templateSpreadsheet.getActiveSheet().getName();
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setValue(spreadsheetTab);
   }
 
   // Go through all the students and create new stuff as necessary.
