@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.10-beta";
+  return "1.11-beta";
 }
 
 /**
@@ -83,121 +83,126 @@ function studentMatrixConfig() {
     description : "Set to 1 to get a popup box confirming each new created file.",
     row : 4
   };
+  config['folder'] = {
+    name : "Folder to use for this master sheet",
+    description : "All files created by this master sheet will be placed in this folder.",
+    row : 5
+  };
   config['emailTemplate'] = {
     name : "Key for e-mail template",
     description : "The key for the Google document used when sending out e-mail notifications. Found in document URL.",
-    row : 5
+    row : 6
   };
 
   // Settings for spreadsheets.
   config['spreadsheetTemplate'] = {
     name : "Key for spreadsheet template",
     description : "The key for the spreadsheet copied when creating new student sheets. Found in sheet URL.",
-    row : 7
+    row : 8
   };
   config['spreadsheetTab'] = {
     name : "Name of tab with matrix",
     description : "The name of the tab containing the actual matrix. Case sensitive.",
-    row : 8
+    row : 9
   };
   config['spreadsheetSuffix'] = {
     name : "Suffix for spreadsheet titles",
     description : "Anything added here will be appended to the student name when creating spreadsheet titles.",
-    row : 9
+    row : 10
   };
   config['spreadsheetColorUnlocked'] = {
     name : "Color for unlocked matrix cells",
     description : "Set background color on this cell to the one you wish to use for unlocked cells which are not yet approved.",
-    row : 10,
+    row : 11,
     special : "read from background"
   };
   config['spreadsheetColorOk'] = {
     name : "Color for approved matrix cells",
     description : "Set background color on this cell to the one you wish to use for approved cells.",
-    row : 11,
+    row : 12,
     special : "read from background"
   };
   config['spreadsheetColorReview'] = {
     name : "Color for cells in need of review",
     description : "Set background color on this cell to the one you wish to use for cells that have been conquered, but then lost.",
-    row : 12,
+    row : 13,
     special : "read from background"
   };
   config['spreadsheetPublic'] = {
     name : "Make spreadsheets viewable by anyone",
     description : "Set to 1 to make new spreadsheets accessible for anyone.",
-    row : 13
+    row : 14
   };
   config['spreadsheetStudentViewable'] = {
     name : "Add student view permission to sheet",
     description : "Set to 1 to add the student email to list of users with view access. Requires gmail address.",
-    row : 14
+    row : 15
   };
   config['spreadsheetStudentEditable'] = {
     name : "Add student edit permission to sheet",
     description : "Set to 1 to add the student email to list of users with edit access. Requires gmail address.",
-    row : 15
+    row : 16
   };
 
   // Settings for documents.
   config['documentEnable'] = {
     name : "Also create student documents",
     description : "Set to 1 to have StudentMatrix also create a Google document for each student, not only spreadsheets.",
-    row : 17
+    row : 18
   };
   config['documentTemplate'] = {
     name : "Key for document template",
     description : "The key for the document to copy to each student. Key is found in the document URL.",
-    row : 18
+    row : 19
   };
   config['documentSuffix'] = {
     name : "Suffix for document titles",
     description : "Anything added here will be appended to the student name when creating title for the document.",
-    row : 19
+    row : 20
   };
   config['documentPublic'] = {
     name : "Make documents viewable by anyone (not used)",
     description : "There are not yet API functions for Google documents to allow this. Sorry.",
-    row : 20
+    row : 21
   };
   config['documentViewable'] = {
     name : "Add student view permission to document",
     description : "Set to 1 to add the student email to the list of users allowed to view new documents. Requires gmail address.",
-    row : 21
+    row : 22
   };
   config['documentCommentable'] = {
     name : "Add student comment permission to document (not used)",
     description : "There are not yet API functions for Google documents to allow this. Sorry.",
-    row : 22
+    row : 23
   };
   config['documentEditable'] = {
     name : "Add student edit permission to document",
     description : "Set to 1 to add the student email to the list of users allowed to edit new documents. Requires gmail address.",
-    row : 23
+    row : 24
   };
 
   // Settings for Khan Academy stuff.
   config['KhanConsumerKey'] = {
     name : "Khan Academy API consumer key",
-    row : 25
+    row : 26
   };
   config['KhanConsumerSecret'] = {
     name : "Khan Academy API secret",
-    row : 26
+    row : 27
   };
   config['KhanToken'] = {
     name : "Khan Academy API token",
-    row : 27
+    row : 28
   };
   config['KhanTokenSecret'] = {
     name : "Khan Academy API token secret",
-    row : 28
+    row : 29
   };
 
   // Settings for version updates.
   config['version'] = {
     name : "Configuration version",
-    row : 30
+    row : 31
   };
 
 return config;
@@ -306,6 +311,9 @@ function studentMatrixCreateSettingsSheet() {
       configSheet.getRange(config[entry]["row"], 1).setComment(config[entry]["description"]);
     }
   }
+
+  // Mark that the config version has been updated.
+  configSheet.getRange(config["version"]["row"], 2).setValue(studentMatrixVersion());
 
   // Create a new sheet for students, if there isn't already one.
   studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
