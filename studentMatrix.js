@@ -283,6 +283,19 @@ function studentMatrixGetStudentSheet(row, fetch) {
 }
 
 /**
+ * Assures that there is a folder matching the config.
+ */
+function studentMatrixAssureFolder() {
+  // Let's also see if a folder exists that matches the config, and if not, create it.
+  try {
+    var tmp = DocsList.getFolder(studentMatrixGetConfig("folder"));
+  }
+  catch (err) {
+    DocsList.createFolder(studentMatrixGetConfig("folder"));
+  }
+}
+
+/**
  * Creates tabs (spreadsheets) called "config" and "students", and populates with relevant information.
  */
 function studentMatrixCreateSettingsSheet() {
@@ -353,6 +366,8 @@ function studentMatrixCreateTemplateSheet() {
   var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
   // Set content of config cell, and set focus to the cell.
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link).activate();
+  studentMatrixAssureFolder();
+  DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
   Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
 }
 
@@ -393,6 +408,7 @@ function studentMatrixCreateStudentSheets() {
     var spreadsheetTab = templateSpreadsheet.getActiveSheet().getName();
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setValue(spreadsheetTab);
   }
+  studentMatrixAssureFolder();
 
   // Go through all the students and create new stuff as necessary.
   for (var row = 2; row <= studentSheet.getLastRow(); row++) {
@@ -431,6 +447,9 @@ function studentMatrixCreateStudentSheets() {
         newSheet = SpreadsheetApp.openById(studentSheet.getRange(row, 4).getValue());
         studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
       }
+
+      // Add the sheet to the proper folder.
+      DocsList.getFileById(studentSheet.getRange(row, 4).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
 
       // Do similar procedure for documents.
       if (documentEnable == 1) {
@@ -471,6 +490,9 @@ function studentMatrixCreateStudentSheets() {
           newDocument = DocsList.getFileById(studentSheet.getRange(row, 5).getValue());
           studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
         }
+
+        // Add the document to the appropriate folder.
+        DocsList.getFileById(studentSheet.getRange(row, 5).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
       }
     }
   }
@@ -481,11 +503,12 @@ function studentMatrixCreateStudentSheets() {
  */
 function studentMatrixCreateMailTemplate() {
   var name = Browser.inputBox("Name for email template document");
-//  var template = DocumentApp.openById("1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg");
   var template = DocsList.getFileById("1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg").makeCopy(name);
   var row = studentMatrixConfig()["emailTemplate"]["row"];
   var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link).activate();
+  studentMatrixAssureFolder();
+  DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
   Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
 }
 
@@ -522,7 +545,7 @@ function studentMatrixCount() {
       continue;
     }
     var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getRange(sourceCells.getA1Notation());
-    
+
     var unlockedCount = 0;
     var okCount = 0;
     var reviewCount = 0;
@@ -560,7 +583,7 @@ function studentMatrixNotify() {
 
   var subject = Browser.inputBox("Email subject.");
 
-  
+
   // Go through all the students and send an email.
   for (var row = 2; row <= studentSheet.getLastRow(); row++) {
     // Check if the row is marked for update.
