@@ -431,13 +431,19 @@ function studentMatrixCreateStudentSheets() {
  */
 function studentMatrixCreateMailTemplate() {
   var name = Browser.inputBox("Name for email template document");
+  SpreadsheetApp.getActiveSpreadsheet().toast('Creating new template...');
   var template = DocsList.getFileById("1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg").makeCopy(name);
-  var row = studentMatrixConfig()["emailTemplate"]["row"];
-  var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
-  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link).activate();
   studentMatrixAssureFolder();
   DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
-  Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
+  ScriptProperties.setProperty('emailTemplate', template.getId());
+  
+  var app = UiApp.createApplication().setTitle("E-mail template created");
+  app.add(app.createLabel('The template is placed in the folder used for this class. You can also find a link to the e-mail template in the StudentMatrix settings. Note that you can use replacement patterns like [column-NN] to dynamically insert content from column NN in the student sheet. Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
+  app.add(app.createLabel('Note that you can use replacement patterns like [column-NN] to dynamically insert content from column NN in the student sheet. Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
+  app.add(app.createLabel('Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
+  app.add(app.createAnchor('View template', true, template.getUrl()));
+  
+  SpreadsheetApp.getActiveSpreadsheet().show(app);
 }
 
 /**
