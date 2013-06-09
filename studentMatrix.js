@@ -14,28 +14,39 @@ function studentMatrixHelp() {
 }
 
 /**
- * Runs the onOpen scripts for adding menus also on install.
+ * Builds the menu when installing the script.
  */
 function onInstall() {
-  onOpen();
+  buildMenu();
+}
+
+/**
+ * Builds the menu when opening the spreadsheet.
+ */
+function onOpen() {
+  buildMenu();
 }
 
 /**
  * Adds a custom menu to the active spreadsheet on opening the spreadsheet.
  */
-function onOpen() {
+function buildMenu() {
   var menuEntries = [];
-  menuEntries.push({name : "Student sheets: Unlock selected cells", functionName : "studentMatrixUnlock"});
-  menuEntries.push({name : "Student sheets: Degrade selected cells to review status", functionName : "studentMatrixReview"});
-  menuEntries.push({name : "Student sheets: Mark cells ok", functionName : "studentMatrixOk"});
-  menuEntries.push({name : "Student sheets: Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
-  menuEntries.push(null); // line separator
-  menuEntries.push({name : "Student sheets: Set colors of selected cells", functionName : "studentMatrixSetColor"});
-  menuEntries.push({name : "Student sheets: Set content of selected cells", functionName : "studentMatrixSetContent"});
-  menuEntries.push(null); // line separator
-  menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
-  menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
-  menuEntries.push({name : "Create new email template", functionName : "studentMatrixCreateMailTemplate"});
+  if (sheetExists("students")) {
+    menuEntries.push({name : "Select students", functionName : "studentMatrixStudents"});
+    menuEntries.push(null); // line separator
+    menuEntries.push({name : "Student sheets: Unlock selected cells", functionName : "studentMatrixUnlock"});
+    menuEntries.push({name : "Student sheets: Degrade selected cells to review status", functionName : "studentMatrixReview"});
+    menuEntries.push({name : "Student sheets: Mark cells ok", functionName : "studentMatrixOk"});
+    menuEntries.push({name : "Student sheets: Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
+    menuEntries.push(null); // line separator
+    menuEntries.push({name : "Student sheets: Set colors of selected cells", functionName : "studentMatrixSetColor"});
+    menuEntries.push({name : "Student sheets: Set content of selected cells", functionName : "studentMatrixSetContent"});
+    menuEntries.push(null); // line separator
+    menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
+    menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
+    menuEntries.push({name : "Create new email template", functionName : "studentMatrixCreateMailTemplate"});
+  }
 
   menuEntries.push(null); // line separator
   if (studentMatrixGetConfig("version") != studentMatrixVersion()) {
@@ -44,180 +55,98 @@ function onOpen() {
   if (studentMatrixGetConfig("spreadsheetTemplate") == "") {
     menuEntries.push({name : "Setup: Create template sheet", functionName : "studentMatrixCreateTemplateSheet"});
   }
-  menuEntries.push({name : "Setup: Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
-  menuEntries.push({name : "Setup: Copy template to master sheet", functionName : "studentMatrixAddTemplateSheet"});
-  menuEntries.push(null); // line separator
+  else {
+    menuEntries.push({name : "Setup: Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
+    menuEntries.push({name : "Setup: Copy template to master sheet", functionName : "studentMatrixAddTemplateSheet"});
+    menuEntries.push(null); // line separator
+  }
+
   menuEntries.push({name : "Help", functionName : "studentMatrixHelp"});
+  menuEntries.push({name : "StudentMatrix settings", functionName : "studentMatrixSettings"});
 
   // Only add these entries if there is a sheet called "Khan exercises".
-  try {
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan exercises").getName();
+  if (sheetExists("Khan exercises")) {
     menuEntries.push(null); // line separator
     menuEntries.push({name : "Khan Academy: Read and update exercises", functionName : "khanUpdate"});
-    menuEntries.push({name : "Khan Academy: Read and update goals", functionName : "khanGoals"});
-  }
-  catch (err) {
+    if (sheetExists("Khan goals")) {
+      menuEntries.push({name : "Khan Academy: Read and update goals", functionName : "khanGoals"});
+    }
   }
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), menuEntries);
 };
 
 /**
- * Declares the settings used by StudentMatrix.
+ * Helper function to check whether a given sheet exists in the active spreadsheet.
  */
-function studentMatrixConfig() {
-  var config = [];
-  // Global settings.
-  config['resetUpdateColumn'] = {
-    name : "Reset update flag after update",
-    description : "Set to 1 to change update column to datestamp when finished.",
-    row : 2,
-  };
-  config['editorMails'] = {
-    name : "Emails for editors",
-    description : "Must be gmail addresses. Separate with space.",
-    row : 3
-  };
-  config['verboseCreation'] = {
-    name : "Alert for each new file created",
-    description : "Set to 1 to get a popup box confirming each new created file.",
-    row : 4
-  };
-  config['folder'] = {
-    name : "Folder to use for this master sheet",
-    description : "All files created by this master sheet will be placed in this folder.",
-    row : 5
-  };
-  config['emailTemplate'] = {
-    name : "Key for e-mail template",
-    description : "The key for the Google document used when sending out e-mail notifications. Found in document URL.",
-    row : 6
-  };
-
-  // Settings for spreadsheets.
-  config['spreadsheetTemplate'] = {
-    name : "Key for spreadsheet template",
-    description : "The key for the spreadsheet copied when creating new student sheets. Found in sheet URL.",
-    row : 8
-  };
-  config['spreadsheetTab'] = {
-    name : "Name of tab with matrix",
-    description : "The name of the tab containing the actual matrix. Case sensitive.",
-    row : 9
-  };
-  config['spreadsheetSuffix'] = {
-    name : "Suffix for spreadsheet titles",
-    description : "Anything added here will be appended to the student name when creating spreadsheet titles.",
-    row : 10
-  };
-  config['spreadsheetColorUnlocked'] = {
-    name : "Color for unlocked matrix cells",
-    description : "Set background color on this cell to the one you wish to use for unlocked cells which are not yet approved.",
-    row : 11,
-    special : "read from background"
-  };
-  config['spreadsheetColorOk'] = {
-    name : "Color for approved matrix cells",
-    description : "Set background color on this cell to the one you wish to use for approved cells.",
-    row : 12,
-    special : "read from background"
-  };
-  config['spreadsheetColorReview'] = {
-    name : "Color for cells in need of review",
-    description : "Set background color on this cell to the one you wish to use for cells that have been conquered, but then lost.",
-    row : 13,
-    special : "read from background"
-  };
-  config['spreadsheetPublic'] = {
-    name : "Make spreadsheets viewable by anyone",
-    description : "Set to 1 to make new spreadsheets accessible for anyone.",
-    row : 14
-  };
-  config['spreadsheetStudentViewable'] = {
-    name : "Add student view permission to sheet",
-    description : "Set to 1 to add the student email to list of users with view access. Requires gmail address.",
-    row : 15
-  };
-  config['spreadsheetStudentEditable'] = {
-    name : "Add student edit permission to sheet",
-    description : "Set to 1 to add the student email to list of users with edit access. Requires gmail address.",
-    row : 16
-  };
-
-  // Settings for documents.
-  config['documentEnable'] = {
-    name : "Also create student documents",
-    description : "Set to 1 to have StudentMatrix also create a Google document for each student, not only spreadsheets.",
-    row : 18
-  };
-  config['documentTemplate'] = {
-    name : "Key for document template",
-    description : "The key for the document to copy to each student. Key is found in the document URL.",
-    row : 19
-  };
-  config['documentSuffix'] = {
-    name : "Suffix for document titles",
-    description : "Anything added here will be appended to the student name when creating title for the document.",
-    row : 20
-  };
-  config['documentPublic'] = {
-    name : "Make documents viewable by anyone (not used)",
-    description : "There are not yet API functions for Google documents to allow this. Sorry.",
-    row : 21
-  };
-  config['documentViewable'] = {
-    name : "Add student view permission to document",
-    description : "Set to 1 to add the student email to the list of users allowed to view new documents. Requires gmail address.",
-    row : 22
-  };
-  config['documentCommentable'] = {
-    name : "Add student comment permission to document (not used)",
-    description : "There are not yet API functions for Google documents to allow this. Sorry.",
-    row : 23
-  };
-  config['documentEditable'] = {
-    name : "Add student edit permission to document",
-    description : "Set to 1 to add the student email to the list of users allowed to edit new documents. Requires gmail address.",
-    row : 24
-  };
-
-  // Settings for Khan Academy stuff.
-  config['KhanConsumerKey'] = {
-    name : "Khan Academy API consumer key",
-    row : 26
-  };
-  config['KhanConsumerSecret'] = {
-    name : "Khan Academy API secret",
-    row : 27
-  };
-  config['KhanToken'] = {
-    name : "Khan Academy API token",
-    row : 28
-  };
-  config['KhanTokenSecret'] = {
-    name : "Khan Academy API token secret",
-    row : 29
-  };
-
-  // Settings for version updates.
-  config['version'] = {
-    name : "Configuration version",
-    row : 31
-  };
-
-return config;
+function sheetExists(sheetName) {
+  try {
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName).getName();
+    return true;
+  }
+  catch (err) {
+    return false;
+  }
 }
 
 /**
- * Returns the config for a given entry, as set on the config tab.
+ * Displays a list of all students in a popup panel with checkboxes.
  */
-function studentMatrixGetConfig(entry) {
-  var config = studentMatrixConfig();
-  var row = config[entry]['row'];
-  if (config[entry]['special'] == "read from background") {
-    return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getBackground();
+function studentMatrixStudents() {
+  var app = UiApp.createApplication().setTitle("Students");
+  var panel = app.createVerticalPanel().setHeight("100%");
+  app.add(app.createScrollPanel(panel).setHeight("100%"));
+
+  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+  var studentData = studentSheet.getRange(2, 1, studentSheet.getLastRow() - 1, 2).getValues();
+  var checkboxes = [];
+  var handler = app.createServerHandler("studentMatrixStudentSelect");
+  for (var student in studentData) {
+    checkboxes[student] = app.createCheckBox(studentData[student][1]).setValue(studentData[student][0] == 1).addClickHandler(handler).setId(2 + parseInt(student)).setName(2 + parseInt(student));
+    panel.add(checkboxes[student]);
   }
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).getValue();
+
+  var done = app.createButton('Done').addClickHandler(handler).setId('done');
+  var selectAll = app.createButton('Select all').addClickHandler(handler).setId('selectAll');
+  panel.add(done);
+  panel.add(selectAll);
+
+
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  spreadsheet.show(app);
+  return app;
+}
+
+/**
+ * Handler for selecting/deselecting students marked for update.
+ */
+function studentMatrixStudentSelect(eventInfo) {
+  // Check if a button has been clicked, and if so take appropriate actions.
+  if (eventInfo.parameter.source == 'selectAll') {
+    var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+    var range = studentSheet.getRange(2, 1, studentSheet.getLastRow() - 1);
+    range.setValue(1);
+
+    SpreadsheetApp.getActiveSpreadsheet().toast("", "All students selected.", 1);
+    var app = UiApp.getActiveApplication();
+    app.close();
+    return app;
+  }
+  if (eventInfo.parameter.source == 'done') {
+    var app = UiApp.getActiveApplication();
+    app.close();
+    return app;
+  }
+
+  // If no button is clicked, we should toggle the 0/1 state of a student cell.
+  // The cell row is the same as the ID of the checkbox being clicked.
+  cell = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(eventInfo.parameter.source, 1);
+  if (cell.getValue() == 1) {
+    cell.setValue(0);
+  }
+  else {
+    cell.setValue(1);
+  }
 }
 
 /**
@@ -286,7 +215,6 @@ function studentMatrixGetStudentSheet(row, fetch) {
  * Assures that there is a folder matching the config.
  */
 function studentMatrixAssureFolder() {
-  // Let's also see if a folder exists that matches the config, and if not, create it.
   try {
     var tmp = DocsList.getFolder(studentMatrixGetConfig("folder"));
   }
