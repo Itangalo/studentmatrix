@@ -3,14 +3,20 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "1.11-beta";
+  return "2.0-beta";
 }
 
 /**
  * Display help link and version information.
  */
 function studentMatrixHelp() {
-  Browser.msgBox("Version " + studentMatrixVersion() + ". See https://github.com/Itangalo/studentmatrix for project information and documentation. Some Swedish video guides can be found at http://tinyurl.com/studentmatrix-videor.");
+  var app = UiApp.createApplication().setTitle("StudentMatrix (" + studentMatrixVersion() + ")");
+  app.add(app.createLabel('StudentMatrix is a set of scripts for Google Drive that helps teachers manage assessment matrices.'));
+  app.add(app.createLabel('See https://github.com/Itangalo/studentmatrix for project information and documentation. Some Swedish video guides can be found at http://tinyurl.com/studentmatrix-videor.'));
+  app.add(app.createLabel('The source code for these scripts can be found on the project page. It is free to use, study, share and improve under standard GPL license.'));
+  app.add(app.createLabel('Feel free to send feedback to johan@vaxjonexus.com or post an issue on the project page.'));
+  
+  SpreadsheetApp.getActiveSpreadsheet().show(app);
 }
 
 /**
