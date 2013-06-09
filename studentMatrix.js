@@ -318,7 +318,7 @@ function studentMatrixCreateStudentSheets() {
   studentMatrixAssureFolder();
 
   // Go through all the students and create new stuff as necessary.
-  for (var row = 2; row <= LAST_STUDENT_ROW; row++) {
+  for (var row = FIRST_STUDENT_ROW; row <= LAST_STUDENT_ROW; row++) {
     // Check if the row is marked for update.
     if (studentMatrixGetStudentSheet(row, '')) {
 
@@ -345,6 +345,30 @@ function studentMatrixCreateStudentSheets() {
         if (spreadsheetEditable == 'true') {
           newSheet.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
         }
+
+        // Make the student editor of only one sheet, if this option is set.
+        if (studentMatrixGetConfig('spreadsheetTabStudent') != '') {
+          var permissions;
+          // Get all the editors for the spreadsheet.
+          var users = newSheet.getEditors();
+          targetSheets = newSheet.getSheets();
+          // Go through all sheets, and explicitly set who is allow to edit.
+          for (var sheet in targetSheets) {
+            // Make all sheets protected, except the one that the student should be able to edit.
+            if (targetSheets[sheet].getName() != studentMatrixGetConfig('spreadsheetTabStudent')) {
+              permissions = targetSheets[sheet].getSheetProtection();
+              permissions.setProtected(true);
+              for (user in users) {
+                // Don't add the student as editor.
+                if (users[user] != STUDENT_SHEET.getRange(row, 3).getValue()) {
+                  permissions.addUser(users[user]);
+                }
+              }
+              targetSheets[sheet].setSheetProtection(permissions);
+            }
+          }
+        }
+
       }
 
       // If there is a sheet key but no link, create a link.

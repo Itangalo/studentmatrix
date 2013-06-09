@@ -177,6 +177,12 @@ function studentMatrixConfig() {
     description : "The name of the tab containing the actual matrix. Case sensitive.",
     fallback : 'Sheet1',
   };
+  config['spreadsheetTabStudent'] = {
+    parent : 'Spreadsheet',
+    name : "Name of tab with matrix editable by student",
+    description : "If the student should be able to edit just one tab in the spreadsheet, enter the tab name here. Case sensitive.",
+    fallback : '',
+  };
   config['spreadsheetSuffix'] = {
     parent : 'Spreadsheet',
     name : "Suffix for spreadsheet titles",
