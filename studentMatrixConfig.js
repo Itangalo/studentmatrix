@@ -82,6 +82,14 @@ function studentMatrixSettings() {
       catch (e) {
       }
     }
+    if (settings[i]['special'] == 'gfolder' && studentMatrixGetConfig(i) != '') {
+      try {
+        grid[settings[i]['parent']]
+        .setWidget(row[settings[i]['parent']], 2, app.createAnchor('link', true, DocsList.getFolder(studentMatrixGetConfig(i)).getUrl()));
+      }
+      catch (e) {
+      }
+    }
 
     // Each elementshould have ID, name and description before being added to the grid.
     elements[i].setId(i).setName(i).setTitle(settings[i]['description']);
@@ -142,7 +150,7 @@ function studentMatrixConfig() {
     name : "Folder to use for this class",
     description : "All files created by this master sheet will be placed in this folder.",
     fallback : "class folder",
-    special : 'glink',
+    special : 'gfolder',
   };
   config['emailTemplate'] = {
     parent : 'Global',
