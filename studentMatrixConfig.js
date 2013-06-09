@@ -116,6 +116,9 @@ function studentMatrixConfigSave(eventInfo) {
   SpreadsheetApp.getActiveSpreadsheet().toast("", "Configuration saved.", 1);
   var app = UiApp.getActiveApplication();
   app.close();
+
+  // The menu might have to be rebuilt, reflecting changes in the settings.
+  buildMenu();
   return app;
 }
 
