@@ -298,6 +298,11 @@ function studentMatrixCreateTemplateSheet() {
   var app = UiApp.createApplication().setTitle("Matrix template created");
   app.add(app.createLabel('The template is placed in the folder used for this class. You can also find a link to the matrix template in the StudentMatrix settings.'));
   app.add(app.createLabel('Please edit the spreadsheet and customize it to fit your needs. You can add several sheets as well, though only one will be used when making mass updates to student matrices. (Edit the settings if you want to change which sheet to use.)'));
+  app.add(app.createLabel('When you are done customizing the matrix template, you probably want to do the following:'));
+  app.add(app.createLabel('1: Create a copy of the template for each student.'));
+  app.add(app.createLabel('2: Copy the template into this master template, to allow mass updates to student matrices.'));
+  app.add(app.createLabel(''));
+  app.add(app.createLabel('You will find options for both these actions in the StudentMatrix menu.'));
   app.add(app.createAnchor('Edit template', true, template.getUrl()));
   
   SpreadsheetApp.getActiveSpreadsheet().show(app);
