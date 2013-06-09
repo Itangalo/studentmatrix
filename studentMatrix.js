@@ -438,8 +438,8 @@ function studentMatrixCreateMailTemplate() {
   ScriptProperties.setProperty('emailTemplate', template.getId());
   
   var app = UiApp.createApplication().setTitle("E-mail template created");
-  app.add(app.createLabel('The template is placed in the folder used for this class. You can also find a link to the e-mail template in the StudentMatrix settings. Note that you can use replacement patterns like [column-NN] to dynamically insert content from column NN in the student sheet. Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
-  app.add(app.createLabel('Note that you can use replacement patterns like [column-NN] to dynamically insert content from column NN in the student sheet. Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
+  app.add(app.createLabel('The template is placed in the folder used for this class. You can also find a link to the e-mail template in the StudentMatrix settings.'));
+  app.add(app.createLabel('Note that you can use replacement patterns like [column-NN] to dynamically insert content from column NN in the student sheet.'));
   app.add(app.createLabel('Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
   app.add(app.createAnchor('View template', true, template.getUrl()));
   
