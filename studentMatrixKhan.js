@@ -35,7 +35,7 @@ function khanUpdate() {
     var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
 
     var parameters = [
-      ["email", studentSheet.getRange(studentRow, 11).getValue()],
+      ["email", STUDENT_SHEET.getRange(studentRow, 11).getValue()],
     ]
 
     // Get the student results from Khan Academy. Note that this collects a pretty huge object
@@ -99,7 +99,6 @@ function khanUpdate() {
  */
 function khanGoals() {
   // Get some settings data.
-  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
   var khanGoals = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Khan goals");
   // Get color values, and convert to numbers to allow shading unlocked to ok.
   var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
@@ -120,7 +119,7 @@ function khanGoals() {
   var url = "https://www.khanacademy.org/api/v1/user/exercises";
 
   // Loop through the selected students.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
     var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
     if (targetSheet == false) {
       continue;
@@ -128,7 +127,7 @@ function khanGoals() {
 
     // Get the student's results from Khan Academy.
     var parameters = [
-      ["email", studentSheet.getRange(studentRow, 11).getValue()],
+      ["email", STUDENT_SHEET.getRange(studentRow, 11).getValue()],
     ]
     var KhanResults = JSON.parse(OAuthConnect(url, parameters, accessor));
 
@@ -207,7 +206,7 @@ function khanGoals() {
  * This function comes straight from http://oauth.googlecode.com/svn/code/javascript/
  *
  * Cred to John Kristian for providing this.
- * (The final snippet, and return statement, is my own hack. Blame @Itangalo.) 
+ * (The final snippet, and return statement, is my own hack. Blame @Itangalo.)
  */
 function OAuthConnect(url, parameters, accessor) {
  /*
@@ -414,7 +413,7 @@ function OAuthConnect(url, parameters, accessor) {
   }
 
 
-  
+
  /*
   * Copyright 2008 Netflix, Inc.
   *

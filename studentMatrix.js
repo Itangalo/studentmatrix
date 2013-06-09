@@ -6,6 +6,12 @@ function studentMatrixVersion() {
   return "2.0-beta";
 }
 
+// Some global variables
+var STUDENT_SHEET = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
+var FIRST_STUDENT_ROW = 2;
+var LAST_STUDENT_ROW = STUDENT_SHEET.getLastRow();
+var NUMBER_OF_STUDENTS = LAST_STUDENT_ROW - FIRST_STUDENT_ROW + 1;
+
 /**
  * Display help link and version information.
  */
@@ -15,7 +21,7 @@ function studentMatrixHelp() {
   app.add(app.createLabel('See https://github.com/Itangalo/studentmatrix for project information and documentation. Some Swedish video guides can be found at http://tinyurl.com/studentmatrix-videor.'));
   app.add(app.createLabel('The source code for these scripts can be found on the project page. It is free to use, study, share and improve under standard GPL license.'));
   app.add(app.createLabel('Feel free to send feedback to johan@vaxjonexus.com or post an issue on the project page.'));
-  
+
   SpreadsheetApp.getActiveSpreadsheet().show(app);
 }
 
@@ -56,7 +62,7 @@ function buildMenu() {
 
   menuEntries.push(null); // line separator
   if (studentMatrixGetConfig("version") != studentMatrixVersion()) {
-    menuEntries.push({name : "Setup: Rewrite settings sheets", functionName : "studentMatrixCreateSettingsSheet"});
+    menuEntries.push({name : "Setup: Rewrite sheet with student list", functionName : "studentMatrixCreateStudentList"});
   }
   if (studentMatrixGetConfig("spreadsheetTemplate") == "") {
     menuEntries.push({name : "Setup: Create template sheet", functionName : "studentMatrixCreateTemplateSheet"});
@@ -103,8 +109,7 @@ function studentMatrixStudents() {
   var panel = app.createVerticalPanel().setHeight("100%");
   app.add(app.createScrollPanel(panel).setHeight("100%"));
 
-  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-  var studentData = studentSheet.getRange(2, 1, studentSheet.getLastRow() - 1, 2).getValues();
+  var studentData = STUDENT_SHEET.getRange(2, 1, NUMBER_OF_STUDENTS, 2).getValues();
   var checkboxes = [];
   var handler = app.createServerHandler("studentMatrixStudentSelect");
   for (var student in studentData) {
@@ -117,9 +122,7 @@ function studentMatrixStudents() {
   panel.add(done);
   panel.add(selectAll);
 
-
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  spreadsheet.show(app);
+  SpreadsheetApp.getActiveSpreadsheet().show(app);
   return app;
 }
 
@@ -129,11 +132,10 @@ function studentMatrixStudents() {
 function studentMatrixStudentSelect(eventInfo) {
   // Check if a button has been clicked, and if so take appropriate actions.
   if (eventInfo.parameter.source == 'selectAll') {
-    var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-    var range = studentSheet.getRange(2, 1, studentSheet.getLastRow() - 1);
+    var range = STUDENT_SHEET.getRange(2, 1, NUMBER_OF_STUDENTS);
     range.setValue(1);
 
-    SpreadsheetApp.getActiveSpreadsheet().toast("", "All students selected.", 1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("", "All students selected.");
     var app = UiApp.getActiveApplication();
     app.close();
     return app;
@@ -146,7 +148,7 @@ function studentMatrixStudentSelect(eventInfo) {
 
   // If no button is clicked, we should toggle the 0/1 state of a student cell.
   // The cell row is the same as the ID of the checkbox being clicked.
-  cell = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(eventInfo.parameter.source, 1);
+  cell = STUDENT_SHEET.getRange(eventInfo.parameter.source, 1);
   if (cell.getValue() == 1) {
     cell.setValue(0);
   }
@@ -161,11 +163,11 @@ function studentMatrixStudentSelect(eventInfo) {
 function studentMatrixMarkDone(row, status) {
   if (studentMatrixGetConfig("resetUpdateColumn") == 1) {
     if (status == false) {
-      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).setValue("fail");
+      STUDENT_SHEET.getRange(row, 1).setValue("fail");
     }
     else {
       var now = new Date;
-      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).setValue(now);
+      STUDENT_SHEET.getRange(row, 1).setValue(now);
     }
   }
 }
@@ -178,15 +180,15 @@ function studentMatrixMarkDone(row, status) {
  *   - "document" will load a document, using sheet ID from column 5.
  */
 function studentMatrixGetStudentSheet(row, fetch) {
-  if (SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 1).getValue() == 1) {
+  if (STUDENT_SHEET.getRange(row, 1).getValue() == 1) {
     // If asked to return a sheet, try loading and returning it.
     if (fetch == "sheet") {
-      var sheetKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 4).getValue();
+      var sheetKey = STUDENT_SHEET.getRange(row, 4).getValue();
       try {
         var sheet = SpreadsheetApp.openById(sheetKey);
       }
       catch (err) {
-        Browser.msgBox("Bad sheet key on row " + row + ". Skipping.");
+        SpreadsheetApp.getActiveSpreadsheet().toast('Bad sheet key on row ' + row + '. Skipping.', 'Error')
         studentMatrixMarkDone(row, false);
         return false;
       }
@@ -196,12 +198,12 @@ function studentMatrixGetStudentSheet(row, fetch) {
 
     // If asked to return a document, try loading and returning it.
     if (fetch == "document") {
-      var documentKey = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getRange(row, 5).getValue();
+      var documentKey = STUDENT_SHEET.getRange(row, 5).getValue();
       try {
         var document = DocsList.getFileById(documentKey);
       }
       catch (err) {
-        Browser.msgBox("Bad document key on row " + row + ". Skipping.");
+        SpreadsheetApp.getActiveSpreadsheet().toast('Bad document key on row ' + row + '. Skipping.', 'Error')
         studentMatrixMarkDone(row, false);
         return false;
       }
@@ -230,64 +232,27 @@ function studentMatrixAssureFolder() {
 }
 
 /**
- * Creates tabs (spreadsheets) called "config" and "students", and populates with relevant information.
+ * Creates a "students" sheet, and populates with relevant information.
  */
-function studentMatrixCreateSettingsSheet() {
-  // Create a new sheet for settings, if there isn't already one.
-  configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config");
-  if (configSheet == null) {
-    configSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("config");
-  }
-  else {
-    var response = Browser.msgBox("Config sheet already exists. Rewrite it?", Browser.Buttons.OK_CANCEL);
-    if (response == "cancel") {
-      return;
-    }
-  }
-  // Set column headers.
-  configSheet.setFrozenRows(1);
-  configSheet.getRange("A:A").clear();
-  configSheet.setColumnWidth(1, 300);
-  configSheet.getRange(1, 1).setValue("Setting");
-  configSheet.getRange(1, 2).setValue("Value");
-  // Set the names of the settings.
-  var config = studentMatrixConfig();
-  for (var entry in config) {
-    configSheet.getRange(config[entry]["row"], 1).setValue(config[entry]["name"]);
-    if (config[entry]["description"]) {
-      configSheet.getRange(config[entry]["row"], 1).setComment(config[entry]["description"]);
-    }
-  }
-
-  // Mark that the config version has been updated.
-  configSheet.getRange(config["version"]["row"], 2).setValue(studentMatrixVersion());
-
-  // Create a new sheet for students, if there isn't already one.
-  studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students");
-  if (studentSheet == null) {
-    studentSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("students");
-  }
-  else {
+function studentMatrixCreateStudentList() {
+  // Check if there is already a sheet, and allow the user to bail out.
+  if (sheetExists("students")) {
     var response = Browser.msgBox("Student sheet already exists. Rewrite it?", Browser.Buttons.OK_CANCEL);
     if (response == "cancel") {
       return;
     }
   }
+  else {
+    STUDENT_SHEET = SpreadsheetApp.getActiveSpreadsheet().insertSheet("students");
+  }
+
   // Set column headers.
-  studentSheet.getRange(1, 1).setValue("Update");
-  studentSheet.getRange(1, 2).setValue("Student name/id");
-  studentSheet.getRange(1, 3).setValue("Student email");
-  studentSheet.getRange(1, 4).setValue("Student matrix key");
-  studentSheet.hideColumns(4);
-  studentSheet.getRange(1, 5).setValue("Student document key");
-  studentSheet.hideColumns(5);
-  studentSheet.getRange(1, 6).setValue("Student matrix link");
-  studentSheet.getRange(1, 7).setValue("Student document link");
-  studentSheet.getRange(1, 8).setValue("OK count");
-  studentSheet.getRange(1, 9).setValue("Review count");
-  studentSheet.getRange(1, 10).setValue("Unlocked count");
-  studentSheet.getRange(1, 11).setValue("Khan Academy ID");
-  studentSheet.setFrozenRows(1);
+  STUDENT_SHEET.getRange(1, 1, 1, 11).setValues(
+    [["Update", "Student name/id", "Student email", "Student matrix key", "Student document key", "Student matrix link", "Student document link", "OK count", "Review count", "Unlocked count", "Khan Academy ID"]]
+  );
+  STUDENT_SHEET.hideColumns(4);
+  STUDENT_SHEET.hideColumns(5);
+  STUDENT_SHEET.setFrozenRows(1);
 }
 
 /**
@@ -310,7 +275,9 @@ function studentMatrixCreateTemplateSheet() {
   app.add(app.createLabel(''));
   app.add(app.createLabel('You will find options for both these actions in the StudentMatrix menu.'));
   app.add(app.createAnchor('Edit template', true, template.getUrl()));
-  
+
+  // Rebuild menu -- the option for adding a new template should be hidden.
+  buildMenu();
   SpreadsheetApp.getActiveSpreadsheet().show(app);
 }
 
@@ -318,7 +285,6 @@ function studentMatrixCreateTemplateSheet() {
  * Creates new spreadsheets/documents for students who don't already have one.
  */
 function studentMatrixCreateStudentSheets() {
-  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
   var editorMails = studentMatrixGetConfig("editorMails").split(" ");
   var verboseCreation = studentMatrixGetConfig("verboseCreation");
 
@@ -347,26 +313,22 @@ function studentMatrixCreateStudentSheets() {
     var tmp = templateSpreadsheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getName();
   }
   catch (err) {
-    var row = studentMatrixConfig()["spreadsheetTab"]["row"];
-    var spreadsheetTab = templateSpreadsheet.getActiveSheet().getName();
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setValue(spreadsheetTab);
+    ScriptProperties.setProperty(spreadsheetTab, templateSpreadsheet.getActiveSheet().getName());
   }
   studentMatrixAssureFolder();
 
   // Go through all the students and create new stuff as necessary.
-  for (var row = 2; row <= studentSheet.getLastRow(); row++) {
+  for (var row = 2; row <= LAST_STUDENT_ROW; row++) {
     // Check if the row is marked for update.
-    if (studentMatrixGetStudentSheet(row, "")) {
+    if (studentMatrixGetStudentSheet(row, '')) {
 
       // If the student doesn't have any spreadsheet yet, create one.
-      if (studentSheet.getRange(row, 4).isBlank()) {
-        if (verboseCreation == 1) {
-          Browser.msgBox("Creating spreadsheet for " + studentSheet.getRange(row, 2).getValue());
-        }
-        var newSheet = templateSpreadsheet.copy(studentSheet.getRange(row, 2).getValue() + spreadsheetSuffix);
+      if (STUDENT_SHEET.getRange(row, 4).isBlank()) {
+        SpreadsheetApp.getActiveSpreadsheet().toast('Creating matrix', STUDENT_SHEET.getRange(row, 2).getValue());
+        var newSheet = templateSpreadsheet.copy(STUDENT_SHEET.getRange(row, 2).getValue() + spreadsheetSuffix);
         // Set links/references to the new sheet.
-        studentSheet.getRange(row, 4).setValue(newSheet.getId());
-        studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
+        STUDENT_SHEET.getRange(row, 4).setValue(newSheet.getId());
+        STUDENT_SHEET.getRange(row, 6).setValue(newSheet.getUrl());
 
         // Apply extra permissons according to settings.
         try {
@@ -374,37 +336,35 @@ function studentMatrixCreateStudentSheets() {
         }
         catch (err) {
         }
-        if (spreadsheetPublic == 1) {
+        if (spreadsheetPublic == 'true') {
           newSheet.setAnonymousAccess(true, false);
         }
-        if (spreadsheetViewable == 1) {
-          newSheet.addViewer(studentSheet.getRange(row, 3).getValue());
+        if (spreadsheetViewable == 'true') {
+          newSheet.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
         }
-        if (spreadsheetEditable == 1) {
-          newSheet.addEditor(studentSheet.getRange(row, 3).getValue());
+        if (spreadsheetEditable == 'true') {
+          newSheet.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
         }
       }
 
       // If there is a sheet key but no link, create a link.
-      if (studentSheet.getRange(row, 6).isBlank() && !studentSheet.getRange(row, 4).isBlank()) {
-        newSheet = SpreadsheetApp.openById(studentSheet.getRange(row, 4).getValue());
-        studentSheet.getRange(row, 6).setValue(newSheet.getUrl());
+      if (STUDENT_SHEET.getRange(row, 6).isBlank() && !STUDENT_SHEET.getRange(row, 4).isBlank()) {
+        newSheet = SpreadsheetApp.openById(STUDENT_SHEET.getRange(row, 4).getValue());
+        STUDENT_SHEET.getRange(row, 6).setValue(newSheet.getUrl());
       }
 
       // Add the sheet to the proper folder.
-      DocsList.getFileById(studentSheet.getRange(row, 4).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
+      DocsList.getFileById(STUDENT_SHEET.getRange(row, 4).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
 
       // Do similar procedure for documents.
-      if (documentEnable == 1) {
-        if (studentSheet.getRange(row, 5).isBlank()) {
-          if (verboseCreation == 1) {
-            Browser.msgBox("Creating document for " + studentSheet.getRange(row, 2).getValue());
-          }
+      if (documentEnable == 'true') {
+        if (STUDENT_SHEET.getRange(row, 5).isBlank()) {
+          SpreadsheetApp.getActiveSpreadsheet().toast('Creating feedback document', STUDENT_SHEET.getRange(row, 2).getValue());
 
-          var newDocument = documentTemplate.makeCopy(studentSheet.getRange(row, 2).getValue() + documentSuffix);
+          var newDocument = documentTemplate.makeCopy(STUDENT_SHEET.getRange(row, 2).getValue() + documentSuffix);
           // Set links/references to the new document.
-          studentSheet.getRange(row, 5).setValue(newDocument.getId());
-          studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
+          STUDENT_SHEET.getRange(row, 5).setValue(newDocument.getId());
+          STUDENT_SHEET.getRange(row, 7).setValue(newDocument.getUrl());
 
           // Apply extra permissons according to settings.
           try {
@@ -417,25 +377,25 @@ function studentMatrixCreateStudentSheets() {
 //            newDocument.setAnonymousAccess(true, false);
 //          }
           if (documentViewable == 1) {
-            newDocument.addViewer(studentSheet.getRange(row, 3).getValue());
+            newDocument.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
           }
 // And there doesn't seem to be any API for adding people who can comment, either. :-(
 //          if (documentCommentable == 1) {
-//            newDocument.addCommentator(studentSheet.getRange(row, 3).getValue());
+//            newDocument.addCommentator(STUDENT_SHEET.getRange(row, 3).getValue());
 //          }
           if (documentEditable == 1) {
-            newDocument.addEditor(studentSheet.getRange(row, 3).getValue());
+            newDocument.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
           }
         }
 
         // If there is a document key but no link, create a link.
-        if (studentSheet.getRange(row, 7).isBlank() && !studentSheet.getRange(row, 5).isBlank()) {
-          newDocument = DocsList.getFileById(studentSheet.getRange(row, 5).getValue());
-          studentSheet.getRange(row, 7).setValue(newDocument.getUrl());
+        if (STUDENT_SHEET.getRange(row, 7).isBlank() && !STUDENT_SHEET.getRange(row, 5).isBlank()) {
+          newDocument = DocsList.getFileById(STUDENT_SHEET.getRange(row, 5).getValue());
+          STUDENT_SHEET.getRange(row, 7).setValue(newDocument.getUrl());
         }
 
         // Add the document to the appropriate folder.
-        DocsList.getFileById(studentSheet.getRange(row, 5).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
+        DocsList.getFileById(STUDENT_SHEET.getRange(row, 5).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
       }
     }
   }
@@ -445,19 +405,19 @@ function studentMatrixCreateStudentSheets() {
  * Creates a document template used for emails to the students.
  */
 function studentMatrixCreateMailTemplate() {
-  var name = Browser.inputBox("Name for email template document");
+  var name = Browser.inputBox('Name for email template document');
   SpreadsheetApp.getActiveSpreadsheet().toast('Creating new template...');
-  var template = DocsList.getFileById("1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg").makeCopy(name);
+  var template = DocsList.getFileById(studentMatrixGetConfig('emailTemplate')).makeCopy(name);
   studentMatrixAssureFolder();
-  DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
+  DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig('folder')));
   ScriptProperties.setProperty('emailTemplate', template.getId());
-  
-  var app = UiApp.createApplication().setTitle("E-mail template created");
+
+  var app = UiApp.createApplication().setTitle('E-mail template created');
   app.add(app.createLabel('The template is placed in the folder used for this class. You can also find a link to the e-mail template in the StudentMatrix settings.'));
   app.add(app.createLabel('Note that you can use replacement patterns like [column-NN] to dynamically insert content from column NN in the student sheet.'));
   app.add(app.createLabel('Send the actual e-mail by running the relevant action from the StudentMatrix menu.'));
   app.add(app.createAnchor('View template', true, template.getUrl()));
-  
+
   SpreadsheetApp.getActiveSpreadsheet().show(app);
 }
 
@@ -471,26 +431,25 @@ function studentMatrixCreateMailTemplate() {
 function studentMatrixCount() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (templateSheet.getName() == "students") {
+    Browser.msgBox('Cannot use config or student sheets as templates.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
-  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
 
   // Get some settings data.
-  var colorUnlocked = studentMatrixGetConfig("spreadsheetColorUnlocked");
-  var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
-  var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
+  var colorUnlocked = studentMatrixGetConfig('spreadsheetColorUnlocked');
+  var colorOk = studentMatrixGetConfig('spreadsheetColorOk');
+  var colorReview = studentMatrixGetConfig('spreadsheetColorReview');
 
   // Loop through the selected students.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
-    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+  for (var studentRow = 2; studentRow <= LAST_STUDENT_ROW; studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, 'sheet');
     if (targetSheet == false) {
       // If the student isn't included in the action, remove any entries on this row.
-      studentSheet.getRange(studentRow, 8).setValue("");
-      studentSheet.getRange(studentRow, 9).setValue("");
-      studentSheet.getRange(studentRow, 10).setValue("");
+      STUDENT_SHEET.getRange(studentRow, 8).setValue("");
+      STUDENT_SHEET.getRange(studentRow, 9).setValue("");
+      STUDENT_SHEET.getRange(studentRow, 10).setValue("");
       continue;
     }
     var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getRange(sourceCells.getA1Notation());
@@ -517,9 +476,7 @@ function studentMatrixCount() {
       }
     }
     // Write out the count in the student tab.
-    studentSheet.getRange(studentRow, 8).setValue(okCount);
-    studentSheet.getRange(studentRow, 9).setValue(reviewCount);
-    studentSheet.getRange(studentRow, 10).setValue(unlockedCount);
+    STUDENT_SHEET.getRange(studentRow, 8, 1, 3).setValues([[okCount, reviewCount, unlockedCount]]);
   }
 };
 
@@ -527,25 +484,23 @@ function studentMatrixCount() {
  * Sends an email to each of the students marked for update, with links to matrix + document.
  */
 function studentMatrixNotify() {
-  var studentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
   var messageTemplate = DocumentApp.openById(studentMatrixGetConfig("emailTemplate")).getText();
 
   var subject = Browser.inputBox("Email subject.");
 
-
   // Go through all the students and send an email.
-  for (var row = 2; row <= studentSheet.getLastRow(); row++) {
+  for (var row = 2; row <= LAST_STUDENT_ROW; row++) {
     // Check if the row is marked for update.
-    if (studentMatrixGetStudentSheet(row, "")) {
+    if (studentMatrixGetStudentSheet(row, '')) {
       var message = messageTemplate;
-      for (var column = 1; column <= studentSheet.getLastColumn(); column++) {
+      for (var column = 1; column <= STUDENT_SHEET.getLastColumn(); column++) {
         while (message.indexOf("[column-" + column + "]") > -1) {
-          message = message.replace("[column-" + column + "]", studentSheet.getRange(row, column).getValue());
+          message = message.replace("[column-" + column + "]", STUDENT_SHEET.getRange(row, column).getValue());
         }
       }
 
       // Send out the email.
-      MailApp.sendEmail(studentSheet.getRange(row, 3).getValue(), subject, message);
+      MailApp.sendEmail(STUDENT_SHEET.getRange(row, 3).getValue(), subject, message);
     }
   }
 }
@@ -567,19 +522,19 @@ function studentMatrixAddTemplateSheet() {
 function studentMatrixSetContent() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (templateSheet.getName() == "students") {
+    Browser.msgBox('Cannot use config or student sheets as templates.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
 
   // Update the target sheets marked for update.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
-    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, 'sheet');
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab'));
 
     // Get the target spreadsheet to update.
     cells = sourceCells.getValues();
@@ -605,19 +560,19 @@ function studentMatrixSetContent() {
 function studentMatrixSetColor() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (templateSheet.getName() == 'students') {
+    Browser.msgBox('Cannot use config or student sheets as templates.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
 
   // Update the target sheets marked for update.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
-    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, 'sheet');
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab'));
     targetSheet.getRange(sourceCells.getRow(), sourceCells.getColumn(), sourceCells.getNumRows(), sourceCells.getNumColumns()).setBackgroundColors(sourceCells.getBackgrounds());
   }
 };
@@ -630,8 +585,8 @@ function studentMatrixSetColor() {
 function studentMatrixSoftOk() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (templateSheet.getName() == 'students') {
+    Browser.msgBox('Cannot use config or student sheets as templates.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -642,12 +597,12 @@ function studentMatrixSoftOk() {
   var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
 
   // Update the target sheets marked for update.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
-    var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
+    var targetSheet = studentMatrixGetStudentSheet(studentRow, 'sheet');
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab'));
 
     // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
     var backgrounds = sourceCells.getBackgrounds();
@@ -674,7 +629,7 @@ function studentMatrixSoftOk() {
 function studentMatrixOk() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+  if (templateSheet.getName() == 'students') {
     Browser.msgBox("Cannot use config or student sheets as templates.");
     return;
   }
@@ -684,7 +639,7 @@ function studentMatrixOk() {
   var colorOk = studentMatrixGetConfig("spreadsheetColorOk");
 
   // Update the target sheets marked for update.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
     var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
     if (targetSheet == false) {
       continue;
@@ -715,7 +670,7 @@ function studentMatrixOk() {
 function studentMatrixReview() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+  if (templateSheet.getName() == "students") {
     Browser.msgBox("Cannot use config or student sheets as templates.");
     return;
   }
@@ -727,7 +682,7 @@ function studentMatrixReview() {
   var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
 
   // Update the target sheets marked for update.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
     var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
     if (targetSheet == false) {
       continue;
@@ -759,7 +714,7 @@ function studentMatrixReview() {
 function studentMatrixUnlock() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "config" || templateSheet.getName() == "students") {
+  if (templateSheet.getName() == "students") {
     Browser.msgBox("Cannot use config or student sheets as templates.");
     return;
   }
@@ -771,7 +726,7 @@ function studentMatrixUnlock() {
   var colorReview = studentMatrixGetConfig("spreadsheetColorReview");
 
   // Update the target sheets marked for update.
-  for (var studentRow = 2; studentRow <= SpreadsheetApp.getActiveSpreadsheet().getSheetByName("students").getLastRow(); studentRow++) {
+  for (var studentRow = FIRST_STUDENT_ROW; studentRow <= LAST_STUDENT_ROW; studentRow++) {
     var targetSheet = studentMatrixGetStudentSheet(studentRow, "sheet");
     if (targetSheet == false) {
       continue;
