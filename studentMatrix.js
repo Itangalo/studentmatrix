@@ -289,14 +289,18 @@ function studentMatrixCreateSettingsSheet() {
  */
 function studentMatrixCreateTemplateSheet() {
   var name = Browser.inputBox("Name for template spreadsheet");
-  var template = SpreadsheetApp.create(name);
-  var row = studentMatrixConfig()["spreadsheetTemplate"]["row"];
-  var link = '=hyperlink("' + template.getUrl() + '", "' + template.getId() + '")';
-  // Set content of config cell, and set focus to the cell.
-  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("config").getRange(row, 2).setFormula(link).activate();
+  SpreadsheetApp.getActiveSpreadsheet().toast('Creating new template...');
   studentMatrixAssureFolder();
+  var template = SpreadsheetApp.create(name);
   DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
-  Browser.msgBox("Template created. Please follow the link on the config tab to edit the template.");
+  ScriptProperties.setProperty('spreadsheetTemplate', template.getId());
+
+  var app = UiApp.createApplication().setTitle("Matrix template created");
+  app.add(app.createLabel('The template is placed in the folder used for this class. You can also find a link to the matrix template in the StudentMatrix settings.'));
+  app.add(app.createLabel('Please edit the spreadsheet and customize it to fit your needs. You can add several sheets as well, though only one will be used when making mass updates to student matrices. (Edit the settings if you want to change which sheet to use.)'));
+  app.add(app.createAnchor('Edit template', true, template.getUrl()));
+  
+  SpreadsheetApp.getActiveSpreadsheet().show(app);
 }
 
 /**
