@@ -330,20 +330,35 @@ function studentMatrixCreateStudentSheets() {
         STUDENT_SHEET.getRange(row, 4).setValue(newSheet.getId());
         STUDENT_SHEET.getRange(row, 6).setValue(newSheet.getUrl());
 
-        // Apply extra permissons according to settings.
-        try {
-          newSheet.addEditor(editorMails);
-        }
-        catch (err) {
+        // Apply extra permissons according to settings. Permissions needs to be
+        // wrapped in try statements, since e-mails might not be connected to Gmail
+        // accounts, which will cause script errors.
+        if (studentMatrixGetConfig('editorMails') != '') {
+          try {
+            newSheet.addEditors(editorMails);
+          }
+          catch (err) {
+            SpreadsheetApp.getActiveSpreadsheet().toast('Some of the editor emails could not be used: ' + studentMatrixGetConfig('editorMails'), 'Error');
+          }
         }
         if (spreadsheetPublic == 'true') {
           newSheet.setAnonymousAccess(true, false);
         }
         if (spreadsheetViewable == 'true') {
-          newSheet.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
+          try {
+            newSheet.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
+          }
+          catch (err) {
+            SpreadsheetApp.getActiveSpreadsheet().toast('Student email cannot be used for permission: ' + STUDENT_SHEET.getRange(row, 3).getValue() + '. (Must be tied to a Gmail account.)', 'Error');
+          }
         }
         if (spreadsheetEditable == 'true') {
-          newSheet.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
+          try {
+            newSheet.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
+          }
+          catch (err) {
+            SpreadsheetApp.getActiveSpreadsheet().toast('Student email cannot be used for permission: ' + STUDENT_SHEET.getRange(row, 3).getValue() + '. (Must be tied to a Gmail account.)', 'Error');
+          }
         }
 
         // Make the student editor of only one sheet, if this option is set.
