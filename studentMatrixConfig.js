@@ -168,7 +168,7 @@ function studentMatrixConfig() {
     parent : 'Spreadsheet',
     name : "Key for spreadsheet template",
     description : "The key for the spreadsheet copied when creating new student sheets. Found in sheet URL.",
-    fallback : 'tuOKaCiGtKKo7tyi57YtR9A',
+    fallback : '',
     special : 'glink',
   };
   config['spreadsheetTab'] = {
@@ -245,7 +245,7 @@ function studentMatrixConfig() {
     parent : 'Document',
     name : "Key for document template",
     description : "The key for the document to copy to each student. Key is found in the document URL.",
-    fallback : 0,
+    fallback : '1nfpISKZgqMIjqoIQAHM3Joc1lfpRz3tHolMdoaSg_vs',
     special : 'glink',
   };
   config['documentSuffix'] = {

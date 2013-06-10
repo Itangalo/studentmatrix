@@ -296,7 +296,7 @@ function studentMatrixCreateStudentSheets() {
   var templateSpreadsheet = SpreadsheetApp.openById(templateSheetKey);
 
   var documentEnable = studentMatrixGetConfig("documentEnable");
-  if (documentEnable == 1) {
+  if (documentEnable == 'true') {
     var documentTemplateKey = studentMatrixGetConfig("documentTemplate");
     var documentTemplate = DocsList.getFileById(documentTemplateKey);
     var documentSuffix = studentMatrixGetConfig("documentSuffix");
@@ -410,20 +410,31 @@ function studentMatrixCreateStudentSheets() {
             newDocument.addEditors(editorMails);
           }
           catch (err) {
+            SpreadsheetApp.getActiveSpreadsheet().toast('Some of the editor emails could not be used: ' + studentMatrixGetConfig('editorMails'), 'Error');
           }
 // This function isn't available for documents, it seems.
 //          if (documentPublic == 1) {
 //            newDocument.setAnonymousAccess(true, false);
 //          }
           if (documentViewable == 1) {
-            newDocument.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
+            try {
+              newDocument.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
+            }
+            catch (err) {
+              SpreadsheetApp.getActiveSpreadsheet().toast('Student email cannot be used for permission: ' + STUDENT_SHEET.getRange(row, 3).getValue() + '. (Must be tied to a Gmail account.)', 'Error');
+            }
           }
 // And there doesn't seem to be any API for adding people who can comment, either. :-(
 //          if (documentCommentable == 1) {
 //            newDocument.addCommentator(STUDENT_SHEET.getRange(row, 3).getValue());
 //          }
           if (documentEditable == 1) {
-            newDocument.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
+            try {
+              newDocument.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
+            }
+            catch (err) {
+              SpreadsheetApp.getActiveSpreadsheet().toast('Student email cannot be used for permission: ' + STUDENT_SHEET.getRange(row, 3).getValue() + '. (Must be tied to a Gmail account.)', 'Error');
+            }
           }
         }
 
