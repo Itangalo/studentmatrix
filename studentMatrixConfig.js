@@ -3,7 +3,7 @@
  */
 function studentMatrixGetConfig(entry) {
   var result = ScriptProperties.getProperty(entry);
-  if (typeof result == 'undefined') {
+  if (typeof result == 'undefined' || result == null) {
     return studentMatrixConfig()[entry]['fallback'];
   }
   return result;
