@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "2.0-beta";
+  return "2.0";
 }
 
 // Some global variables
