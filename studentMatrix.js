@@ -401,14 +401,20 @@ function studentMatrixCreateStudentSheets() {
           var newDocument = documentTemplate.makeCopy(STUDENT_SHEET.getRange(row, 2).getValue() + documentSuffix);
           // Set links/references to the new document.
           STUDENT_SHEET.getRange(row, 5).setValue(newDocument.getId());
-          STUDENT_SHEET.getRange(row, 7).setValue(newDocument.getUrl());
+          // If the document is open to anyone with the link, the link should be differently formatted.
+          // There is currently no API support for this, so we do this hack instead.
+          //STUDENT_SHEET.getRange(row, 7).setValue(newDocument.getUrl());
+          STUDENT_SHEET.getRange(row, 7).setValue('https://docs.google.com/document/d/' + newDocument.getId() + '/edit?usp=sharing');
+
 
           // Apply extra permissons according to settings.
-          try {
-            newDocument.addEditors(editorMails);
-          }
-          catch (err) {
-            SpreadsheetApp.getActiveSpreadsheet().toast('Some of the editor emails could not be used: ' + studentMatrixGetConfig('editorMails'), 'Error');
+          if (studentMatrixGetConfig('editorMails') != '') {
+            try {
+              newDocument.addEditors(editorMails);
+            }
+            catch (err) {
+              SpreadsheetApp.getActiveSpreadsheet().toast('Some of the editor emails could not be used: ' + studentMatrixGetConfig('editorMails'), 'Error');
+            }
           }
 // This function isn't available for documents, it seems.
 //          if (documentPublic == 1) {
