@@ -50,7 +50,8 @@ function buildMenu() {
     menuEntries.push({name : "Student sheets: Unlock selected cells", functionName : "studentMatrixUnlock"});
     menuEntries.push({name : "Student sheets: Degrade selected cells to review status", functionName : "studentMatrixReview"});
     menuEntries.push({name : "Student sheets: Mark cells ok", functionName : "studentMatrixOk"});
-    menuEntries.push({name : "Student sheets: Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
+// This option isn't used anymore. It was only used for manual Khan Academy updates.
+//    menuEntries.push({name : "Student sheets: Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
     menuEntries.push(null); // line separator
     menuEntries.push({name : "Student sheets: Set colors of selected cells", functionName : "studentMatrixSetColor"});
     menuEntries.push({name : "Student sheets: Set content of selected cells", functionName : "studentMatrixSetContent"});
@@ -74,7 +75,7 @@ function buildMenu() {
   }
 
   menuEntries.push({name : "Help", functionName : "studentMatrixHelp"});
-  menuEntries.push({name : "StudentMatrix settings", functionName : "studentMatrixSettings"});
+  menuEntries.push({name : "Settings", functionName : "studentMatrixSettings"});
 
   // Only add these entries if there is a sheet called "Khan exercises".
   if (sheetExists("Khan exercises")) {
@@ -343,7 +344,7 @@ function studentMatrixCreateStudentSheets() {
           }
         }
         // If the option to make student editor of one sheet only is set, we need a bit of complex processing.
-        if (studentMatrixGetConfig('spreadsheetTabStudent') != '') {
+        if (studentMatrixGetConfig('spreadsheetTabStudent') != '(none)') {
           var permissions;
           var accountMail = STUDENT_SHEET.getRange(row, 3).getValue();
           // Get all the editors for the spreadsheet.
@@ -374,7 +375,7 @@ function studentMatrixCreateStudentSheets() {
           }
         }
         // If the option to make student editor of one sheet only is set, the student must be added as an editor.
-        if (spreadsheetEditable == 'true' || studentMatrixGetConfig('spreadsheetTabStudent') != '') {
+        if (spreadsheetEditable == 'true' || studentMatrixGetConfig('spreadsheetTabStudent') != '(none)') {
           try {
             newSheet.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
           }

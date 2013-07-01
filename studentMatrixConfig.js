@@ -10,6 +10,21 @@ function studentMatrixGetConfig(entry) {
 }
 
 /**
+ * Handler for saving configuration from the config panel popup.
+ */
+function studentMatrixConfigSave(eventInfo) {
+  // Save all configuration options, display a toaster message, and close the panel.
+  ScriptProperties.setProperties(eventInfo.parameter);
+  SpreadsheetApp.getActiveSpreadsheet().toast('', "Configuration saved.", 1);
+  var app = UiApp.getActiveApplication();
+  app.close();
+
+  // The menu might have to be rebuilt, reflecting changes in the settings.
+  buildMenu();
+  return app;
+}
+
+/**
  * Creates a popup panel for managing settings for StudentMatrix.
  */
 function studentMatrixSettings() {
@@ -65,6 +80,26 @@ function studentMatrixSettings() {
           .setText(row[settings[i]['parent']], 1, settings[i]["fallback"]);
         row[settings[i]['parent']]++;
         continue;
+      case 'sheet tab':
+        elements[i] = app.createListBox();
+        var selected = 0;
+        try {
+          var sheets = studentMatrixGetTemplateTabs(i == 'spreadsheetTabStudent');
+          for (var sheet in sheets) {
+            elements[i].addItem(sheets[sheet]);
+            if (sheets[sheet] == studentMatrixGetConfig(i)) {
+              selected = parseInt(sheet);
+            }
+          }
+        }
+        catch(e) {
+          elements[i].addItem('(no template available)', -1);
+          selected = -1;
+        }
+        
+
+        elements[i].setSelectedIndex(selected);
+        break;
       case 'hidden':
         continue;
       default:
@@ -90,7 +125,18 @@ function studentMatrixSettings() {
       catch (e) {
       }
     }
-
+    if (settings[i]['special'] == 'color' && studentMatrixGetConfig(i) != '') {
+      try {
+        grid[settings[i]['parent']]
+        .setWidget(row[settings[i]['parent']], 2, app.createLabel("Example")
+           .setStyleAttribute('background-color', studentMatrixGetConfig(i))
+           .setStyleAttribute('padding', '1px')
+        );
+      }
+      catch (e) {
+      }
+    }
+    
     // Each elementshould have ID, name and description before being added to the grid.
     elements[i].setId(i).setName(i).setTitle(settings[i]['description']);
     grid[settings[i]['parent']]
@@ -101,6 +147,7 @@ function studentMatrixSettings() {
   }
 
   // Display the panel. Also, the UI app is returned to allow processing by Google Apps Script.
+  tabPanel.selectTab(0);
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   spreadsheet.show(app);
 
@@ -108,18 +155,29 @@ function studentMatrixSettings() {
 }
 
 /**
- * Handler for saving configuration from the config panel popup.
+ * Helper function returning sheet tab names as an array.
+ *
+ * A spreadsheet ID may be passed to the function to fetch all tab names from that sheet.
+ * If no ID is passed, the matrix template will be used.
  */
-function studentMatrixConfigSave(eventInfo) {
-  // Save all configuration options, display a toaster message, and close the panel.
-  ScriptProperties.setProperties(eventInfo.parameter);
-  SpreadsheetApp.getActiveSpreadsheet().toast("", "Configuration saved.", 1);
-  var app = UiApp.getActiveApplication();
-  app.close();
-
-  // The menu might have to be rebuilt, reflecting changes in the settings.
-  buildMenu();
-  return app;
+function studentMatrixGetTemplateTabs(optional, spreadsheetID) {
+  if (typeof spreadsheetID == 'undefined') {
+    spreadsheetID = studentMatrixGetConfig('spreadsheetTemplate');
+  }
+  var names = [];
+  if (optional == true) {
+    names.push('(none)');
+  }
+  try {
+    var sheets = SpreadsheetApp.openById(spreadsheetID).getSheets();
+    for (var index in sheets) {
+      names.push(sheets[index].getName());
+    }
+  }
+  catch(e) {
+    names.push('(no sheet available)');
+  }
+  return names;
 }
 
 /**
@@ -128,31 +186,11 @@ function studentMatrixConfigSave(eventInfo) {
 function studentMatrixConfig() {
   var config = [];
   // Global settings.
-  config['resetUpdateColumn'] = {
-    parent : 'Global',
-    name : "Reset update flag after update",
-    description : "Check to change update column to datestamp when finished.",
-    fallback : 0,
-    type : "checkbox",
-  };
-  config['editorMails'] = {
-    parent : 'Global',
-    name : "Emails for editors",
-    description : "Must be gmail addresses. Separate with space.",
-    fallback : "",
-  };
-  config['verboseCreation'] = {
-    parent : 'Global',
-    name : "Alert for each new file created",
-    description : "Check to get a popup box confirming each new created file.",
-    fallback : 0,
-    type : "checkbox",
-  };
   config['folder'] = {
     parent : 'Global',
     name : "Folder to use for this class",
     description : "All files created by this master sheet will be placed in this folder.",
-    fallback : "class folder",
+    fallback : SpreadsheetApp.getActiveSpreadsheet().getName(),
     special : 'gfolder',
   };
   config['emailTemplate'] = {
@@ -161,6 +199,12 @@ function studentMatrixConfig() {
     description : "The key for the Google document used when sending out e-mail notifications. Found in document URL.",
     fallback : '1tbY8JzstY3Yt2ih78ArRkgz-PvATXAI8OFcU7aGGLCg',
     special : 'glink',
+  };
+  config['editorMails'] = {
+    parent : 'Global',
+    name : "Emails for editors",
+    description : "Must be gmail addresses. Separate with space.",
+    fallback : "",
   };
 
   // Settings for spreadsheets.
@@ -173,42 +217,17 @@ function studentMatrixConfig() {
   };
   config['spreadsheetTab'] = {
     parent : 'Spreadsheet',
-    name : "Name of tab with matrix",
-    description : "The name of the tab containing the actual matrix. Case sensitive.",
+    name : "Tab edited from master spreadsheet",
+    description : "The name of the tab containing the assessment matrix. Case sensitive.",
     fallback : 'Sheet1',
+    type : 'sheet tab',
   };
   config['spreadsheetTabStudent'] = {
     parent : 'Spreadsheet',
-    name : "Name of tab with matrix editable by student",
+    name : "Tab editable by student",
     description : "If the student should be able to edit just one tab in the spreadsheet, enter the tab name here. Case sensitive.",
     fallback : '',
-  };
-  config['spreadsheetSuffix'] = {
-    parent : 'Spreadsheet',
-    name : "Suffix for spreadsheet titles",
-    description : "Anything added here will be appended to the student name when creating spreadsheet titles.",
-    fallback : ' (matrix)',
-  };
-  config['spreadsheetColorUnlocked'] = {
-    parent : 'Spreadsheet',
-    name : "Color for unlocked matrix cells",
-    description : "Set background color on this cell to the one you wish to use for unlocked cells which are not yet approved.",
-    fallback : '#ff0000',
-    special : "read from background"
-  };
-  config['spreadsheetColorOk'] = {
-    parent : 'Spreadsheet',
-    name : "Color for approved matrix cells",
-    description : "Set background color on this cell to the one you wish to use for approved cells.",
-    fallback : '#00ff00',
-    special : "read from background"
-  };
-  config['spreadsheetColorReview'] = {
-    parent : 'Spreadsheet',
-    name : "Color for cells in need of review",
-    description : "Set background color on this cell to the one you wish to use for cells that have been conquered, but then lost.",
-    fallback : '#ffff00',
-    special : "read from background"
+    type : 'sheet tab',
   };
   config['spreadsheetPublic'] = {
     parent : 'Spreadsheet',
@@ -236,7 +255,7 @@ function studentMatrixConfig() {
   // Settings for documents.
   config['documentEnable'] = {
     parent : 'Document',
-    name : "Also create student documents",
+    name : "Create a document for each student",
     description : "Check to have StudentMatrix also create a Google document for each student, not only spreadsheets.",
     fallback : 0,
     type : "checkbox",
@@ -247,12 +266,6 @@ function studentMatrixConfig() {
     description : "The key for the document to copy to each student. Key is found in the document URL.",
     fallback : '1nfpISKZgqMIjqoIQAHM3Joc1lfpRz3tHolMdoaSg_vs',
     special : 'glink',
-  };
-  config['documentSuffix'] = {
-    parent : 'Document',
-    name : "Suffix for document titles",
-    description : "Anything added here will be appended to the student name when creating title for the document.",
-    fallback : ' (feedback)',
   };
   config['documentPublic'] = {
     parent : 'Document',
@@ -329,6 +342,55 @@ function studentMatrixConfig() {
     parent : 'Khan Academy',
     type : 'markup',
     fallback : 'Step 3: Use generated keys at http://developer.netflix.com/resources/OAuthTest to get final keys. (Use URL https://www.khanacademy.org/api/auth/access_token .)',
+  };
+
+  // Advanced stuff that most people don't use.
+  config['spreadsheetColorUnlocked'] = {
+    parent : 'Advanced',
+    name : "Color for unlocked matrix cells",
+    description : "Set background color on this cell to the one you wish to use for unlocked cells which are not yet approved.",
+    fallback : '#ff0000',
+    special : "color"
+  };
+  config['spreadsheetColorOk'] = {
+    parent : 'Advanced',
+    name : "Color for approved matrix cells",
+    description : "Set background color on this cell to the one you wish to use for approved cells.",
+    fallback : '#00ff00',
+    special : "color"
+  };
+  config['spreadsheetColorReview'] = {
+    parent : 'Advanced',
+    name : "Color for cells in need of review",
+    description : "Set background color on this cell to the one you wish to use for cells that have been conquered, but then lost.",
+    fallback : '#ffff00',
+    special : "color"
+  };
+  config['spreadsheetSuffix'] = {
+    parent : 'Advanced',
+    name : "Suffix for spreadsheet titles",
+    description : "Anything added here will be appended to the student name when creating spreadsheet titles.",
+    fallback : ' (matrix)',
+  };
+  config['documentSuffix'] = {
+    parent : 'Advanced',
+    name : "Suffix for document titles",
+    description : "Anything added here will be appended to the student name when creating title for the document.",
+    fallback : ' (feedback)',
+  };
+  config['resetUpdateColumn'] = {
+    parent : 'Advanced',
+    name : "Reset update flag after update",
+    description : "Check to change update column to datestamp when finished.",
+    fallback : 0,
+    type : "checkbox",
+  };
+  config['verboseCreation'] = {
+    parent : 'Advanced',
+    name : "Alert for each new file created",
+    description : "Check to get a popup box confirming each new created file.",
+    fallback : 0,
+    type : "checkbox",
   };
 
   // Settings for version updates.
