@@ -418,10 +418,10 @@ function studentMatrixCreateStudentSheets() {
             }
           }
 // This function isn't available for documents, it seems.
-//          if (documentPublic == 1) {
+//          if (documentPublic == 'true') {
 //            newDocument.setAnonymousAccess(true, false);
 //          }
-          if (documentViewable == 1) {
+          if (documentViewable == 'true') {
             try {
               newDocument.addViewer(STUDENT_SHEET.getRange(row, 3).getValue());
             }
@@ -430,10 +430,10 @@ function studentMatrixCreateStudentSheets() {
             }
           }
 // And there doesn't seem to be any API for adding people who can comment, either. :-(
-//          if (documentCommentable == 1) {
+//          if (documentCommentable == 'true') {
 //            newDocument.addCommentator(STUDENT_SHEET.getRange(row, 3).getValue());
 //          }
-          if (documentEditable == 1) {
+          if (documentEditable == 'true') {
             try {
               newDocument.addEditor(STUDENT_SHEET.getRange(row, 3).getValue());
             }
