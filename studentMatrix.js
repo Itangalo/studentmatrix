@@ -225,10 +225,12 @@ function studentMatrixGetStudentSheet(row, fetch) {
  */
 function studentMatrixAssureFolder() {
   try {
-    var tmp = DocsList.getFolder(studentMatrixGetConfig("folder"));
+    var folder = DocsList.getFolder(studentMatrixGetConfig("folder"));
   }
   catch (err) {
-    DocsList.createFolder(studentMatrixGetConfig("folder"));
+    var folder = DocsList.createFolder(studentMatrixGetConfig("folder"));
+    var masterSheetID = SpreadsheetApp.getActiveSpreadsheet().getId();
+    DocsList.getFileById(masterSheetID).addToFolder(folder);
   }
 }
 
