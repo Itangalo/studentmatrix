@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "2.1";
+  return "2.2";
 }
 
 // Some global variables
@@ -43,50 +43,57 @@ function onOpen() {
  * Adds a custom menu to the active spreadsheet on opening the spreadsheet.
  */
 function buildMenu() {
-  var menuEntries = [];
+  var globalMenuEntries = [];
   if (sheetExists("students")) {
-    menuEntries.push({name : "Select students", functionName : "studentMatrixStudents"});
-    menuEntries.push(null); // line separator
-    menuEntries.push({name : "Student sheets: Unlock selected cells", functionName : "studentMatrixUnlock"});
-    menuEntries.push({name : "Student sheets: Degrade selected cells to review status", functionName : "studentMatrixReview"});
-    menuEntries.push({name : "Student sheets: Mark cells ok", functionName : "studentMatrixOk"});
-// This option isn't used anymore. It was only used for manual Khan Academy updates.
-//    menuEntries.push({name : "Student sheets: Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
-    menuEntries.push(null); // line separator
-    menuEntries.push({name : "Student sheets: Set colors of selected cells", functionName : "studentMatrixSetColor"});
-    menuEntries.push({name : "Student sheets: Set content of selected cells", functionName : "studentMatrixSetContent"});
-    menuEntries.push(null); // line separator
-    menuEntries.push({name : "Count cell status", functionName : "studentMatrixCount"});
-    menuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
-    menuEntries.push({name : "Create new email template", functionName : "studentMatrixCreateMailTemplate"});
+    globalMenuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
+    globalMenuEntries.push({name : "Create new email template", functionName : "studentMatrixCreateMailTemplate"});
   }
 
-  menuEntries.push(null); // line separator
+  globalMenuEntries.push(null); // line separator
   if (studentMatrixGetConfig("version") != studentMatrixVersion()) {
-    menuEntries.push({name : "Setup: Rewrite sheet with student list", functionName : "studentMatrixCreateStudentList"});
+    globalMenuEntries.push({name : "Setup: Rewrite sheet with student list", functionName : "studentMatrixCreateStudentList"});
   }
   if (studentMatrixGetConfig("spreadsheetTemplate") == "") {
-    menuEntries.push({name : "Setup: Create template sheet", functionName : "studentMatrixCreateTemplateSheet"});
+    globalMenuEntries.push({name : "Setup: Create template sheet", functionName : "studentMatrixCreateTemplateSheet"});
   }
   else {
-    menuEntries.push({name : "Setup: Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
-    menuEntries.push({name : "Setup: Copy template to master sheet", functionName : "studentMatrixAddTemplateSheet"});
-    menuEntries.push(null); // line separator
+    globalMenuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
+    globalMenuEntries.push({name : "Copy template to master sheet", functionName : "studentMatrixAddTemplateSheet"});
+    globalMenuEntries.push(null); // line separator
   }
 
-  menuEntries.push({name : "Help", functionName : "studentMatrixHelp"});
-  menuEntries.push({name : "Settings", functionName : "studentMatrixSettings"});
+  globalMenuEntries.push({name : "Help", functionName : "studentMatrixHelp"});
+  globalMenuEntries.push({name : "Settings", functionName : "studentMatrixSettings"});
 
   // Only add these entries if there is a sheet called "Khan exercises".
   if (sheetExists("Khan exercises")) {
-    menuEntries.push(null); // line separator
-    menuEntries.push({name : "Khan Academy: Read and update exercises", functionName : "khanUpdate"});
+    globalMenuEntries.push(null); // line separator
+    globalMenuEntries.push({name : "Khan Academy: Read and update exercises", functionName : "khanUpdate"});
     if (sheetExists("Khan goals")) {
-      menuEntries.push({name : "Khan Academy: Read and update goals", functionName : "khanGoals"});
+      globalMenuEntries.push({name : "Khan Academy: Read and update goals", functionName : "khanGoals"});
     }
   }
 
-  SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), menuEntries);
+  var studentOperationsMenuEntries = [];
+  if (sheetExists("students")) {
+    studentOperationsMenuEntries.push({name : "Select students", functionName : "studentMatrixStudents"});
+    studentOperationsMenuEntries.push(null); // line separator
+    studentOperationsMenuEntries.push({name : "Unlock selected cells", functionName : "studentMatrixUnlock"});
+    studentOperationsMenuEntries.push({name : "Degrade selected cells to review status", functionName : "studentMatrixReview"});
+    studentOperationsMenuEntries.push({name : "Mark cells ok", functionName : "studentMatrixOk"});
+// This option isn't used anymore. It was only used for manual Khan Academy updates.
+//    studentOperationsMenuEntries.push({name : "Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
+    studentOperationsMenuEntries.push(null); // line separator
+    studentOperationsMenuEntries.push({name : "Hide selected cells", functionName : "studentMatrixHideRange"});
+    studentOperationsMenuEntries.push({name : "Unhide and reset selected cells", functionName : "studentMatrixRevealRange"});
+    studentOperationsMenuEntries.push({name : "Set colors of selected cells", functionName : "studentMatrixSetColor"});
+    studentOperationsMenuEntries.push({name : "Set content of selected cells", functionName : "studentMatrixSetContent"});
+    studentOperationsMenuEntries.push(null); // line separator
+    studentOperationsMenuEntries.push({name : "Count status for selected cells", functionName : "studentMatrixCount"});
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), globalMenuEntries);
+  SpreadsheetApp.getActiveSpreadsheet().addMenu('Student sheets', studentOperationsMenuEntries);
 };
 
 /**
