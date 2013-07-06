@@ -80,7 +80,7 @@ function buildMenu() {
     studentOperationsMenuEntries.push(null); // line separator
     studentOperationsMenuEntries.push({name : "Unlock selected cells", functionName : "studentMatrixUnlock"});
     studentOperationsMenuEntries.push({name : "Degrade selected cells to review status", functionName : "studentMatrixReview"});
-    studentOperationsMenuEntries.push({name : "Mark cells ok", functionName : "studentMatrixOk"});
+    studentOperationsMenuEntries.push({name : "Mark selected cells ok", functionName : "studentMatrixOk"});
 // This option isn't used anymore. It was only used for manual Khan Academy updates.
 //    studentOperationsMenuEntries.push({name : "Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
     studentOperationsMenuEntries.push(null); // line separator
