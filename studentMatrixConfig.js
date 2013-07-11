@@ -215,13 +215,6 @@ function studentMatrixConfig() {
     fallback : '',
     special : 'glink',
   };
-  config['spreadsheetTab'] = {
-    parent : 'Spreadsheet',
-    name : "Tab edited from master spreadsheet",
-    description : "The name of the tab containing the assessment matrix. Case sensitive.",
-    fallback : 'Sheet1',
-    type : 'sheet tab',
-  };
   config['spreadsheetTabStudent'] = {
     parent : 'Spreadsheet',
     name : "Tab editable by student",
@@ -299,6 +292,13 @@ function studentMatrixConfig() {
   };
 
   // Settings for Khan Academy stuff.
+  config['spreadsheetTab'] = {
+    parent : 'Khan Academy',
+    name : "Tab that should be updated based on Khan Academy results",
+    description : "The name of the tab containing the assessment matrix. Case sensitive.",
+    fallback : 'Sheet1',
+    type : 'sheet tab',
+  };
   config['KhanConsumerKey'] = {
     parent : 'Khan Academy',
     name : "Khan Academy API consumer key",
