@@ -43,6 +43,10 @@ function onOpen() {
  * Adds a custom menu to the active spreadsheet on opening the spreadsheet.
  */
 function buildMenu(parameters) {
+  if (typeof parameters == 'undefined') {
+    parameters = [];
+  }
+
   var globalMenuEntries = [];
   if (sheetExists("students")) {
     globalMenuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
