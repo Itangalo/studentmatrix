@@ -617,7 +617,7 @@ function studentMatrixAddTemplateSheet() {
   app.add(app.createLabel('Name for the new tab in the master spreadsheet'));
   app.add(tabName);
 
-  app.add(app.createButton("Save").addClickHandler(handler));
+  app.add(app.createButton("Add").addClickHandler(handler));
 
   SpreadsheetApp.getActiveSpreadsheet().show(app);
   return app;
