@@ -646,11 +646,14 @@ function studentMatrixAddTemplateSheetHandler(eventInfo) {
   }
 
   // Store the connection between this sheet and the source sheet in the template.
-  if (typeof sheetKeys != 'object') {
-    sheetKeys = {};
-    Browser.msgBox(typeof sheetKeys);
+  try {
+    sheetKeys[newSheet.getSheetId()] = sourceTab;
   }
-  sheetKeys[newSheet.getSheetId()] = sourceTab;
+  catch(e) {
+    sheetKeys = [];
+    sheetKeys[newSheet.getSheetId()] = sourceTab;
+  }
+
   ScriptProperties.setProperty('studentMatrixSheetKeys', JSON.stringify(sheetKeys));
 
   var app = UiApp.getActiveApplication();
