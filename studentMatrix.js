@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "2.2";
+  return "2.3";
 }
 
 // Some global variables
@@ -42,7 +42,7 @@ function onOpen() {
 /**
  * Adds a custom menu to the active spreadsheet on opening the spreadsheet.
  */
-function buildMenu() {
+function buildMenu(parameters) {
   var globalMenuEntries = [];
   if (sheetExists("students")) {
     globalMenuEntries.push({name : "Send email to students", functionName : "studentMatrixNotify"});
@@ -57,8 +57,7 @@ function buildMenu() {
     globalMenuEntries.push({name : "Setup: Create template sheet", functionName : "studentMatrixCreateTemplateSheet"});
   }
   else {
-    globalMenuEntries.push({name : "Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
-    globalMenuEntries.push({name : "Copy template to master sheet", functionName : "studentMatrixAddTemplateSheet"});
+    globalMenuEntries.push({name : "Setup: Create student sheets", functionName : "studentMatrixCreateStudentSheets"});
     globalMenuEntries.push(null); // line separator
   }
 
@@ -76,11 +75,16 @@ function buildMenu() {
 
   var studentOperationsMenuEntries = [];
   if (sheetExists("students")) {
-    studentOperationsMenuEntries.push({name : "Select students", functionName : "studentMatrixStudents"});
+    if (typeof parameters['selected students'] == 'undefined') {
+      studentOperationsMenuEntries.push({name : 'Select students', functionName : 'studentMatrixStudents'});
+    }
+    else {
+      studentOperationsMenuEntries.push({name : 'Select students (selected: ' + parameters['selected students'] + ')', functionName : "studentMatrixStudents"});
+    }
     studentOperationsMenuEntries.push(null); // line separator
-    studentOperationsMenuEntries.push({name : "Unlock selected cells", functionName : "studentMatrixUnlock"});
-    studentOperationsMenuEntries.push({name : "Degrade selected cells to review status", functionName : "studentMatrixReview"});
-    studentOperationsMenuEntries.push({name : "Mark selected cells ok", functionName : "studentMatrixOk"});
+    studentOperationsMenuEntries.push({name : "Unlock selected cells (colored only)", functionName : "studentMatrixUnlock"});
+    studentOperationsMenuEntries.push({name : "Degrade selected cells to review status (colored only)", functionName : "studentMatrixReview"});
+    studentOperationsMenuEntries.push({name : "Mark selected cells ok (colored only)", functionName : "studentMatrixOk"});
 // This option isn't used anymore. It was only used for manual Khan Academy updates.
 //    studentOperationsMenuEntries.push({name : "Mark cells ok, unless marked for review", functionName : "studentMatrixSoftOk"});
     studentOperationsMenuEntries.push(null); // line separator
@@ -90,6 +94,9 @@ function buildMenu() {
     studentOperationsMenuEntries.push({name : "Set content of selected cells", functionName : "studentMatrixSetContent"});
     studentOperationsMenuEntries.push(null); // line separator
     studentOperationsMenuEntries.push({name : "Count status for selected cells", functionName : "studentMatrixCount"});
+    studentOperationsMenuEntries.push(null); // line separator
+    studentOperationsMenuEntries.push({name : "Add a new sheet from the template", functionName : "studentMatrixAddTemplateSheet"});
+    studentOperationsMenuEntries.push({name : "What tab is this sheet using?", functionName : "studentMatrixInspectSourceTab"});
   }
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu("StudentMatrix " + studentMatrixVersion(), globalMenuEntries);
@@ -143,12 +150,28 @@ function studentMatrixStudentSelect(eventInfo) {
     var range = STUDENT_SHEET.getRange(2, 1, NUMBER_OF_STUDENTS);
     range.setValue(1);
 
+    // Update the menu to show the number of selected students.
+    buildMenu({'selected students' : 'all'});
     SpreadsheetApp.getActiveSpreadsheet().toast("", "All students selected.");
     var app = UiApp.getActiveApplication();
     app.close();
+
     return app;
   }
   if (eventInfo.parameter.source == 'done') {
+    // Update the menu to show the number of selected students.
+    var values = STUDENT_SHEET.getRange(2, 1, NUMBER_OF_STUDENTS).getValues();
+    var selected = 0;
+    for (var row in values) {
+      if (values[row][0] == 1) {
+        selected++;
+      }
+    }
+    if (selected == NUMBER_OF_STUDENTS) {
+      selected = 'all';
+    }
+    buildMenu({'selected students' : selected});
+
     var app = UiApp.getActiveApplication();
     app.close();
     return app;
@@ -320,10 +343,10 @@ function studentMatrixCreateStudentSheets() {
   // Let's verify that the tab name for the template sheet exists, and correct the
   // setting if not.
   try {
-    var tmp = templateSpreadsheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getName();
+    var tmp = templateSpreadsheet.getSheetByName(studentMatrixGetSourceTab()).getName();
   }
   catch (err) {
-    ScriptProperties.setProperty(spreadsheetTab, templateSpreadsheet.getActiveSheet().getName());
+    ScriptProperties.setProperty('spreadsheetTab', templateSpreadsheet.getActiveSheet().getName());
   }
   studentMatrixAssureFolder();
 
@@ -495,8 +518,8 @@ function studentMatrixCreateMailTemplate() {
 function studentMatrixCount() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "students") {
-    Browser.msgBox('Cannot use config or student sheets as templates.');
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -516,7 +539,7 @@ function studentMatrixCount() {
       STUDENT_SHEET.getRange(studentRow, 10).setValue("");
       continue;
     }
-    var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab")).getRange(sourceCells.getA1Notation());
+    var targetRange = targetSheet.getSheetByName(studentMatrixGetSourceTab()).getRange(sourceCells.getA1Notation());
 
     var unlockedCount = 0;
     var okCount = 0;
@@ -573,11 +596,78 @@ function studentMatrixNotify() {
  * Adds a new sheet, cloned from the template specified in the settings.
  */
 function studentMatrixAddTemplateSheet() {
-  var name = Browser.inputBox("Name for new sheet.");
+  var app = UiApp.createApplication().setTitle("Copy a sheet from the template");
+  var handler = app.createServerHandler("studentMatrixAddTemplateSheetHandler");
+
+  var sourceTab = app.createListBox().setName('sourceTab');
+  handler.addCallbackElement(sourceTab);
+  var sheets = studentMatrixGetTemplateTabs();
+  for (var i in sheets) {
+    sourceTab.addItem(sheets[i]);
+  }
+  app.add(app.createLabel('Tab to copy from template'));
+  app.add(sourceTab);
+
+  var tabName = app.createTextBox().setName('tabName');
+  handler.addCallbackElement(tabName);
+  app.add(app.createLabel('Name for the new tab in the master spreadsheet'));
+  app.add(tabName);
+
+  app.add(app.createButton("Save").addClickHandler(handler));
+
+  SpreadsheetApp.getActiveSpreadsheet().show(app);
+  return app;
+
+}
+
+/**
+ * Submit handler for copying from a sheet from template to master.
+ */
+function studentMatrixAddTemplateSheetHandler(eventInfo) {
+  // Get data from the submitted panel.
+  var sourceTab = eventInfo.parameter['sourceTab'];
+  var tabName = eventInfo.parameter['tabName'];
+  // Create a new sheet, move it in front of the active sheet, and set it active.
   var index = SpreadsheetApp.getActive().getActiveSheet().getIndex();
-  var newSheet = SpreadsheetApp.openById(studentMatrixGetConfig("spreadsheetTemplate")).getSheetByName(studentMatrixGetConfig("spreadsheetTab")).copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(name);
+  var newSheet = SpreadsheetApp.openById(studentMatrixGetConfig("spreadsheetTemplate")).getSheetByName(sourceTab).copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(tabName);
   newSheet.activate();
   SpreadsheetApp.getActiveSpreadsheet().moveActiveSheet(index);
+
+  // Ensure that the ScriptProperty 'studentMatrixSheetKeys' has a valid format.
+  try {
+    var sheetKeys = JSON.parse(ScriptProperties.getProperty('studentMatrixSheetKeys'));
+  }
+  catch(e) {
+    ScriptProperties.setProperty('studentMatrixSheetKeys', JSON.stringify([]));
+  }
+
+  // Store the connection between this sheet and the source sheet in the template.
+  if (typeof sheetKeys != 'object') {
+    sheetKeys = {};
+    Browser.msgBox(typeof sheetKeys);
+  }
+  sheetKeys[newSheet.getSheetId()] = sourceTab;
+  ScriptProperties.setProperty('studentMatrixSheetKeys', JSON.stringify(sheetKeys));
+
+  var app = UiApp.getActiveApplication();
+  app.close();
+  return app;
+}
+
+/**
+ * Helper function returning the name of the tab the active sheet is connected to in the template
+ */
+function studentMatrixGetSourceTab() {
+  var sheetKeys = JSON.parse(ScriptProperties.getProperty('studentMatrixSheetKeys'));
+  var tabID = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetId();
+  return sheetKeys[tabID];
+}
+
+/**
+ * Shows which tab the active sheet is working against.
+ */
+function studentMatrixInspectSourceTab() {
+  Browser.msgBox('This sheet is connected to \'' + studentMatrixGetSourceTab() + '\' in the student matrices.');
 }
 
 /**
@@ -586,8 +676,8 @@ function studentMatrixAddTemplateSheet() {
 function studentMatrixSetContent() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "students") {
-    Browser.msgBox('Cannot use config or student sheets as templates.');
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -598,7 +688,7 @@ function studentMatrixSetContent() {
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab'));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetSourceTab());
 
     // Get the target spreadsheet to update.
     cells = sourceCells.getValues();
@@ -624,8 +714,8 @@ function studentMatrixSetContent() {
 function studentMatrixSetColor() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == 'students') {
-    Browser.msgBox('Cannot use config or student sheets as templates.');
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -636,7 +726,7 @@ function studentMatrixSetColor() {
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab'));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetSourceTab());
     targetSheet.getRange(sourceCells.getRow(), sourceCells.getColumn(), sourceCells.getNumRows(), sourceCells.getNumColumns()).setBackgroundColors(sourceCells.getBackgrounds());
   }
 };
@@ -649,8 +739,8 @@ function studentMatrixSetColor() {
 function studentMatrixSoftOk() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == 'students') {
-    Browser.msgBox('Cannot use config or student sheets as templates.');
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -666,7 +756,7 @@ function studentMatrixSoftOk() {
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab'));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetSourceTab());
 
     // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
     var backgrounds = sourceCells.getBackgrounds();
@@ -693,8 +783,8 @@ function studentMatrixSoftOk() {
 function studentMatrixOk() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == 'students') {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -708,7 +798,7 @@ function studentMatrixOk() {
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetSourceTab());
 
     // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
     var backgrounds = sourceCells.getBackgrounds();
@@ -734,8 +824,8 @@ function studentMatrixOk() {
 function studentMatrixReview() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "students") {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -751,7 +841,7 @@ function studentMatrixReview() {
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetSourceTab());
 
     // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
     var backgrounds = sourceCells.getBackgrounds();
@@ -778,8 +868,8 @@ function studentMatrixReview() {
 function studentMatrixUnlock() {
   // Load the active sheet, used for reference, and make sure it not one of the special sheets.
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == "students") {
-    Browser.msgBox("Cannot use config or student sheets as templates.");
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceCells = SpreadsheetApp.getActiveRange();
@@ -795,7 +885,7 @@ function studentMatrixUnlock() {
     if (targetSheet == false) {
       continue;
     }
-    targetSheet = targetSheet.getSheetByName(studentMatrixGetConfig("spreadsheetTab"));
+    targetSheet = targetSheet.getSheetByName(studentMatrixGetSourceTab());
 
     // Crawl through the selection in the template sheet and find cells that should be updated in the target sheet.
     var backgrounds = sourceCells.getBackgrounds();

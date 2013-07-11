@@ -3,8 +3,8 @@
  */
 function studentMatrixHideRange() {
   var templateSheet = SpreadsheetApp.getActiveSheet();
-  if (templateSheet.getName() == 'students') {
-    Browser.msgBox('Cannot use config or student sheets as templates.');
+  if (studentMatrixGetSourceTab() == null) {
+    Browser.msgBox('This sheet is not copied from the template, and cannot be used for updating student sheets.');
     return;
   }
   var sourceRange = SpreadsheetApp.getActiveSheet().getActiveRange();
@@ -25,7 +25,7 @@ function studentMatrixHideRange() {
     if (targetSheet == false) {
       continue;
     }
-    var targetRange = targetSheet.getSheetByName(studentMatrixGetConfig('spreadsheetTab')).getRange(sourceRange.getRow(), sourceRange.getColumn(), sourceRange.getNumRows(), sourceRange.getNumColumns());
+    var targetRange = targetSheet.getSheetByName(studentMatrixGetSourceTab()).getRange(sourceRange.getRow(), sourceRange.getColumn(), sourceRange.getNumRows(), sourceRange.getNumColumns());
     targetRange.setBackgroundColors(backgrounds);
     targetRange.setValues(values);
   }
