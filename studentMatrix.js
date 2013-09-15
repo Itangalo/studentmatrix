@@ -265,6 +265,7 @@ function studentMatrixAssureFolder() {
     var folder = DocsList.createFolder(studentMatrixGetConfig("folder"));
     var masterSheetID = SpreadsheetApp.getActiveSpreadsheet().getId();
     DocsList.getFileById(masterSheetID).addToFolder(folder);
+    DocsList.getFileById(masterSheetID).removeFromFolder(DocsList.getRootFolder());
   }
 }
 
@@ -301,6 +302,7 @@ function studentMatrixCreateTemplateSheet() {
   studentMatrixAssureFolder();
   var template = SpreadsheetApp.create(name);
   DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
+  DocsList.getFileById(template.getId()).removeFromFolder(DocsList.getRootFolder());
   ScriptProperties.setProperty('spreadsheetTemplate', template.getId());
 
   var app = UiApp.createApplication().setTitle("Matrix template created");
@@ -429,6 +431,7 @@ function studentMatrixCreateStudentSheets() {
 
       // Add the sheet to the proper folder.
       DocsList.getFileById(STUDENT_SHEET.getRange(row, 4).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
+      DocsList.getFileById(STUDENT_SHEET.getRange(row, 4).getValue()).removeFromFolder(DocsList.getRootFolder());
 
       // Do similar procedure for documents.
       if (documentEnable == 'true') {
@@ -487,6 +490,7 @@ function studentMatrixCreateStudentSheets() {
 
         // Add the document to the appropriate folder.
         DocsList.getFileById(STUDENT_SHEET.getRange(row, 5).getValue()).addToFolder(DocsList.getFolder(studentMatrixGetConfig("folder")));
+        DocsList.getFileById(STUDENT_SHEET.getRange(row, 5).getValue()).removeFromFolder(DocsList.getRootFolder());
       }
     }
   }
@@ -501,6 +505,7 @@ function studentMatrixCreateMailTemplate() {
   var template = DocsList.getFileById(studentMatrixGetConfig('emailTemplate')).makeCopy(name);
   studentMatrixAssureFolder();
   DocsList.getFileById(template.getId()).addToFolder(DocsList.getFolder(studentMatrixGetConfig('folder')));
+  DocsList.getFileById(template.getId()).removeFromFolder(DocsList.getRootFolder());
   ScriptProperties.setProperty('emailTemplate', template.getId());
 
   var app = UiApp.createApplication().setTitle('E-mail template created');
