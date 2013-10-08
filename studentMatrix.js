@@ -3,7 +3,7 @@
 // See restrictions at http://www.opensource.org/licenses/gpl-3.0.html
 
 function studentMatrixVersion() {
-  return "2.3";
+  return "2.4";
 }
 
 // Some global variables
@@ -96,6 +96,7 @@ function buildMenu(parameters) {
     studentOperationsMenuEntries.push({name : "Unhide and reset selected cells", functionName : "studentMatrixRevealRange"});
     studentOperationsMenuEntries.push({name : "Set colors of selected cells", functionName : "studentMatrixSetColor"});
     studentOperationsMenuEntries.push({name : "Set content of selected cells", functionName : "studentMatrixSetContent"});
+    studentOperationsMenuEntries.push({name : "Append notes to selected cells", functionName : "studentMatrixAddComment"});
     studentOperationsMenuEntries.push(null); // line separator
     studentOperationsMenuEntries.push({name : "Count status for selected cells", functionName : "studentMatrixCount"});
     studentOperationsMenuEntries.push(null); // line separator
