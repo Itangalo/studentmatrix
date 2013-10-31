@@ -43,15 +43,6 @@ StudentMatrix = {
 }
 
 /**
- * Column declarations included in StudentMatrix core.
- */
-StudentMatrix.columns = {
-  process : 'Process',
-  studentName : 'Student name',
-  studentMail : 'Student email',
-}
-
-/**
  * Returns an array with row numbers of all students that should be processed.
  */
 StudentMatrix.studentRows = function(mode) {
@@ -195,7 +186,7 @@ function selectStudents(eventInfo) {
   var panel = app.createVerticalPanel().setHeight('100%');
 
   var checkboxes = [];
-  var handler = app.createServerHandler('studentDialogHandler');
+  var handler = app.createServerHandler('selectStudentsHandler');
   var processColumn = StudentMatrix.getColumn('process');
   var nameColumn = StudentMatrix.getColumn('studentName');
 
@@ -218,7 +209,7 @@ function selectStudents(eventInfo) {
 /**
  * Handler for the student selection dialog. Toggles process flag or runs actions.
  */
-function studentDialogHandler(eventInfo) {
+function selectStudentsHandler(eventInfo) {
   // If the 'Run action' button was hit, call the relevant processor.
   if (eventInfo.parameter.source == 'RunAction') {
     var app = UiApp.getActiveApplication();
@@ -247,6 +238,13 @@ function studentDialogHandler(eventInfo) {
 // Declares the empty properties, so it can be populated by plugins.
 StudentMatrix.plugins = {};
 StudentMatrix.iterators = {};
+
+// Column declarations included in StudentMatrix core.
+StudentMatrix.columns = {
+  process : 'Process',
+  studentName : 'Student name',
+  studentMail : 'Student email',
+}
 
 // One iterator used by core, for selecting students.
 StudentMatrix.iterators.getRowValues = function(row) {
