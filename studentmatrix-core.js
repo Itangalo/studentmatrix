@@ -22,6 +22,7 @@ function setupColumns() {
       StudentMatrix.setColumn(columnID, column);
     }
   }
+  StudentMatrix.mainSheet().setFrozenRows(StudentMatrix.firstStudentRow() - 1);
 }
 
 /**
@@ -43,6 +44,15 @@ StudentMatrix = {
 }
 
 /**
+ * Column declarations included in StudentMatrix core.
+ */
+StudentMatrix.columns = {
+  process : 'Process',
+  studentName : 'Student name',
+  studentMail : 'Student email',
+}
+
+/**
  * Returns an array with row numbers of all students that should be processed.
  */
 StudentMatrix.studentRows = function(mode) {
@@ -57,6 +67,15 @@ StudentMatrix.studentRows = function(mode) {
     for (var row = StudentMatrix.firstStudentRow(); row <= StudentMatrix.lastStudentRow(); row++) {
       if (StudentMatrix.mainSheet().getRange(row, column).getValue() == 1) {
         studentRows[row] = row;
+      }
+    }
+  }
+  if (mode == 'count') {
+    studenRows = 0;
+    var column = StudentMatrix.getColumn('process');
+    for (var row = StudentMatrix.firstStudentRow(); row <= StudentMatrix.lastStudentRow(); row++) {
+      if (StudentMatrix.mainSheet().getRange(row, column).getValue() == 1) {
+        studentRows++;
       }
     }
   }
@@ -117,6 +136,24 @@ StudentMatrix.setColumn = function(columnID, columnNumber) {
 }
 
 /**
+ * Returns an object with all plugin groups, each group containing its plugins.
+ */
+StudentMatrix.getPluginsByGroup = function() {
+  var plugins = {};
+  for (var plugin in StudentMatrix.plugins) {
+    var group = StudentMatrix.plugins[plugin].group;
+    if (typeof group == 'undefined') {
+      group = 'Other';
+    }
+    if (typeof plugins[group] == 'undefined') {
+      plugins[group] = {};
+    }
+    plugins[group][plugin] = StudentMatrix.plugins[plugin].name;
+  }
+  return plugins;
+}
+
+/**
  * Displays a dialog used for selecting actions for processing student sheets.
  */
 function actionsDialog() {
@@ -124,9 +161,12 @@ function actionsDialog() {
   var handler = app.createServerHandler('actionsDialogHandler');
 
   var actionsList = app.createListBox().setId('SelectedAction').setName('SelectedAction');
-  actionsList.addItem('Select an action to run', null);
-  for (plugin in StudentMatrix.plugins) {
-    actionsList.addItem(StudentMatrix.plugins[plugin].name, plugin);
+  var pluginList = StudentMatrix.getPluginsByGroup();
+  for (group in pluginList) {
+    actionsList.addItem('-- ' + group + ' --', null);
+    for (plugin in pluginList[group]) {
+      actionsList.addItem(StudentMatrix.plugins[plugin].name, plugin);
+    }
   }
   actionsList.addChangeHandler(handler);
   app.add(actionsList);
@@ -134,9 +174,9 @@ function actionsDialog() {
 
   app.add(app.createLabel('', true).setId('ActionDescription'));
 
-  app.add(app.createButton('Run for all students', handler).setId('ProcessAll'));
-  app.add(app.createButton('Run for selected students (NN)', handler).setId('ProcessSelected'));
-  app.add(app.createButton('Select students and run', handler).setId('SelectAndProcess'));
+  app.add(app.createButton('Run for all students', handler).setId('ProcessAll').setEnabled(false));
+  app.add(app.createButton('Run for selected students (' + StudentMatrix.studentRows('count') + ')', handler).setId('ProcessSelected').setEnabled(false));
+  app.add(app.createButton('Select students and run', handler).setId('SelectAndProcess').setEnabled(false));
   SpreadsheetApp.getActiveSpreadsheet().show(app);
   return app;
 }
@@ -150,6 +190,18 @@ function actionsDialogHandler(eventInfo) {
     var plugin = eventInfo.parameter.SelectedAction;
     var app = UiApp.getActiveApplication();
     var description = app.getElementById('ActionDescription');
+    
+    if (plugin == 'null') {
+      app.getElementById('ProcessAll').setEnabled(false);
+      app.getElementById('ProcessSelected').setEnabled(false);
+      app.getElementById('SelectAndProcess').setEnabled(false);
+    }
+    else {
+      app.getElementById('ProcessAll').setEnabled(true);
+      app.getElementById('ProcessSelected').setEnabled(true);
+      app.getElementById('SelectAndProcess').setEnabled(true);
+    }
+    
     try {
       description.setText(StudentMatrix.plugins[plugin].description);
     }
@@ -172,6 +224,18 @@ function actionsDialogHandler(eventInfo) {
     app.close()
     return app;
   }
+  if (eventInfo.parameter.source == 'ProcessSelected') {
+    debug('Processing...');
+    var plugin = eventInfo.parameter.SelectedAction;
+    var iterator = StudentMatrix.plugins[plugin].iterator;
+    for (var row in StudentMatrix.studentRows('ProcessSelected')) {
+      var object = StudentMatrix.iterators[iterator](row);
+      StudentMatrix.plugins[plugin].processor(object);
+    }
+    var app = UiApp.getActiveApplication();
+    app.close()
+    return app;
+  }
   if (eventInfo.parameter.source == 'SelectAndProcess') {
     selectStudents(eventInfo);
   }
@@ -186,7 +250,7 @@ function selectStudents(eventInfo) {
   var panel = app.createVerticalPanel().setHeight('100%');
 
   var checkboxes = [];
-  var handler = app.createServerHandler('selectStudentsHandler');
+  var handler = app.createServerHandler('studentDialogHandler');
   var processColumn = StudentMatrix.getColumn('process');
   var nameColumn = StudentMatrix.getColumn('studentName');
 
@@ -209,7 +273,7 @@ function selectStudents(eventInfo) {
 /**
  * Handler for the student selection dialog. Toggles process flag or runs actions.
  */
-function selectStudentsHandler(eventInfo) {
+function studentDialogHandler(eventInfo) {
   // If the 'Run action' button was hit, call the relevant processor.
   if (eventInfo.parameter.source == 'RunAction') {
     var app = UiApp.getActiveApplication();
@@ -238,13 +302,6 @@ function selectStudentsHandler(eventInfo) {
 // Declares the empty properties, so it can be populated by plugins.
 StudentMatrix.plugins = {};
 StudentMatrix.iterators = {};
-
-// Column declarations included in StudentMatrix core.
-StudentMatrix.columns = {
-  process : 'Process',
-  studentName : 'Student name',
-  studentMail : 'Student email',
-}
 
 // One iterator used by core, for selecting students.
 StudentMatrix.iterators.getRowValues = function(row) {
