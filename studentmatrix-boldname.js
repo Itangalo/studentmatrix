@@ -1,11 +1,17 @@
 StudentMatrix.plugins.boldname = {
   name : 'Make name bold',
   group : 'Examples',
-  iterator : 'studentName',
   description : 'This is an example action. It makes the student name bold.',
+  helpLink : 'http://www.dn.se/nyheter/vetenskap/nobelpristagare-river-katedern/',
+  iterator : 'studentName',
   processor : function(object) {
     object.setFontWeight('bold');
-  }
+  },
+  validator : function() {
+    if (typeof StudentMatrix.getColumn('studentName') == 'undefined') {
+      return 'No column for student names declared!';
+    }
+  },
 };
 
 StudentMatrix.iterators.rowNumber = function(row) {
