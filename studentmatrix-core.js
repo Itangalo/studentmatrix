@@ -13,13 +13,13 @@ function onOpen() {
  */
 function setupColumns() {
   for (columnID in StudentMatrix.columns) {
-    if (parseInt(StudentMatrix.getColumn(columnID)) > 0) {
-      StudentMatrix.mainSheet().getRange(1, StudentMatrix.getColumn(columnID)).setValue(StudentMatrix.columns[columnID]);
+    if (parseInt(StudentMatrix.getProperty('StudentMatrixColumns', columnID)) > 0) {
+      StudentMatrix.mainSheet().getRange(1, StudentMatrix.getProperty('StudentMatrixColumns', columnID)).setValue(StudentMatrix.columns[columnID]);
     }
     else {
       var column = StudentMatrix.mainSheet().getLastColumn() + 1;
       StudentMatrix.mainSheet().getRange(1, column).setValue(StudentMatrix.columns[columnID]);
-      StudentMatrix.setColumn(columnID, column);
+      StudentMatrix.setProperty(column, 'StudentMatrixColumns', columnID);
     }
   }
   StudentMatrix.mainSheet().setFrozenRows(StudentMatrix.firstStudentRow() - 1);
@@ -41,9 +41,6 @@ StudentMatrix = {
   numberOfStudents : function() {
     return StudentMatrix.lastStudentRow() - StudentMatrix.firstStudentRow() + 1;
   },
-  test : function() {
-    debug('I am.');
-  }
 }
 
 /**
@@ -66,7 +63,7 @@ StudentMatrix.studentRows = function(mode) {
     }
   }
   if (mode == 'ProcessSelected') {
-    var column = StudentMatrix.getColumn('process');
+    var column = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
     for (var row = StudentMatrix.firstStudentRow(); row <= StudentMatrix.lastStudentRow(); row++) {
       if (StudentMatrix.mainSheet().getRange(row, column).getValue() == 1) {
         studentRows[row] = row;
@@ -75,7 +72,8 @@ StudentMatrix.studentRows = function(mode) {
   }
   if (mode == 'count') {
     studenRows = 0;
-    var column = StudentMatrix.getColumn('process');
+    var column = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
+
     for (var row = StudentMatrix.firstStudentRow(); row <= StudentMatrix.lastStudentRow(); row++) {
       if (StudentMatrix.mainSheet().getRange(row, column).getValue() == 1) {
         studentRows++;
@@ -86,56 +84,43 @@ StudentMatrix.studentRows = function(mode) {
 }
 
 /**
- * Loads a JSON parsed property, and uses fallback if the property is not set.
+ * Loads a JSON parsed property.
+ *
+ * If subPropertyName is set, the property will be fetched from the object stored
+ * on propertyName.
  */
-StudentMatrix.getProperty = function(propertyName, fallback) {
-  if (typeof fallback == 'undefined') {
-    fallback = '';
-  }
-  try {
-    var raw = ScriptProperties.getProperty(propertyName);
-    var value = JSON.parse(raw);
-  }
-  catch(e) {
-    var value = fallback;
-    StudentMatrix.setProperty(propertyName, fallback);
+StudentMatrix.getProperty = function(propertyName, subPropertyName) {
+  var value = JSON.parse(ScriptProperties.getProperty(propertyName));
+  if (typeof subPropertyName == 'string') {
+    if (value == null) {
+      return undefined;
+    }
+    else {
+      return value[subPropertyName];
+    }
   }
   return value;
 }
 
 /**
  * Stores a variable as a JSON parsed script property.
+ *
+ * If subPropertyName is set, propertyName will be treated as an object, whose property
+ * 'subPropertyName' will be set to value. That is, you will get
+ * properties[propertyName][subPropertyName] = value.
  */
-StudentMatrix.setProperty = function(propertyName, value) {
-  ScriptProperties.setProperty(propertyName, JSON.stringify(value));
-}
-
-/**
- * Gets the column number for a specified column ID.
- */
-StudentMatrix.getColumn = function(columnID) {
-  var columns = StudentMatrix.getProperty('StudentMatrixColumns');
-  try {
-    return columns[columnID];
+StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
+  if (typeof subPropertyName == 'string') {
+    var object = settingsGet(propertyName);
+    if (object == null || typeof object != 'object') {
+      object = {};
+    }
+    object[subPropertyName] = value;
+    StudentMatrix.setProperty(object, propertyName);
   }
-  catch(e) {
-    return false;
+  else {
+    ScriptProperties.setProperty(propertyName, JSON.stringify(value));
   }
-}
-
-/**
- * Stores the column number for a specified column ID.
- */
-StudentMatrix.setColumn = function(columnID, columnNumber) {
-  var columns = StudentMatrix.getProperty('StudentMatrixColumns', {});
-  try {
-    columns[columnID] = columnNumber;
-  }
-  catch(e) {
-    columns = {};
-    columns[columnID] = columnNumber;
-  }
-  StudentMatrix.setProperty('StudentMatrixColumns', columns);
 }
 
 /**
@@ -260,8 +245,8 @@ function selectStudents(eventInfo) {
 
   var checkboxes = [];
   var handler = app.createServerHandler('studentDialogHandler');
-  var processColumn = StudentMatrix.getColumn('process');
-  var nameColumn = StudentMatrix.getColumn('studentName');
+  var processColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
+  var nameColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'studentName');
 
   for (var row in StudentMatrix.studentRows('ProcessAll')) {
     var values = StudentMatrix.iterators.getRowValues(row);
@@ -292,7 +277,7 @@ function studentDialogHandler(eventInfo) {
   }
 
   // If the button wasn't clicked, this was a call from the check boxes. Switch 1/0 values.
-  var processColumn = StudentMatrix.getColumn('process');
+  var processColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
   var cell = StudentMatrix.mainSheet().getRange(eventInfo.parameter.source, processColumn);
   if (cell.getValue() == 1) {
     cell.setValue(0);

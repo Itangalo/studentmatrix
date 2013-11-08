@@ -8,7 +8,7 @@ StudentMatrix.plugins.boldname = {
     object.setFontWeight('bold');
   },
   validator : function() {
-    if (typeof StudentMatrix.getColumn('studentName') == 'undefined') {
+    if (typeof StudentMatrix.getProperty('StudentMatrixColumns', 'studentName') == 'undefined') {
       return 'No column for student names declared!';
     }
   },
@@ -19,5 +19,5 @@ StudentMatrix.iterators.rowNumber = function(row) {
 }
 
 StudentMatrix.iterators.studentName = function(row) {
-  return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getColumn('studentName'));
+  return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentName'));
 }

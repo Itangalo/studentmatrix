@@ -20,15 +20,5 @@ function reset() {
 }
 
 function dev() {
-  debug(StudentMatrix.studentRows('ProcessSelected'), 'index');
-//  StudentMatrix.setColumn('process', 3);
-//  debug(StudentMatrix.getColumn('process'));
-//  debug(StudentMatrix.getColumn('studentName'));
-//  debug(StudentMatrix.getColumn('studentName'));
-
-//  StudentMatrix.setColumn('studentName', 3);
-//  debug(StudentMatrix.getColumn('process'));
-//  debug(StudentMatrix.getProperty('StudentMatrixColumns'), 'index');
-//  debug(StudentMatrix.columns, 'index');
-//  debug(StudentMatrix.getProperty('tmp', StudentMatrix.columns));
+  debug(StudentMatrix.getProperty('StudentMatrixColumns', 'process'));
 }
