@@ -1,4 +1,4 @@
-StudentMatrix.plugins.namecolor = {
+StudentMatrix.studentActions.namecolor = {
   name : 'Set background color for name',
   group : 'Examples',
   iterator : 'studentName',

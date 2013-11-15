@@ -19,6 +19,7 @@ function reset() {
   debug('All properties deleted.');
 }
 
-function dev() {
-  debug(StudentMatrix.getProperty('StudentMatrixColumns', 'process'));
+function dev(info) {
+  debug(arguments, 'index');
+//  StudentMatrix.tmp();
 }

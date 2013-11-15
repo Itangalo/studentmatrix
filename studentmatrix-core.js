@@ -3,6 +3,7 @@ function onOpen() {
   entries.push({name : 'dev', functionName : 'dev'});
   entries.push({name : 'reset', functionName : 'reset'});
   entries.push({name : 'Run actions on students', functionName : 'actionsDialog'});
+  entries.push({name : 'Settings', functionName : 'StudentMatrixSettingsDialog'});
   entries.push({name : 'Setup columns', functionName : 'setupColumns'});
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu('Development', entries);
@@ -41,6 +42,9 @@ StudentMatrix = {
   numberOfStudents : function() {
     return StudentMatrix.lastStudentRow() - StudentMatrix.firstStudentRow() + 1;
   },
+  tmp : function() {
+    debug('I am.');
+  }
 }
 
 /**
@@ -50,6 +54,27 @@ StudentMatrix.columns = {
   process : 'Process',
   studentName : 'Student name',
   studentMail : 'Student email',
+}
+
+StudentMatrix.plugins = {};
+
+StudentMatrix.plugins.iterators = {
+}
+
+StudentMatrix.plugins.studentActions = {
+  name : 'string',
+  group : 'string',
+  description : 'string',
+  iterator : 'string',
+  processor : 'function',
+}
+
+StudentMatrix.plugins.settings = {
+  name : 'string',
+  group : 'string',
+  description : 'string',
+  iterator : 'string',
+  processor : 'function',
 }
 
 /**
@@ -111,7 +136,7 @@ StudentMatrix.getProperty = function(propertyName, subPropertyName) {
  */
 StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
   if (typeof subPropertyName == 'string') {
-    var object = settingsGet(propertyName);
+    var object = StudentMatrix.getProperty(propertyName);
     if (object == null || typeof object != 'object') {
       object = {};
     }
@@ -126,19 +151,63 @@ StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
 /**
  * Returns an object with all plugin groups, each group containing its plugins.
  */
-StudentMatrix.getPluginsByGroup = function() {
+StudentMatrix.getPluginsByGroup = function(type) {
   var plugins = {};
-  for (var plugin in StudentMatrix.plugins) {
-    var group = StudentMatrix.plugins[plugin].group;
+  for (var plugin in StudentMatrix[type]) {
+    var group = StudentMatrix[type][plugin].group;
     if (typeof group == 'undefined') {
       group = 'Other';
     }
     if (typeof plugins[group] == 'undefined') {
       plugins[group] = {};
     }
-    plugins[group][plugin] = StudentMatrix.plugins[plugin].name;
+    plugins[group][plugin] = StudentMatrix[type][plugin].name;
   }
   return plugins;
+}
+
+function StudentMatrixSettingsDialog() {
+  var app = UiApp.createApplication();
+  var handler = app.createServerHandler('StudentMatrixSettingsHandler');
+
+  var settingsPlugins = StudentMatrix.getPluginsByGroup('settings');
+  var settingsList = app.createListBox().setId('selectedSetting').setName('selectedSetting').addChangeHandler(handler);
+  
+  for (var group in settingsPlugins) {
+    settingsList.addItem('-- ' + group + ' --', null);
+    app.add(app.createHTML('Select setting'));
+    for (var setting in settingsPlugins[group]) {
+      settingsList.addItem(StudentMatrix.settings[setting].name, setting);
+    }
+  }
+  app.add(settingsList);
+  app.add(app.createVerticalPanel().setId('settingsPanel'));
+  
+  var okButton = app.createButton('Save', handler)
+  app.add(okButton);
+  
+  SpreadsheetApp.getActiveSpreadsheet().show(app);
+}
+
+function StudentMatrixSettingsHandler(eventInfo) {
+  if (eventInfo.parameter.source == 'selectedSetting') {
+    var app = UiApp.getActiveApplication();
+    var panel = app.getElementById('settingsPanel');
+    panel.clear();
+    var setting = eventInfo.parameter.selectedSetting;
+    if (setting == 'null') {
+      return app;
+    }
+//    var handler = UiApp.getActiveApplication().getElementById('StudentMatrixSettingsHandler');
+    StudentMatrix.settings[setting].formBuilder(panel);
+
+//    debug(eventInfo.parameter, 'index');
+    return UiApp.getActiveApplication();
+  }
+  
+  for (var setting in StudentMatrix.settings) {
+    StudentMatrix.settings[setting].processor(eventInfo);
+  }
 }
 
 /**
@@ -149,11 +218,11 @@ function actionsDialog() {
   var handler = app.createServerHandler('actionsDialogHandler');
 
   var actionsList = app.createListBox().setId('SelectedAction').setName('SelectedAction');
-  var pluginList = StudentMatrix.getPluginsByGroup();
+  var pluginList = StudentMatrix.getPluginsByGroup('studentActions');
   for (group in pluginList) {
     actionsList.addItem('-- ' + group + ' --', null);
     for (plugin in pluginList[group]) {
-      actionsList.addItem(StudentMatrix.plugins[plugin].name, plugin);
+      actionsList.addItem(StudentMatrix.studentActions[plugin].name, plugin);
     }
   }
   actionsList.addChangeHandler(handler);
@@ -192,22 +261,22 @@ function actionsDialogHandler(eventInfo) {
     // Set description and help links, if available.
     var description = app.getElementById('ActionDescription');
     description.setText('');
-    if (typeof StudentMatrix.plugins[plugin].description == 'string') {
-      description.setText(StudentMatrix.plugins[plugin].description);
+    if (typeof StudentMatrix.studentActions[plugin].description == 'string') {
+      description.setText(StudentMatrix.studentActions[plugin].description);
     }
 
     var helpLink = app.getElementById('ActionHelpLink');
     helpLink.setHTML('');
-    if (typeof StudentMatrix.plugins[plugin].helpLink == 'string') {
-      helpLink.setHref(StudentMatrix.plugins[plugin].helpLink).setHTML('Help page<br />');
+    if (typeof StudentMatrix.studentActions[plugin].helpLink == 'string') {
+      helpLink.setHref(StudentMatrix.studentActions[plugin].helpLink).setHTML('Help page<br />');
     }
 
     // Run basic validator on the plugin, if available.
     var errorMessage = app.getElementById('ErrorMessage');
     errorMessage.setText('');
-    if (typeof StudentMatrix.plugins[plugin].validator == 'function') {
-      if (StudentMatrix.plugins[plugin].validator() != null) {
-        errorMessage.setText('Cannot run action: ' + StudentMatrix.plugins[plugin].validator());
+    if (typeof StudentMatrix.studentActions[plugin].validator == 'function') {
+      if (StudentMatrix.studentActions[plugin].validator() != null) {
+        errorMessage.setText('Cannot run action: ' + StudentMatrix.studentActions[plugin].validator());
         app.getElementById('ProcessAll').setEnabled(false);
         app.getElementById('ProcessSelected').setEnabled(false);
         app.getElementById('SelectAndProcess').setEnabled(false);
@@ -291,11 +360,11 @@ function studentDialogHandler(eventInfo) {
  * Calls the plugin processors, to run actions on student rows.
  */
 StudentMatrix.pluginOptionsDialog = function(plugin, mode, app) {
-  if (typeof StudentMatrix.plugins[plugin].optionsBuilder == 'function') {
+  if (typeof StudentMatrix.studentActions[plugin].optionsBuilder == 'function') {
     var app = UiApp.getActiveApplication();
     var handler = app.createServerHandler('pluginOptionsDialogHandler');
     
-    StudentMatrix.plugins[plugin].optionsBuilder(handler);
+    StudentMatrix.studentActions[plugin].optionsBuilder(handler);
 //    for (var option in StudentMatrix.plugins[plugin].options) {
 //      var widget = StudentMatrix.plugins[plugin].options[option]();
 //      widget.setId(option);
@@ -330,29 +399,32 @@ function pluginOptionsDialogHandler(eventInfo) {
     var app = UiApp.getActiveApplication();
     var plugin = eventInfo.parameter.plugin;
     var options = {};
-    if (typeof StudentMatrix.plugins[plugin].options == 'object') {
-      for (var option in StudentMatrix.plugins[plugin].options) {
+    if (typeof StudentMatrix.studentActions[plugin].options == 'object') {
+      for (var option in StudentMatrix.studentActions[plugin].options) {
 //        StudentMatrix.options[option] = eventInfo.parameter[option];
         options[option] = eventInfo.parameter[option];
       }
     }
     StudentMatrix.pluginExecute(eventInfo.parameter.plugin, eventInfo.parameter.mode, options);
+    return app;
   }
 }
 
 StudentMatrix.pluginExecute = function(plugin, mode, options) {
   debug('running...');
-  var iterator = StudentMatrix.plugins[plugin].iterator;
+  var iterator = StudentMatrix.studentActions[plugin].iterator;
   for (var row in StudentMatrix.studentRows(mode)) {
     var object = StudentMatrix.iterators[iterator](row);
-    StudentMatrix.plugins[plugin].processor(object, options);
+    StudentMatrix.studentActions[plugin].processor(object, options);
   }
 }
 
 // Declares some empty properties, so it can be populated by plugins.
-StudentMatrix.plugins = {};
-StudentMatrix.iterators = {};
+for (var plugin in StudentMatrix.plugins) {
+  StudentMatrix[plugin] = {};
+}
 StudentMatrix.options = {};
+StudentMatrix.settings = {};
 
 // One iterator used by core, for selecting students.
 StudentMatrix.iterators.getRowValues = function(row) {

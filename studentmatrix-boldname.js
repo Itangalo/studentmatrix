@@ -1,4 +1,4 @@
-StudentMatrix.plugins.boldname = {
+StudentMatrix.studentActions.boldname = {
   name : 'Make name bold',
   group : 'Examples',
   description : 'This is an example action. It makes the student name bold.',
