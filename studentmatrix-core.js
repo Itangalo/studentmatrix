@@ -1,12 +1,14 @@
 function onOpen() {
   var entries = [];
-  entries.push({name : 'dev', functionName : 'dev'});
-  entries.push({name : 'reset', functionName : 'reset'});
   entries.push({name : 'Run actions on students', functionName : 'actionsDialog'});
   entries.push({name : 'Settings', functionName : 'StudentMatrixSettingsDialog'});
   entries.push({name : 'Setup columns', functionName : 'setupColumns'});
+  entries.push(null);
+  entries.push({name : 'dev', functionName : 'dev'});
+  entries.push({name : 'try', functionName : 'dev'});
+  entries.push({name : 'reset', functionName : 'reset'});
 
-  SpreadsheetApp.getActiveSpreadsheet().addMenu('Development', entries);
+  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix', entries);
 }
 
 /**
@@ -42,9 +44,6 @@ StudentMatrix = {
   numberOfStudents : function() {
     return StudentMatrix.lastStudentRow() - StudentMatrix.firstStudentRow() + 1;
   },
-  tmp : function() {
-    debug('I am.');
-  }
 }
 
 /**
