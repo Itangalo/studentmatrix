@@ -3,6 +3,7 @@
  * Extension that allows actions to be run on all or selected students.
  */
 
+// Declares two new components: studentActions and iterators.
 StudentMatrix.plugins.studentActions = {
   name : 'string',
   group : 'string',
@@ -252,4 +253,9 @@ StudentMatrix.pluginExecute = function(plugin, mode, options) {
     var object = StudentMatrix.iterators[iterator](row);
     StudentMatrix.studentActions[plugin].processor(object, options);
   }
+}
+
+// One iterator used by core, for selecting students.
+StudentMatrix.iterators.getRowValues = function(row) {
+  return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues();
 }

@@ -168,13 +168,10 @@ function StudentMatrixSettingsHandler(eventInfo) {
 }
 
 // Declares some empty properties, so it can be populated by plugins.
-for (var plugin in StudentMatrix.plugins) {
-  StudentMatrix[plugin] = {};
-}
+//for (var plugin in StudentMatrix.plugins) {
+//  StudentMatrix[plugin] = {};
+//}
 StudentMatrix.options = {};
 StudentMatrix.settings = {};
-
-// One iterator used by core, for selecting students.
-StudentMatrix.iterators.getRowValues = function(row) {
-  return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues();
-}
+StudentMatrix.studentActions = {};
+StudentMatrix.iterators = {};
