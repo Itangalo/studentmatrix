@@ -4,9 +4,10 @@ function onOpen() {
   entries.push({name : 'Settings', functionName : 'StudentMatrixSettingsDialog'});
   entries.push({name : 'Setup columns', functionName : 'setupColumns'});
   entries.push(null);
-  entries.push({name : 'dev', functionName : 'dev'});
-  entries.push({name : 'try', functionName : 'dev'});
+  entries.push({name : 'Rebuild menu', functionName : 'onOpen'});
   entries.push({name : 'reset', functionName : 'reset'});
+  entries.push({name : 'dev', functionName : 'dev'});
+  entries.push({name : 'try', functionName : "dev"});
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix', entries);
 }
@@ -31,20 +32,29 @@ function setupColumns() {
 /**
  * A number of basic properties for StudentMatrix.
  */
-StudentMatrix = {
-  mainSheet : function() {
+var StudentMatrix = (function() {
+  mainSheet = function() {
     return SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
-  },
-  firstStudentRow : function() {
+  };
+  firstStudentRow = function() {
     return 2;
-  },
-  lastStudentRow : function() {
+  };
+  lastStudentRow = function() {
     return StudentMatrix.mainSheet().getLastRow();
-  },
-  numberOfStudents : function() {
+  };
+  numberOfStudents = function() {
     return StudentMatrix.lastStudentRow() - StudentMatrix.firstStudentRow() + 1;
-  },
-}
+  };
+  
+  // Reveal the public methods.
+  return {
+    mainSheet : mainSheet,
+    firstStudentRow : firstStudentRow,
+    lastStudentRow : lastStudentRow,
+    numberOfStudents : numberOfStudents,
+    test : test
+  }
+})();
 
 /**
  * Column declarations included in StudentMatrix core.
