@@ -54,7 +54,7 @@ function actionsDialog() {
   var handler = app.createServerHandler('actionsDialogHandler');
 
   var actionsList = app.createListBox().setId('SelectedAction').setName('SelectedAction');
-  var pluginList = StudentMatrix.getPluginsByGroup('studentActions');
+  var pluginList = StudentMatrix.getComponentsByGroup('studentActions');
   for (group in pluginList) {
     actionsList.addItem('-- ' + group + ' --', null);
     for (plugin in pluginList[group]) {

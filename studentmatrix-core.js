@@ -52,7 +52,6 @@ var StudentMatrix = (function() {
     firstStudentRow : firstStudentRow,
     lastStudentRow : lastStudentRow,
     numberOfStudents : numberOfStudents,
-    test : test
   }
 })();
 
@@ -118,7 +117,7 @@ StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
 /**
  * Returns an object with all plugin groups, each group containing its plugins.
  */
-StudentMatrix.getPluginsByGroup = function(type) {
+StudentMatrix.getComponentsByGroup = function(type) {
   var plugins = {};
   for (var plugin in StudentMatrix[type]) {
     var group = StudentMatrix[type][plugin].group;
@@ -137,13 +136,13 @@ function StudentMatrixSettingsDialog() {
   var app = UiApp.createApplication();
   var handler = app.createServerHandler('StudentMatrixSettingsHandler');
 
-  var settingsPlugins = StudentMatrix.getPluginsByGroup('settings');
+  var settingsComponents = StudentMatrix.getComponentsByGroup('settings');
   var settingsList = app.createListBox().setId('selectedSetting').setName('selectedSetting').addChangeHandler(handler);
   
-  for (var group in settingsPlugins) {
+  for (var group in settingsComponents) {
     settingsList.addItem('-- ' + group + ' --', null);
     app.add(app.createHTML('Select setting'));
-    for (var setting in settingsPlugins[group]) {
+    for (var setting in settingsComponents[group]) {
       settingsList.addItem(StudentMatrix.settings[setting].name, setting);
     }
   }
