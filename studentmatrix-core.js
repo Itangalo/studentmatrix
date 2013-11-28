@@ -64,9 +64,9 @@ StudentMatrix.columns = {
   studentMail : 'Student email',
 }
 
-StudentMatrix.plugins = {};
+StudentMatrix.components = {};
 
-StudentMatrix.plugins.settings = {
+StudentMatrix.components.settings = {
   name : 'string',
   group : 'string',
   description : 'string',
@@ -115,21 +115,21 @@ StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
 }
 
 /**
- * Returns an object with all plugin groups, each group containing its plugins.
+ * Returns an object with all component groups, each group containing its components.
  */
 StudentMatrix.getComponentsByGroup = function(type) {
-  var plugins = {};
-  for (var plugin in StudentMatrix[type]) {
-    var group = StudentMatrix[type][plugin].group;
+  var components = {};
+  for (var component in StudentMatrix[type]) {
+    var group = StudentMatrix[type][component].group;
     if (typeof group == 'undefined') {
       group = 'Other';
     }
-    if (typeof plugins[group] == 'undefined') {
-      plugins[group] = {};
+    if (typeof components[group] == 'undefined') {
+      components[group] = {};
     }
-    plugins[group][plugin] = StudentMatrix[type][plugin].name;
+    components[group][component] = StudentMatrix[type][component].name;
   }
-  return plugins;
+  return components;
 }
 
 function StudentMatrixSettingsDialog() {
@@ -176,9 +176,9 @@ function StudentMatrixSettingsHandler(eventInfo) {
   }
 }
 
-// Declares some empty properties, so it can be populated by plugins.
-//for (var plugin in StudentMatrix.plugins) {
-//  StudentMatrix[plugin] = {};
+// Declares some empty properties, so it can be populated by components.
+//for (var component in StudentMatrix.components) {
+//  StudentMatrix[component] = {};
 //}
 StudentMatrix.options = {};
 StudentMatrix.settings = {};

@@ -4,7 +4,7 @@
  */
 
 // Declares two new components: studentActions and iterators.
-StudentMatrix.plugins.studentActions = {
+StudentMatrix.components.studentActions = {
   name : 'string',
   group : 'string',
   description : 'string',
@@ -12,7 +12,7 @@ StudentMatrix.plugins.studentActions = {
   processor : 'function',
 }
 
-StudentMatrix.plugins.iterators = {
+StudentMatrix.components.iterators = {
 }
 
 /**
@@ -54,11 +54,11 @@ function actionsDialog() {
   var handler = app.createServerHandler('actionsDialogHandler');
 
   var actionsList = app.createListBox().setId('SelectedAction').setName('SelectedAction');
-  var pluginList = StudentMatrix.getComponentsByGroup('studentActions');
-  for (group in pluginList) {
+  var componentList = StudentMatrix.getComponentsByGroup('studentActions');
+  for (group in componentList) {
     actionsList.addItem('-- ' + group + ' --', null);
-    for (plugin in pluginList[group]) {
-      actionsList.addItem(StudentMatrix.studentActions[plugin].name, plugin);
+    for (component in componentList[group]) {
+      actionsList.addItem(StudentMatrix.studentActions[component].name, component);
     }
   }
   actionsList.addChangeHandler(handler);
@@ -83,11 +83,11 @@ function actionsDialog() {
 function actionsDialogHandler(eventInfo) {
   // When changing selected action, update the action description.
   if (eventInfo.parameter.source == 'SelectedAction') {
-    var plugin = eventInfo.parameter.SelectedAction;
+    var component = eventInfo.parameter.SelectedAction;
     var app = UiApp.getActiveApplication();
     
     // If the selected action is actually a group, disable buttons and quit.
-    if (plugin == 'null') {
+    if (component == 'null') {
       app.getElementById('ProcessAll').setEnabled(false);
       app.getElementById('ProcessSelected').setEnabled(false);
       app.getElementById('SelectAndProcess').setEnabled(false);
@@ -97,22 +97,22 @@ function actionsDialogHandler(eventInfo) {
     // Set description and help links, if available.
     var description = app.getElementById('ActionDescription');
     description.setText('');
-    if (typeof StudentMatrix.studentActions[plugin].description == 'string') {
-      description.setText(StudentMatrix.studentActions[plugin].description);
+    if (typeof StudentMatrix.studentActions[component].description == 'string') {
+      description.setText(StudentMatrix.studentActions[component].description);
     }
 
     var helpLink = app.getElementById('ActionHelpLink');
     helpLink.setHTML('');
-    if (typeof StudentMatrix.studentActions[plugin].helpLink == 'string') {
-      helpLink.setHref(StudentMatrix.studentActions[plugin].helpLink).setHTML('Help page<br />');
+    if (typeof StudentMatrix.studentActions[component].helpLink == 'string') {
+      helpLink.setHref(StudentMatrix.studentActions[component].helpLink).setHTML('Help page<br />');
     }
 
-    // Run basic validator on the plugin, if available.
+    // Run basic validator on the component, if available.
     var errorMessage = app.getElementById('ErrorMessage');
     errorMessage.setText('');
-    if (typeof StudentMatrix.studentActions[plugin].validator == 'function') {
-      if (StudentMatrix.studentActions[plugin].validator() != null) {
-        errorMessage.setText('Cannot run action: ' + StudentMatrix.studentActions[plugin].validator());
+    if (typeof StudentMatrix.studentActions[component].validator == 'function') {
+      if (StudentMatrix.studentActions[component].validator() != null) {
+        errorMessage.setText('Cannot run action: ' + StudentMatrix.studentActions[component].validator());
         app.getElementById('ProcessAll').setEnabled(false);
         app.getElementById('ProcessSelected').setEnabled(false);
         app.getElementById('SelectAndProcess').setEnabled(false);
@@ -131,8 +131,8 @@ function actionsDialogHandler(eventInfo) {
   // Call the relevant processor
   if (eventInfo.parameter.source == 'ProcessAll' || eventInfo.parameter.source == 'ProcessSelected') {
     var app = UiApp.getActiveApplication();
-    var plugin = eventInfo.parameter.SelectedAction;
-    StudentMatrix.pluginOptionsDialog(plugin, eventInfo.parameter.source, app);
+    var component = eventInfo.parameter.SelectedAction;
+    StudentMatrix.componentOptionsDialog(component, eventInfo.parameter.source, app);
     return app;
   }
   if (eventInfo.parameter.source == 'SelectAndProcess') {
@@ -176,8 +176,8 @@ function studentDialogHandler(eventInfo) {
   // If the 'Run action' button was hit, call the relevant processor.
   if (eventInfo.parameter.source == 'RunAction') {
     var app = UiApp.getActiveApplication();
-    var plugin = eventInfo.parameter.SelectedAction;
-    StudentMatrix.pluginOptionsDialog(plugin, 'ProcessSelected', app);
+    var component = eventInfo.parameter.SelectedAction;
+    StudentMatrix.componentOptionsDialog(component, 'ProcessSelected', app);
     return app;
   }
 
@@ -193,16 +193,16 @@ function studentDialogHandler(eventInfo) {
 }
 
 /**
- * Calls the plugin processors, to run actions on student rows.
+ * Calls the component processors, to run actions on student rows.
  */
-StudentMatrix.pluginOptionsDialog = function(plugin, mode, app) {
-  if (typeof StudentMatrix.studentActions[plugin].optionsBuilder == 'function') {
+StudentMatrix.componentOptionsDialog = function(component, mode, app) {
+  if (typeof StudentMatrix.studentActions[component].optionsBuilder == 'function') {
     var app = UiApp.getActiveApplication();
-    var handler = app.createServerHandler('pluginOptionsDialogHandler');
+    var handler = app.createServerHandler('componentOptionsDialogHandler');
     
-    StudentMatrix.studentActions[plugin].optionsBuilder(handler);
-//    for (var option in StudentMatrix.plugins[plugin].options) {
-//      var widget = StudentMatrix.plugins[plugin].options[option]();
+    StudentMatrix.studentActions[component].optionsBuilder(handler);
+//    for (var option in StudentMatrix.components[component].options) {
+//      var widget = StudentMatrix.components[component].options[option]();
 //      widget.setId(option);
 //      try {
 //        widget.setName(option);
@@ -214,44 +214,44 @@ StudentMatrix.pluginOptionsDialog = function(plugin, mode, app) {
 //    }
     app.add(app.createButton('Cancel', handler).setId('Cancel'));
     app.add(app.createButton('OK', handler).setId('OK'));
-    var pluginWidget = app.createHidden('plugin', plugin).setId('plugin');
-    var pluginMode = app.createHidden('mode', mode).setId('mode');
-    handler.addCallbackElement(pluginWidget);
-    handler.addCallbackElement(pluginMode);
-    app.add(pluginWidget);
-    app.add(pluginMode);
+    var componentWidget = app.createHidden('component', component).setId('component');
+    var componentMode = app.createHidden('mode', mode).setId('mode');
+    handler.addCallbackElement(componentWidget);
+    handler.addCallbackElement(componentMode);
+    app.add(componentWidget);
+    app.add(componentMode);
     SpreadsheetApp.getActiveSpreadsheet().show(app);
   }
   else {
-    StudentMatrix.pluginExecute(plugin, mode);
+    StudentMatrix.componentExecute(component, mode);
   }
 }
 
 /**
- * Handler for the pluginOptionsDialog, allowing OK and Cancel.
+ * Handler for the componentOptionsDialog, allowing OK and Cancel.
  */
-function pluginOptionsDialogHandler(eventInfo) {
+function componentOptionsDialogHandler(eventInfo) {
   if (eventInfo.parameter.source == 'OK') {
     var app = UiApp.getActiveApplication();
-    var plugin = eventInfo.parameter.plugin;
+    var component = eventInfo.parameter.component;
     var options = {};
-    if (typeof StudentMatrix.studentActions[plugin].options == 'object') {
-      for (var option in StudentMatrix.studentActions[plugin].options) {
+    if (typeof StudentMatrix.studentActions[component].options == 'object') {
+      for (var option in StudentMatrix.studentActions[component].options) {
 //        StudentMatrix.options[option] = eventInfo.parameter[option];
         options[option] = eventInfo.parameter[option];
       }
     }
-    StudentMatrix.pluginExecute(eventInfo.parameter.plugin, eventInfo.parameter.mode, options);
+    StudentMatrix.componentExecute(eventInfo.parameter.component, eventInfo.parameter.mode, options);
     return app;
   }
 }
 
-StudentMatrix.pluginExecute = function(plugin, mode, options) {
+StudentMatrix.componentExecute = function(component, mode, options) {
   debug('running...');
-  var iterator = StudentMatrix.studentActions[plugin].iterator;
+  var iterator = StudentMatrix.studentActions[component].iterator;
   for (var row in StudentMatrix.studentRows(mode)) {
     var object = StudentMatrix.iterators[iterator](row);
-    StudentMatrix.studentActions[plugin].processor(object, options);
+    StudentMatrix.studentActions[component].processor(object, options);
   }
 }
 
