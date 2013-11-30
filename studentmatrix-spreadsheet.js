@@ -1,4 +1,4 @@
-StudentMatrix.studentActions.spreadsheet = {
+StudentMatrix.addComponent('studentActions', 'spreadsheet', {
   name : 'Create student sheets',
   group : 'Spreadsheet',
   iterator : 'studentRow',
@@ -22,7 +22,7 @@ StudentMatrix.studentActions.spreadsheet = {
     app.add(spreadsheetTemplate);
     handler.addCallbackElement(spreadsheetTemplate);
   },
-};
+});
 
 /**
  * Returns the entire row for a student, from the student list.

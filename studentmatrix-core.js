@@ -2,37 +2,36 @@ function onOpen() {
   var entries = [];
   entries.push({name : 'Run actions on students', functionName : 'actionsDialog'});
   entries.push({name : 'Settings', functionName : 'StudentMatrixSettingsDialog'});
-  entries.push({name : 'Setup columns', functionName : 'setupColumns'});
+  entries.push({name : 'Setup columns', functionName : 'setUpColumns'});
   entries.push(null);
   entries.push({name : 'Rebuild menu', functionName : 'onOpen'});
   entries.push({name : 'reset', functionName : 'reset'});
   entries.push({name : 'dev', functionName : 'dev'});
-  entries.push({name : 'try', functionName : "dev"});
+  entries.push({name : 'try', functionName : 'test', argument: 'whatev'});
+  
+  entries = StudentMatrix.getMenuEntries();
 
   SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix', entries);
+}
+
+function test() {
+  debug(arguments, 'index');
 }
 
 /**
  * Sets up column headers for all columns declared in StudentMatrix.columns.
  */
-function setupColumns() {
-  for (columnID in StudentMatrix.columns) {
-    if (parseInt(StudentMatrix.getProperty('StudentMatrixColumns', columnID)) > 0) {
-      StudentMatrix.mainSheet().getRange(1, StudentMatrix.getProperty('StudentMatrixColumns', columnID)).setValue(StudentMatrix.columns[columnID]);
-    }
-    else {
-      var column = StudentMatrix.mainSheet().getLastColumn() + 1;
-      StudentMatrix.mainSheet().getRange(1, column).setValue(StudentMatrix.columns[columnID]);
-      StudentMatrix.setProperty(column, 'StudentMatrixColumns', columnID);
-    }
-  }
-  StudentMatrix.mainSheet().setFrozenRows(StudentMatrix.firstStudentRow() - 1);
+function setUpColumns() {
+  StudentMatrix.setUpColumns();
 }
 
 /**
  * A number of basic properties for StudentMatrix.
  */
 var StudentMatrix = (function() {
+  var modules = {};
+  var components = {};
+
   mainSheet = function() {
     return SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
   };
@@ -46,14 +45,97 @@ var StudentMatrix = (function() {
     return StudentMatrix.lastStudentRow() - StudentMatrix.firstStudentRow() + 1;
   };
   
-  // Reveal the public methods.
+  toast = function(message, title) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, title || '');
+  };
+  
+  addModule = function(moduleName, moduleDeclaration) {
+    modules[moduleName] = moduleDeclaration;
+    StudentMatrix[moduleName] = {};
+  };
+  
+  addComponent = function(componentType, componentName, componentDeclaration) {
+//    var abort = false;
+//    if (typeof modules[pluginType].properties == 'object') {
+//      for (var property in modules[pluginType].properties) {
+//        if (typeof pluginDeclaration[property] != modules[pluginType].properties[property]) {
+//          abort = 'The plugin ' + pluginName + ' is missing the required property ' + property + ' (' + modules[pluginType].properties[property] + ')';
+//        }
+//      }
+//      if (abort !== false) {
+//        StudentMatrix.toast(abort);
+//      }
+//      else {
+    if (typeof components[componentType] == 'undefined') {
+      components[componentType] = {};
+    }
+        components[componentType][componentName] = componentDeclaration;
+//      }
+//    }
+  };
+  
+  getComponent = function(componentType, componentName) {
+    return components[componentType][componentName];
+  };
+  
+  getMenuEntries = function() {
+    var menuEntries = [];
+    for (var module in modules) {
+      if (typeof modules[module].menuEntries == 'object') {
+        for (var entry in modules[module].menuEntries) {
+          menuEntries.push({name : modules[module].menuEntries[entry], functionName : entry});
+        }
+        menuEntries.push(null);
+      }
+    }
+    return menuEntries;
+  };
+  
+  addHandler = function(componentName, functionName) {
+    var app = UiApp.getActiveApplication();
+    var callback = app.createHidden('callback', JSON.stringify({componentName : componentName, functionName : functionName}));
+    var handler = app.createServerHandler('StudentMatrixCallbackRouter').addCallbackElement(callback);
+    return handler;
+  };
+
+  getComponentsByGroup = function(type) {
+    var groupedComponents = {};
+    for (var component in components[type]) {
+      var group = components[type][component].group;
+      if (typeof group == 'undefined') {
+        group = 'Other';
+      }
+      if (typeof groupedComponents[group] == 'undefined') {
+        groupedComponents[group] = {};
+      }
+      groupedComponents[group][component] = components[type][component].name;
+    }
+    return groupedComponents;
+  }
+  
+  // Reveal the public methods and properties.
   return {
     mainSheet : mainSheet,
     firstStudentRow : firstStudentRow,
     lastStudentRow : lastStudentRow,
     numberOfStudents : numberOfStudents,
+    addModule : addModule,
+    getMenuEntries : getMenuEntries,
+    addComponent : addComponent,
+    toast : toast,
+    components : components,
+    getComponentsByGroup : getComponentsByGroup,
+    getComponent : getComponent,
+    addHandler : addHandler,
   }
 })();
+
+function StudentMatrixCallbackRouter(eventInfo) {
+//  var tmp = JSON.parse(eventInfo.parameter.callback);
+//  dev[tmp.functionName](eventInfo);
+  actionsDialogHandler(eventInfo);
+  return UiApp.getActiveApplication();
+}
 
 /**
  * Column declarations included in StudentMatrix core.
@@ -63,8 +145,6 @@ StudentMatrix.columns = {
   studentName : 'Student name',
   studentMail : 'Student email',
 }
-
-StudentMatrix.components = {};
 
 StudentMatrix.components.settings = {
   name : 'string',
@@ -117,7 +197,7 @@ StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
 /**
  * Returns an object with all component groups, each group containing its components.
  */
-StudentMatrix.getComponentsByGroup = function(type) {
+StudentMatrixgetComponentsByGroup = function(type) {
   var components = {};
   for (var component in StudentMatrix[type]) {
     var group = StudentMatrix[type][component].group;
@@ -130,6 +210,20 @@ StudentMatrix.getComponentsByGroup = function(type) {
     components[group][component] = StudentMatrix[type][component].name;
   }
   return components;
+}
+
+StudentMatrix.setUpColumns = function() {
+  for (columnID in StudentMatrix.columns) {
+    if (parseInt(StudentMatrix.getProperty('StudentMatrixColumns', columnID)) > 0) {
+      StudentMatrix.mainSheet().getRange(1, StudentMatrix.getProperty('StudentMatrixColumns', columnID)).setValue(StudentMatrix.columns[columnID]);
+    }
+    else {
+      var column = StudentMatrix.mainSheet().getLastColumn() + 1;
+      StudentMatrix.mainSheet().getRange(1, column).setValue(StudentMatrix.columns[columnID]);
+      StudentMatrix.setProperty(column, 'StudentMatrixColumns', columnID);
+    }
+  }
+  StudentMatrix.mainSheet().setFrozenRows(StudentMatrix.firstStudentRow() - 1);
 }
 
 function StudentMatrixSettingsDialog() {
@@ -182,5 +276,5 @@ function StudentMatrixSettingsHandler(eventInfo) {
 //}
 StudentMatrix.options = {};
 StudentMatrix.settings = {};
-StudentMatrix.studentActions = {};
+//StudentMatrix.studentActions = {};
 StudentMatrix.iterators = {};

@@ -4,13 +4,18 @@
  */
 
 // Declares two new components: studentActions and iterators.
-StudentMatrix.components.studentActions = {
-  name : 'string',
-  group : 'string',
-  description : 'string',
-  iterator : 'string',
-  processor : 'function',
-}
+StudentMatrix.addModule('studentActions', {
+  properties : {
+    name : 'string',
+    group : 'string',
+    description : 'string',
+    iterator : 'string',
+    processor : 'function',
+  },
+  menuEntries : {
+    actionsDialog : 'Run actions on students',
+  },
+});
 
 StudentMatrix.components.iterators = {
 }
@@ -51,14 +56,16 @@ StudentMatrix.studentRows = function(mode) {
  */
 function actionsDialog() {
   var app = UiApp.createApplication().setTitle('Run actions on students');
-  var handler = app.createServerHandler('actionsDialogHandler');
+//  var handler = app.createServerHandler('actionsDialogHandler');
+//  var handler = app.createServerHandler('StudentMatrixCallbackRouter').setTag('StudentMatrix.toast');
+  var handler = StudentMatrix.addHandler('dev', 'callback');
 
   var actionsList = app.createListBox().setId('SelectedAction').setName('SelectedAction');
   var componentList = StudentMatrix.getComponentsByGroup('studentActions');
   for (group in componentList) {
     actionsList.addItem('-- ' + group + ' --', null);
     for (component in componentList[group]) {
-      actionsList.addItem(StudentMatrix.studentActions[component].name, component);
+      actionsList.addItem(componentList[group][component], component);
     }
   }
   actionsList.addChangeHandler(handler);
@@ -73,6 +80,7 @@ function actionsDialog() {
   app.add(app.createButton('Select students and run', handler).setId('SelectAndProcess').setEnabled(false));
 
   app.add(app.createLabel('', true).setId('ErrorMessage'));
+  
   SpreadsheetApp.getActiveSpreadsheet().show(app);
   return app;
 }
@@ -97,22 +105,22 @@ function actionsDialogHandler(eventInfo) {
     // Set description and help links, if available.
     var description = app.getElementById('ActionDescription');
     description.setText('');
-    if (typeof StudentMatrix.studentActions[component].description == 'string') {
-      description.setText(StudentMatrix.studentActions[component].description);
+    if (typeof StudentMatrix.components.studentActions[component].description == 'string') {
+      description.setText(StudentMatrix.components.studentActions[component].description);
     }
 
     var helpLink = app.getElementById('ActionHelpLink');
     helpLink.setHTML('');
-    if (typeof StudentMatrix.studentActions[component].helpLink == 'string') {
-      helpLink.setHref(StudentMatrix.studentActions[component].helpLink).setHTML('Help page<br />');
+    if (typeof StudentMatrix.components.studentActions[component].helpLink == 'string') {
+      helpLink.setHref(StudentMatrix.components.studentActions[component].helpLink).setHTML('Help page<br />');
     }
 
     // Run basic validator on the component, if available.
     var errorMessage = app.getElementById('ErrorMessage');
     errorMessage.setText('');
-    if (typeof StudentMatrix.studentActions[component].validator == 'function') {
-      if (StudentMatrix.studentActions[component].validator() != null) {
-        errorMessage.setText('Cannot run action: ' + StudentMatrix.studentActions[component].validator());
+    if (typeof StudentMatrix.components.studentActions[component].validator == 'function') {
+      if (StudentMatrix.components.studentActions[component].validator() != null) {
+        errorMessage.setText('Cannot run action: ' + StudentMatrix.components.studentActions[component].validator());
         app.getElementById('ProcessAll').setEnabled(false);
         app.getElementById('ProcessSelected').setEnabled(false);
         app.getElementById('SelectAndProcess').setEnabled(false);
@@ -196,11 +204,11 @@ function studentDialogHandler(eventInfo) {
  * Calls the component processors, to run actions on student rows.
  */
 StudentMatrix.componentOptionsDialog = function(component, mode, app) {
-  if (typeof StudentMatrix.studentActions[component].optionsBuilder == 'function') {
+  if (typeof StudentMatrix.components.studentActions[component].optionsBuilder == 'function') {
     var app = UiApp.getActiveApplication();
     var handler = app.createServerHandler('componentOptionsDialogHandler');
     
-    StudentMatrix.studentActions[component].optionsBuilder(handler);
+    StudentMatrix.components.studentActions[component].optionsBuilder(handler);
 //    for (var option in StudentMatrix.components[component].options) {
 //      var widget = StudentMatrix.components[component].options[option]();
 //      widget.setId(option);
@@ -235,8 +243,8 @@ function componentOptionsDialogHandler(eventInfo) {
     var app = UiApp.getActiveApplication();
     var component = eventInfo.parameter.component;
     var options = {};
-    if (typeof StudentMatrix.studentActions[component].options == 'object') {
-      for (var option in StudentMatrix.studentActions[component].options) {
+    if (typeof StudentMatrix.components.studentActions[component].options == 'object') {
+      for (var option in StudentMatrix.components.studentActions[component].options) {
 //        StudentMatrix.options[option] = eventInfo.parameter[option];
         options[option] = eventInfo.parameter[option];
       }
@@ -248,10 +256,10 @@ function componentOptionsDialogHandler(eventInfo) {
 
 StudentMatrix.componentExecute = function(component, mode, options) {
   debug('running...');
-  var iterator = StudentMatrix.studentActions[component].iterator;
+  var iterator = StudentMatrix.components.studentActions[component].iterator;
   for (var row in StudentMatrix.studentRows(mode)) {
     var object = StudentMatrix.iterators[iterator](row);
-    StudentMatrix.studentActions[component].processor(object, options);
+    StudentMatrix.components.studentActions[component].processor(object, options);
   }
 }
 

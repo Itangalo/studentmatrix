@@ -1,3 +1,12 @@
+StudentMatrix.addModule('dev',  {
+  menuEntries : {
+    onOpen : 'Rebuild menu',
+    reset : 'reset',
+    dev : 'dev',
+    test : 'try',
+  },
+});
+
 function debug(variable, option) {
   if (option == 'index') {
     var indexes = '';
@@ -19,7 +28,14 @@ function reset() {
   debug('All properties deleted.');
 }
 
-function dev(info) {
-  debug(arguments, 'index');
-//  StudentMatrix.tmp();
+function dev() {
+  debug(StudentMatrix.modules);
+}
+
+dev.callback = function(eventInfo) {
+  debug('First callback');
+}
+
+dev.callback2 = function(eventInfo) {
+  debug('Second callback');
 }

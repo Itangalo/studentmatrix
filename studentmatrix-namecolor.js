@@ -1,11 +1,10 @@
-StudentMatrix.studentActions.namecolor = {
+StudentMatrix.addComponent('studentActions', 'namecolor', {
   name : 'Set background color for name',
   group : 'Examples',
   iterator : 'studentName',
   description : 'This is an example action. It allows you to change the background color for the student names in the list.',
   processor : function(object, options) {
-    debug(options, 'index');
-//    object.setBackground(StudentMatrix.options.namecolor);
+    object.setBackground(options.color);
   },
   options : {
     fileID : '',
@@ -26,7 +25,7 @@ StudentMatrix.studentActions.namecolor = {
     app.add(fileId);
     handler.addCallbackElement(fileId);
   },
-};
+});
 
 function namecolorHandlerShow(eventInfo) {
   var app = UiApp.getActiveApplication();

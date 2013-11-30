@@ -1,4 +1,4 @@
-StudentMatrix.studentActions.boldname = {
+StudentMatrix.addComponent('studentActions', 'boldname', {
   name : 'Make name bold',
   group : 'Examples',
   description : 'This is an example action. It makes the student name bold.',
@@ -12,7 +12,7 @@ StudentMatrix.studentActions.boldname = {
       return 'No column for student names declared!';
     }
   },
-};
+});
 
 StudentMatrix.iterators.rowNumber = function(row) {
   return row;
