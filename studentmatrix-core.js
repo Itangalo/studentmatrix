@@ -1,14 +1,8 @@
 function onOpen() {
-//  var entries = [];
-//  entries.push({name : 'Run actions on students', functionName : 'actionsDialog'});
 //  entries.push({name : 'Settings', functionName : 'StudentMatrixSettingsDialog'});
 //  entries.push({name : 'Setup columns', functionName : 'setUpColumns'});
   
   SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix', StudentMatrix.getMenuEntries());
-}
-
-function test() {
-  debug(arguments, 'index');
 }
 
 /**
@@ -24,6 +18,7 @@ function setUpColumns() {
 var StudentMatrix = (function() {
   var modules = {};
   var components = {};
+  var plugins = {};
 
   mainSheet = function() {
     return SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
@@ -42,34 +37,13 @@ var StudentMatrix = (function() {
     SpreadsheetApp.getActiveSpreadsheet().toast(message, title || '');
   };
   
-  addModule = function(moduleName, moduleDeclaration) {
-    modules[moduleName] = moduleDeclaration;
-    StudentMatrix[moduleName] = {};
-  };
+//  addModule = function(moduleName, moduleDeclaration) {
+//    modules[moduleName] = moduleDeclaration;
+//  };
   
-  addComponent = function(componentType, componentName, componentDeclaration) {
-//    var abort = false;
-//    if (typeof modules[pluginType].properties == 'object') {
-//      for (var property in modules[pluginType].properties) {
-//        if (typeof pluginDeclaration[property] != modules[pluginType].properties[property]) {
-//          abort = 'The plugin ' + pluginName + ' is missing the required property ' + property + ' (' + modules[pluginType].properties[property] + ')';
-//        }
-//      }
-//      if (abort !== false) {
-//        StudentMatrix.toast(abort);
-//      }
-//      else {
-    if (typeof components[componentType] == 'undefined') {
-      components[componentType] = {};
-    }
-        components[componentType][componentName] = componentDeclaration;
-//      }
-//    }
-  };
-  
-  getComponent = function(componentType, componentName) {
-    return components[componentType][componentName];
-  };
+//  getComponent = function(componentType, componentName) {
+//    return components[componentType][componentName];
+//  };
   
   getMenuEntries = function() {
     var menuEntries = [];
@@ -84,9 +58,16 @@ var StudentMatrix = (function() {
     return menuEntries;
   };
   
-  addHandler = function(componentName, functionName) {
+  addPluginHandler = function(pluginName, functionName) {
     var app = UiApp.getActiveApplication();
-    var callback = app.createHidden('callback', JSON.stringify({componentName : componentName, functionName : functionName}));
+    var callback = app.createHidden('callback', JSON.stringify({base : 'plugins', objectName : pluginName, functionName : functionName}));
+    var handler = app.createServerHandler('StudentMatrixCallbackRouter').addCallbackElement(callback);
+    return handler;
+  };
+  
+  addModuleHandler = function(moduleName, functionName) {
+    var app = UiApp.getActiveApplication();
+    var callback = app.createHidden('callback', JSON.stringify({base : 'modules', objectName : moduleName, functionName : functionName}));
     var handler = app.createServerHandler('StudentMatrixCallbackRouter').addCallbackElement(callback);
     return handler;
   };
@@ -104,29 +85,54 @@ var StudentMatrix = (function() {
       groupedComponents[group][component] = components[type][component].name;
     }
     return groupedComponents;
-  }
+  };
   
+  loadComponents = function(componentType) {
+    // Look through all plugins, and add all components of the relevant type to StudentMatrix.components.
+    if (typeof components[componentType] != 'object') {
+      components[componentType] = {};
+    }
+    for (var plugin in plugins) {
+      if (typeof plugins[plugin][componentType] == 'object') {
+        for (var component in plugins[plugin][componentType]) {
+          components[componentType][component] = plugins[plugin][componentType][component];
+        }
+      }
+    }
+  };
+
   // Reveal the public methods and properties.
   return {
     mainSheet : mainSheet,
     firstStudentRow : firstStudentRow,
     lastStudentRow : lastStudentRow,
     numberOfStudents : numberOfStudents,
-    addModule : addModule,
+//    addModule : addModule,
     getMenuEntries : getMenuEntries,
-    addComponent : addComponent,
     toast : toast,
-    components : components,
     getComponentsByGroup : getComponentsByGroup,
-    getComponent : getComponent,
-    addHandler : addHandler,
+//    getComponent : getComponent,
+    addPluginHandler : addPluginHandler,
+    addModuleHandler : addModuleHandler,
+    plugins : plugins,
+    loadComponents : loadComponents,
+    components : components,
+    modules : modules,
   }
 })();
 
+/**
+ * Helper function routing handler calls to the proper method.
+ */
 function StudentMatrixCallbackRouter(eventInfo) {
-//  var tmp = JSON.parse(eventInfo.parameter.callback);
-//  dev[tmp.functionName](eventInfo);
-  actionsDialogHandler(eventInfo);
+  var info = JSON.parse(eventInfo.parameter.callback);
+  if (info.base == 'modules') {
+    StudentMatrix[info.base][info.objectName][info.functionName](eventInfo);
+  }
+  else {
+    StudentMatrix[info.base][info.objectName].handlers[info.functionName](eventInfo);
+  }
+//  {base : 'plugins', objectName : pluginName, componentType : componentType, functionName : functionName}
   return UiApp.getActiveApplication();
 }
 
@@ -264,9 +270,6 @@ function StudentMatrixSettingsHandler(eventInfo) {
 }
 
 // Declares some empty properties, so it can be populated by components.
-//for (var component in StudentMatrix.components) {
-//  StudentMatrix[component] = {};
-//}
 StudentMatrix.options = {};
 StudentMatrix.settings = {};
 //StudentMatrix.studentActions = {};

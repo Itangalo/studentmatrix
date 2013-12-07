@@ -1,11 +1,11 @@
-StudentMatrix.addModule('dev',  {
+StudentMatrix.modules.dev = {
   menuEntries : {
     onOpen : 'Rebuild menu',
     reset : 'reset',
     dev : 'dev',
     test : 'try',
   },
-});
+};
 
 function debug(variable, option) {
   if (option == 'index') {
@@ -29,7 +29,10 @@ function reset() {
 }
 
 function dev() {
-  debug(StudentMatrix.modules);
+  StudentMatrix.loadComponents('studentActions');
+  StudentMatrix.loadComponents('iterators');
+  StudentMatrix.loadComponents('handlers');
+  debug(StudentMatrix.modules.studentActions.studentRows('count'));
 }
 
 dev.callback = function(eventInfo) {
