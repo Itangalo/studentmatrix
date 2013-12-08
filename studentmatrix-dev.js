@@ -29,16 +29,7 @@ function reset() {
 }
 
 function dev() {
-  StudentMatrix.loadComponents('studentActions');
-  StudentMatrix.loadComponents('iterators');
-  StudentMatrix.loadComponents('handlers');
-  debug(StudentMatrix.modules.studentActions.studentRows('count'));
-}
-
-dev.callback = function(eventInfo) {
-  debug('First callback');
-}
-
-dev.callback2 = function(eventInfo) {
-  debug('Second callback');
+  StudentMatrix.setUpColumns();
+//  debug(StudentMatrix.getProperty('color'));
+//  debug(StudentMatrix.modules.studentActions.studentRows('count'));
 }

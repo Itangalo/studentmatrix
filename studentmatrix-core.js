@@ -145,14 +145,6 @@ StudentMatrix.columns = {
   studentMail : 'Student email',
 }
 
-StudentMatrix.components.settings = {
-  name : 'string',
-  group : 'string',
-  description : 'string',
-  iterator : 'string',
-  processor : 'function',
-}
-
 /**
  * Loads a JSON parsed property.
  *
@@ -193,24 +185,6 @@ StudentMatrix.setProperty = function(value, propertyName, subPropertyName) {
   }
 }
 
-/**
- * Returns an object with all component groups, each group containing its components.
- */
-StudentMatrixgetComponentsByGroup = function(type) {
-  var components = {};
-  for (var component in StudentMatrix[type]) {
-    var group = StudentMatrix[type][component].group;
-    if (typeof group == 'undefined') {
-      group = 'Other';
-    }
-    if (typeof components[group] == 'undefined') {
-      components[group] = {};
-    }
-    components[group][component] = StudentMatrix[type][component].name;
-  }
-  return components;
-}
-
 StudentMatrix.setUpColumns = function() {
   for (columnID in StudentMatrix.columns) {
     if (parseInt(StudentMatrix.getProperty('StudentMatrixColumns', columnID)) > 0) {
@@ -224,53 +198,3 @@ StudentMatrix.setUpColumns = function() {
   }
   StudentMatrix.mainSheet().setFrozenRows(StudentMatrix.firstStudentRow() - 1);
 }
-
-function StudentMatrixSettingsDialog() {
-  var app = UiApp.createApplication();
-  var handler = app.createServerHandler('StudentMatrixSettingsHandler');
-
-  var settingsComponents = StudentMatrix.getComponentsByGroup('settings');
-  var settingsList = app.createListBox().setId('selectedSetting').setName('selectedSetting').addChangeHandler(handler);
-  
-  for (var group in settingsComponents) {
-    settingsList.addItem('-- ' + group + ' --', null);
-    app.add(app.createHTML('Select setting'));
-    for (var setting in settingsComponents[group]) {
-      settingsList.addItem(StudentMatrix.settings[setting].name, setting);
-    }
-  }
-  app.add(settingsList);
-  app.add(app.createVerticalPanel().setId('settingsPanel'));
-  
-  var okButton = app.createButton('Save', handler)
-  app.add(okButton);
-  
-  SpreadsheetApp.getActiveSpreadsheet().show(app);
-}
-
-function StudentMatrixSettingsHandler(eventInfo) {
-  if (eventInfo.parameter.source == 'selectedSetting') {
-    var app = UiApp.getActiveApplication();
-    var panel = app.getElementById('settingsPanel');
-    panel.clear();
-    var setting = eventInfo.parameter.selectedSetting;
-    if (setting == 'null') {
-      return app;
-    }
-//    var handler = UiApp.getActiveApplication().getElementById('StudentMatrixSettingsHandler');
-    StudentMatrix.settings[setting].formBuilder(panel);
-
-//    debug(eventInfo.parameter, 'index');
-    return UiApp.getActiveApplication();
-  }
-  
-  for (var setting in StudentMatrix.settings) {
-    StudentMatrix.settings[setting].processor(eventInfo);
-  }
-}
-
-// Declares some empty properties, so it can be populated by components.
-StudentMatrix.options = {};
-StudentMatrix.settings = {};
-//StudentMatrix.studentActions = {};
-StudentMatrix.iterators = {};
