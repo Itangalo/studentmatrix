@@ -2,10 +2,15 @@
  * @file
  * Module that allows global settings. Introduces the 'settings' component.
  */
+
+// Menu alias: Opens the settings dialog.
 function settingsDialog() {
   StudentMatrix.modules.settings.settingsDialog();
 }
 
+/**
+ * Module for handling StudentMatrix settings.
+ */
 StudentMatrix.modules.settings = {
   // Declares all menu entries for this module.
   menuEntries : {
@@ -19,6 +24,7 @@ StudentMatrix.modules.settings = {
     optionsBuilder : 'function',
   },
 
+  // The dialog for displaying StudentMatrix settings. Main starting point for this module.
   settingsDialog : function() {
     StudentMatrix.loadComponents('settings');
     var settings = StudentMatrix.getComponentsByGroup('settings');
@@ -39,14 +45,17 @@ StudentMatrix.modules.settings = {
     return app;
   },
   
+  // Handler for displaying settings for a selected group.
   showSettings : function(eventInfo) {
     var app = UiApp.getActiveApplication();
     var panel = app.getElementById('settingsPanel');
     panel.clear();
     
+    // The 'null' value is used for groups that are not groups.
     if (eventInfo.parameter.settingsGroup == 'null') {
       return app;
     }
+    // If we have a proper group; display all settings in the group.
     else {
       var saveHandler = StudentMatrix.addModuleHandler('settings', 'saveSettings');
       // Get all the settings in this group and loop through them.
@@ -58,9 +67,10 @@ StudentMatrix.modules.settings = {
         for (var option in options) {
           options[option] = StudentMatrix.getProperty(option) || options[option];
         }
-        
+        // Call the options builder for the setting, populating the panel with form elements.
         StudentMatrix.components.settings[setting].optionsBuilder(saveHandler, panel, options);
       }
+
       var hidden = app.createHidden('settings', JSON.stringify(settings));
       app.add(hidden);
       saveHandler.addCallbackElement(hidden);
@@ -70,6 +80,7 @@ StudentMatrix.modules.settings = {
     }
   },
   
+  // Handler for saving settings for a selected group.
   saveSettings : function(eventInfo) {
     StudentMatrix.toast('Settings for this group.')
     // Get all the settings components that should be saved.
@@ -90,6 +101,7 @@ StudentMatrix.modules.settings = {
     return UiApp.getActiveApplication();
   },
 
+  // Handler for closing the settings dialog.
   closeSettings : function(eventInfo) {
     var app = UiApp.getActiveApplication();
     app.close();
@@ -97,6 +109,7 @@ StudentMatrix.modules.settings = {
   },
 }
 
+// Settings that should be included in StudentMatrix core.
 StudentMatrix.plugins.core = {
   settings : {
     aSetting : {
