@@ -3,10 +3,13 @@
  * Module that allows actions to be run on all or selected students.
  * Introduces the 'studentActions' and 'iterators' components.
  */
+
+// Menu alias: Dialog for running actions on students.
 function actionsDialog() {
   StudentMatrix.modules.studentActions.actionsDialog();
 };
 
+// Declares the StudentActions module.
 StudentMatrix.modules.studentActions = {
   // Declares all menu entries for this module.
   menuEntries : {
@@ -29,6 +32,7 @@ StudentMatrix.modules.studentActions = {
     var app = UiApp.createApplication().setTitle('Run actions on students');
     var descriptionHandler = StudentMatrix.addModuleHandler('studentActions', 'showDescriptions');
 
+    // Build a select list of the actions, by group.
     var actionsList = app.createListBox().setId('SelectedAction').setName('SelectedAction');
     var componentList = StudentMatrix.getComponentsByGroup('studentActions');
     for (group in componentList) {
@@ -40,23 +44,33 @@ StudentMatrix.modules.studentActions = {
     actionsList.addChangeHandler(descriptionHandler);
     app.add(actionsList);
 
-    var buttonsHandler = StudentMatrix.addModuleHandler('studentActions', 'actionsDialogHandler');
-    buttonsHandler.addCallbackElement(actionsList);
-    
+    // Add two elements for description and helpt link, to be populated later.
     app.add(app.createLabel('', true).setId('ActionDescription'));
     app.add(app.createAnchor('', false, '').setId('ActionHelpLink'));
     
+    // Add the buttons for running actions, in three different modes.
+    var buttonsHandler = StudentMatrix.addModuleHandler('studentActions', 'actionsDialogHandler');
+    buttonsHandler.addCallbackElement(actionsList);
+
     app.add(app.createButton('Run for all students', buttonsHandler).setId('ProcessAll').setEnabled(false));
     app.add(app.createButton('Run for selected students (' + this.studentRows('count') + ')', buttonsHandler).setId('ProcessSelected').setEnabled(false));
     app.add(app.createButton('Select students and run', buttonsHandler).setId('SelectAndProcess').setEnabled(false));
     
+    // We also have spot for an error message, should there be one.
     app.add(app.createLabel('', true).setId('ErrorMessage'));
-    
+
     SpreadsheetApp.getActiveSpreadsheet().show(app);
     return app;
   },
 
-  // Returns an array with row numbers of all students that should be processed, or the number of selected students.
+  /**
+   * Returns an array with row numbers of all students that should be processed.
+   *
+   * The mode can either be 'ProcessAll' (gives all students), 'ProcessSelected'
+   * (gives only the students where the process column is 1), or 'count'.
+   * If the mode is set to 'count', the return is just the number of selected
+   * students. Otherwise it is an array with keys/values being the student rows.
+   */
   studentRows : function(mode) {
     var studentRows = [];
     if (mode == 'ProcessAll') {
@@ -106,7 +120,7 @@ StudentMatrix.modules.studentActions = {
       app.getElementById('SelectAndProcess').setEnabled(false);
       return app;
     }
-    
+
     // Set description and help links, if available.
     if (typeof StudentMatrix.components.studentActions[component].description == 'string') {
       description.setText(StudentMatrix.components.studentActions[component].description);
@@ -134,18 +148,20 @@ StudentMatrix.modules.studentActions = {
     return app;
   },
   
-  // Handler for the actions dialog. Calls actions when klicking on buttons.
+  // Handler taking care of dispatching student actions.
   actionsDialogHandler : function(eventInfo) {
-    // Call the relevant processor
+    // Special case: If students should be selected before running action, call
+    // another handler.
+    if (eventInfo.parameter.source == 'SelectAndProcess') {
+      this.selectStudents(eventInfo);
+      return UiApp.getActiveApplication();
+    }
+    // Call the options builder for the selected action.
     if (eventInfo.parameter.source == 'ProcessAll' || eventInfo.parameter.source == 'ProcessSelected') {
       var app = UiApp.getActiveApplication();
       var component = eventInfo.parameter.SelectedAction;
       this.componentOptionsDialog(component, eventInfo.parameter.source, app);
       return app;
-    }
-    if (eventInfo.parameter.source == 'SelectAndProcess') {
-      this.selectStudents(eventInfo);
-      return UiApp.getActiveApplication();
     }
   },
   
