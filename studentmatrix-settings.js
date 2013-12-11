@@ -82,7 +82,7 @@ StudentMatrix.modules.settings = {
   
   // Handler for saving settings for a selected group.
   saveSettings : function(eventInfo) {
-    StudentMatrix.toast('Settings for this group.')
+    StudentMatrix.toast('Saved settings for this group.')
     // Get all the settings components that should be saved.
     StudentMatrix.loadComponents('settings');
     var settings = JSON.parse(eventInfo.parameter.settings);
