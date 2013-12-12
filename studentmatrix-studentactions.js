@@ -214,6 +214,7 @@ StudentMatrix.modules.studentActions = {
       app.add(componentWidget);
       app.add(modeWidget);
 
+      app.add(app.createHTML('<hr />'));
       app.add(app.createButton('Cancel', handler).setId('Cancel'));
       app.add(app.createButton('OK', handler).setId('OK'));
       SpreadsheetApp.getActiveSpreadsheet().show(app);
