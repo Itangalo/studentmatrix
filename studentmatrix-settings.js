@@ -18,9 +18,7 @@ StudentMatrix.modules.settings = {
   },
   // Declare required properties for components of type 'settings'.
   properties : {
-    name : 'string',
     group : 'string',
-    description : 'string',
     optionsBuilder : 'function',
   },
 
@@ -113,7 +111,6 @@ StudentMatrix.modules.settings = {
 StudentMatrix.plugins.core = {
   settings : {
     aSetting : {
-      name : 'I am a setting',
       options : {
         color : 'blue',
         file : '',
