@@ -164,7 +164,7 @@ StudentMatrix.modules.studentActions = {
     var nameColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'studentName');
     for (var row in this.studentRows('ProcessAll')) {
       var values = StudentMatrix.components.iterators.getRowValues(row);
-      checkboxes[row] = app.createCheckBox(values[0][nameColumn - 1]).setValue(values[0][processColumn - 1] == 1).addClickHandler(toggleHandler).setId(row).setName(2);
+      checkboxes[row] = app.createCheckBox(values[0][nameColumn - 1]).setValue(values[0][processColumn - 1] == 1).addClickHandler(toggleHandler).setId(row);
       panel.add(checkboxes[row]);
     }
     
@@ -176,7 +176,7 @@ StudentMatrix.modules.studentActions = {
     var selectedAction = app.createHidden('SelectedAction', eventInfo.parameter.SelectedAction);
     buttonHandler.addCallbackElement(selectedAction);
     
-//    SpreadsheetApp.getActiveSpreadsheet().show(app);
+    SpreadsheetApp.getActiveSpreadsheet().show(app);
     return app;
   },
   
