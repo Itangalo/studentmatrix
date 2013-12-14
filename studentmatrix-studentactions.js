@@ -266,13 +266,26 @@ StudentMatrix.modules.studentActions = {
     // Get the name of the iterator that should be used.
     StudentMatrix.loadComponents('iterators');
     var iterator = StudentMatrix.components.studentActions[component].iterator;
+    var skipped = '';
     // Loop through all relevant students.
     for (var row in this.studentRows(mode)) {
       // Let the iterator build the object on which the action should act, then call the action.
-      var object = StudentMatrix.components.iterators[iterator](row);
-      StudentMatrix.components.studentActions[component].processor(object, options);
+      var item = StudentMatrix.components.iterators[iterator](row);
+      if (item == false) {
+        StudentMatrix.toast('Cannot process row ' + row + '.', 'Skipping student');
+        skipped += ' ' + row;
+      }
+      else {
+        StudentMatrix.components.studentActions[component].processor(object, options);
+      }
     }
-    StudentMatrix.toast('Actions completed.');
+    
+    if (skipped == '') {
+      StudentMatrix.toast('All relevant students processed.', 'Actions completed.');
+    }
+    else {
+      StudentMatrix.toast('Skipped students on these rows:' + skipped, 'Actions completed.');
+    }
   },
 };
 
