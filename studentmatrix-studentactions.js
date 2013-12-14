@@ -5,7 +5,7 @@
  */
 
 // Menu alias: Dialog for running actions on students.
-function actionsDialog() {
+function studentActionsDialog() {
   StudentMatrix.modules.studentActions.actionsDialog();
 };
 
@@ -13,7 +13,7 @@ function actionsDialog() {
 StudentMatrix.modules.studentActions = {
   // Declares all menu entries for this module.
   menuEntries : {
-    actionsDialog : 'Run actions on students',
+    studentActionsDialog : 'Run actions on students',
   },
   // Declare required properties for components of type 'studentActions'.
   properties : {
@@ -23,12 +23,11 @@ StudentMatrix.modules.studentActions = {
     iterator : 'string',
     processor : 'function',
   },
-  
+
   // Displays dialog for running studentActions. Starting point for this module.
   actionsDialog : function() {
     StudentMatrix.loadComponents('studentActions');
-    StudentMatrix.loadComponents('iterators');
-    
+
     var app = UiApp.createApplication().setTitle('Run actions on students');
     var descriptionHandler = StudentMatrix.addModuleHandler('studentActions', 'showDescriptions');
 
@@ -44,10 +43,10 @@ StudentMatrix.modules.studentActions = {
     actionsList.addChangeHandler(descriptionHandler);
     app.add(actionsList);
 
-    // Add two elements for description and helpt link, to be populated later.
+    // Add two elements for description and help link, to be populated later.
     app.add(app.createLabel('', true).setId('ActionDescription'));
     app.add(app.createAnchor('', false, '').setId('ActionHelpLink'));
-    
+
     // Add the buttons for running actions, in three different modes (and with two different handlers).
     var optionsHandler = StudentMatrix.addModuleHandler('studentActions', 'optionsHandler');
     var studentSelectHandler = StudentMatrix.addModuleHandler('studentActions', 'studentSelectHandler');
@@ -57,14 +56,14 @@ StudentMatrix.modules.studentActions = {
     app.add(app.createButton('Run for all students', optionsHandler).setId('ProcessAll').setEnabled(false));
     app.add(app.createButton('Run for selected students (' + this.studentRows('count') + ')', optionsHandler).setId('ProcessSelected').setEnabled(false));
     app.add(app.createButton('Select students and run', studentSelectHandler).setId('SelectAndProcess').setEnabled(false));
-    
+
     // We also have spot for an error message, should there be one.
     app.add(app.createLabel('', true).setId('ErrorMessage'));
 
     SpreadsheetApp.getActiveSpreadsheet().show(app);
     return app;
   },
-  
+
   /**
    * Returns an array with row numbers of all students that should be processed.
    *
@@ -91,7 +90,7 @@ StudentMatrix.modules.studentActions = {
     if (mode == 'count') {
       studenRows = 0;
       var column = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
-      
+
       for (var row = StudentMatrix.firstStudentRow(); row <= StudentMatrix.lastStudentRow(); row++) {
         if (StudentMatrix.mainSheet().getRange(row, column).getValue() == 1) {
           studentRows++;
@@ -100,7 +99,7 @@ StudentMatrix.modules.studentActions = {
     }
     return studentRows;
   },
-  
+
   // Handler for updating descriptions and help link for selected actions.
   showDescriptions : function(eventInfo) {
     StudentMatrix.loadComponents('studentActions');
@@ -130,7 +129,7 @@ StudentMatrix.modules.studentActions = {
     if (typeof StudentMatrix.components.studentActions[component].helpLink == 'string') {
       helpLink.setHref(StudentMatrix.components.studentActions[component].helpLink).setHTML('Help page<br />');
     }
-    
+
     // Run basic validator on the component, if available.
     if (typeof StudentMatrix.components.studentActions[component].validator == 'function') {
       if (StudentMatrix.components.studentActions[component].validator() != null) {
@@ -141,12 +140,12 @@ StudentMatrix.modules.studentActions = {
         return app;
       }
     }
-    
+
     // All systems go. Enable the ok buttons.
     app.getElementById('ProcessAll').setEnabled(true);
     app.getElementById('ProcessSelected').setEnabled(true);
     app.getElementById('SelectAndProcess').setEnabled(true);
-    
+
     return app;
   },
 
@@ -167,19 +166,19 @@ StudentMatrix.modules.studentActions = {
       checkboxes[row] = app.createCheckBox(values[0][nameColumn - 1]).setValue(values[0][processColumn - 1] == 1).addClickHandler(toggleHandler).setId(row);
       panel.add(checkboxes[row]);
     }
-    
+
     // Add a button for running the action. (It will actually call the options builder.)
     var buttonHandler = StudentMatrix.addModuleHandler('studentActions', 'optionsHandler');
     panel.add(app.createButton('Run action', buttonHandler).setId('ProcessSelected'));
     app.add(app.createScrollPanel(panel).setHeight('100%'));
-    
+
     var selectedAction = app.createHidden('SelectedAction', eventInfo.parameter.SelectedAction);
     buttonHandler.addCallbackElement(selectedAction);
-    
+
     SpreadsheetApp.getActiveSpreadsheet().show(app);
     return app;
   },
-  
+
   // Handler for the student selection dialog. Toggles process flag or runs actions.
   studentSelectToggle : function(eventInfo) {
     var processColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
@@ -198,7 +197,7 @@ StudentMatrix.modules.studentActions = {
     // Get the component to run and which mode to run in. Add as hidden elements.
     var component = eventInfo.parameter.SelectedAction;
     var mode = eventInfo.parameter.source;
-        
+
     // Check for an options builder for the component. If found, display a form with options.
     StudentMatrix.loadComponents('studentActions');
     if (typeof StudentMatrix.components.studentActions[component].optionsBuilder == 'function') {
@@ -224,7 +223,7 @@ StudentMatrix.modules.studentActions = {
       this.componentExecute(component, mode);
     }
   },
-  
+
   // Handler for the componentOptionsDialog, allowing OK and Cancel.
   optionsProcessor : function(eventInfo) {
     // If it wasn't the OK button being clicked, close the dialog -- we're done.
@@ -245,19 +244,19 @@ StudentMatrix.modules.studentActions = {
       }
       // If no optionsProcessor was found, just look for values for the declared options.
       else {
-        // Load default options from the action component.
+        // Load default options from the action component, overwrite with options in eventInfo.
         var options = StudentMatrix.components.studentActions[component].options;
         for (var option in StudentMatrix.components.studentActions[component].options) {
           options[option] = eventInfo.parameter[option];
         }
       }
-      
+
       // Execute the action with the given options, in the given mode.
       this.componentExecute(component, mode, options);
       return app;
     }
   },
-  
+
   // Calls the actual action, once for each student that should be processed.
   componentExecute : function(component, mode, options) {
     // This process may be slow, so it makes sense to display a message while processing.
