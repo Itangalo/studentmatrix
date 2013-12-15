@@ -50,12 +50,70 @@ StudentMatrix.plugins.matrixtemplate = {
     copySheet : {
       name : 'Create student sheets from matrix template',
       group : 'Student sheet setup',
-      description : 'Makes a copy of the matrix template for each student.',
+      description : 'Makes a copy of the matrix template for each student. Can also be used for changing access settings to existing student sheets.',
 
-      processor : function(item, options) {
+      processor : function(item, options, row) {
+        // Create the student sheet if it doesn't already exist. In any case, load it into the varible 'copy'.
         if (item.getValue() == '') {
           var copy = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID')).copy('Test copy (delete)');
           item.setFormula('=hyperlink("' + copy.getUrl() + '";"' + copy.getId() + '")');
+        }
+        else {
+          var copy = SpreadsheetApp.openById(item.getValue());
+        }
+        
+        // Go through the options to set permissions (and some other things), one at a time.
+        if (options.resetPermissions == 'true') {
+          copy.setAnonymousAccess(false, false);
+          var editors = copy.getEditors();
+          for (var editor in editors) {
+            if (editors[editor] != '') {
+              copy.removeEditor(editors[editor]);
+            }
+          }
+          var viewers = copy.getViewers();
+          for (var viewer in viewers) {
+            if (viewers[viewer] != '') {
+              copy.removeViewer(viewers[viewer]);
+            }
+          }
+        }
+        
+        if (options.addTeachers == 'true') {
+          if (StudentMatrix.getProperty('teacherEmails') != '') {
+            copy.addEditors(StudentMatrix.getProperty('teacherEmails').split("\n"));
+          }
+        }
+        
+        
+
+        
+      },
+      
+      options : {
+        resetPermissions : false,
+        addTeachers : true,
+        addStudentView : true,
+        addStudentEdit : false,
+        addAllView : false,
+        moveToFolder : true,
+      },
+      // This is just a helper, to reduce code repeat.
+      descriptions : {
+        resetPermissions : 'Remove all permissions on existing student sheets, then set new permissions.',
+        addTeachers : 'Add edit permissions to all accounts specified in the teacher emails box in the settings.',
+        addStudentView : 'Add student view permission to the student sheet.',
+        addStudentEdit : 'Add student edit permission to the student sheet.',
+        addAllView : 'Make the student sheet public, so that anyone can view it.',
+        moveToFolder : 'Move the student sheet to any folder specified in the "student folder ID" column.',
+      },
+      optionsBuilder : function(handler) {
+        var app = UiApp.getActiveApplication();
+        var checkboxes = {};
+        for (var checkbox in this.descriptions) {
+          checkboxes[checkbox] = app.createCheckBox(this.descriptions[checkbox]).setName(checkbox).setValue(this.options[checkbox]);
+          app.add(checkboxes[checkbox]).add(app.createHTML('<br />'));
+          handler.addCallbackElement(checkboxes[checkbox]);
         }
       },
       
