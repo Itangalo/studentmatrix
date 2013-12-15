@@ -54,36 +54,34 @@ StudentMatrix.modules.settings = {
       return app;
     }
     // If we have a proper group; display all settings in the group.
-    else {
-      var saveHandler = StudentMatrix.addModuleHandler('settings', 'saveSettings');
-      // Get all the settings in this group and loop through them.
-      StudentMatrix.loadComponents('settings');
-      var settings = StudentMatrix.getComponentsByGroup('settings')[eventInfo.parameter.settingsGroup];
-      for (var setting in settings) {
-        // Fetch default values from the component, then overwrite with any manually set properties.
-        var options = StudentMatrix.components.settings[setting].options;
-        for (var option in options) {
-          options[option] = StudentMatrix.getProperty(option) || options[option];
-        }
-        // Call the options builder for the setting, populating the panel with form elements.
-        StudentMatrix.components.settings[setting].optionsBuilder(saveHandler, panel, options);
+    var saveHandler = StudentMatrix.addModuleHandler('settings', 'saveSettings');
+    // Get all the settings in this group and loop through them.
+    StudentMatrix.loadComponents('settings');
+    var settings = StudentMatrix.getComponentsByGroup('settings')[eventInfo.parameter.settingsGroup];
+    for (var setting in settings) {
+      // Fetch default values from the component, then overwrite with any manually set properties.
+      var options = StudentMatrix.components.settings[setting].options;
+      for (var option in options) {
+        options[option] = StudentMatrix.getProperty(option) || options[option];
       }
-
-      var hidden = app.createHidden('settings', JSON.stringify(settings));
-      app.add(hidden);
-      saveHandler.addCallbackElement(hidden);
-      panel.add(app.createHTML('<hr />'));
-      // Add a button to save the settings.
-      panel.add(app.createButton('Save group settings', saveHandler));
+      // Call the options builder for the setting, populating the panel with form elements.
+      StudentMatrix.components.settings[setting].optionsBuilder(saveHandler, panel, options);
     }
+    
+    var hidden = app.createHidden('settingsgroup', eventInfo.parameter.settingsGroup);
+    app.add(hidden);
+    saveHandler.addCallbackElement(hidden);
+    panel.add(app.createHTML('<hr />'));
+    // Add a button to save the settings.
+    panel.add(app.createButton('Save group settings', saveHandler));
   },
 
   // Handler for saving settings for a selected group.
   saveSettings : function(eventInfo) {
     StudentMatrix.toast('Saved settings for this group.')
-    // Get all the settings components that should be saved.
+    // Get all the settings components in this group.
     StudentMatrix.loadComponents('settings');
-    var settings = JSON.parse(eventInfo.parameter.settings);
+    var settings = StudentMatrix.getComponentsByGroup('settings')[eventInfo.parameter.settingsgroup];
     for (var setting in settings) {
       // If there is a special optionsSaver in the component, use it.
       if (typeof StudentMatrix.components.settings[setting].optionsSaver == 'function') {
