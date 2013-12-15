@@ -26,7 +26,7 @@ StudentMatrix.modules.settings = {
   settingsDialog : function() {
     StudentMatrix.loadComponents('settings');
     var settings = StudentMatrix.getComponentsByGroup('settings');
-    
+
     var app = UiApp.createApplication().setTitle('StudentMatrix settings');
     var showHandler = StudentMatrix.addModuleHandler('settings', 'showSettings');
     var groupSelector = app.createListBox().setName('settingsGroup').addChangeHandler(showHandler);
@@ -38,17 +38,17 @@ StudentMatrix.modules.settings = {
 
     var panel = app.createVerticalPanel().setId('settingsPanel');//.setHeight('100%');
     app.add(panel);
-    
+
     SpreadsheetApp.getActiveSpreadsheet().show(app);
     return app;
   },
-  
+
   // Handler for displaying settings for a selected group.
   showSettings : function(eventInfo) {
     var app = UiApp.getActiveApplication();
     var panel = app.getElementById('settingsPanel');
     panel.clear();
-    
+
     // The 'null' value is used for groups that are not groups.
     if (eventInfo.parameter.settingsGroup == 'null') {
       return app;
@@ -77,7 +77,7 @@ StudentMatrix.modules.settings = {
       panel.add(app.createButton('Save group settings', saveHandler));
     }
   },
-  
+
   // Handler for saving settings for a selected group.
   saveSettings : function(eventInfo) {
     StudentMatrix.toast('Saved settings for this group.')
@@ -120,14 +120,14 @@ StudentMatrix.plugins.core = {
         var textBox = app.createTextBox().setName('color').setText(defaults.color);
         container.add(textBox);
         handler.addCallbackElement(textBox);
-        
+
         container.add(app.createHTML('File ID'));
         var file = app.createTextBox().setName('file').setText(defaults.file).setId('file');
         handler.addCallbackElement(file);
         var filePicker = StudentMatrix.addPluginHandler('core', 'filePickerShow');
         var pickerButton = app.createButton('Select file', filePicker);
         container.add(file).add(pickerButton);
-        
+
         return app;
       },
     },
