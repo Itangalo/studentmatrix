@@ -76,8 +76,9 @@ StudentMatrix.plugins.example = {
       // be anything the iterator throws together (such as a range of the
       // student's sheet, the student e-mail, or an object containing a
       // combination of a lot of things). If your action uses options, they are
-      // passed in the options parameter.
-      processor : function(item, options) {
+      // passed in the options parameter. If you for some reason want to know
+      // which row is being processed, that is passed in the row parameter.
+      processor : function(item, options, row) {
         item.setFontWeight('bold');
         item.setBackgroundColor(options.color);
       },

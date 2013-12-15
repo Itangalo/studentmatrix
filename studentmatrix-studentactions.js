@@ -276,7 +276,7 @@ StudentMatrix.modules.studentActions = {
         skipped += ' ' + row;
       }
       else {
-        StudentMatrix.components.studentActions[component].processor(item, options);
+        StudentMatrix.components.studentActions[component].processor(item, options, row);
       }
     }
     

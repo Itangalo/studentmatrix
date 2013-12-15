@@ -14,7 +14,7 @@ function globalActionsDialog() {
 StudentMatrix.modules.globalActions = {
   // Declares all menu entries for this module.
   menuEntries : {
-    globalActionsDialog : 'Run actions on the master sheet',
+    globalActionsDialog : 'Run global actions',
   },
   // Declare required properties for components of type 'globalActions'.
   properties : {
