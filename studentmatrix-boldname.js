@@ -5,7 +5,7 @@ StudentMatrix.plugins.boldname = {
       group : 'Examples',
       description : 'This is an example action. It makes the student name bold.',
       helpLink : 'http://www.dn.se/nyheter/vetenskap/nobelpristagare-river-katedern/',
-      iterator : 'studentName',
+      fetcher : 'studentName',
       processor : function(object) {
         object.setFontWeight('bold');
       },
@@ -16,7 +16,7 @@ StudentMatrix.plugins.boldname = {
       },
     },
   },
-  iterators : {
+  fetchers : {
     studentName : function(row) {
       return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentName'));
     },

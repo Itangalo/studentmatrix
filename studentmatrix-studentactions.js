@@ -1,7 +1,7 @@
 /**
  * @file
  * Module that allows actions to be run on all or selected students.
- * Introduces the 'studentActions' and 'iterators' components.
+ * Introduces the 'studentActions' and 'fetchers' components.
  */
 
 // Menu alias: Dialog for running actions on students.
@@ -152,7 +152,7 @@ StudentMatrix.modules.studentActions = {
   // Allow selecting students before running any actions.
   studentSelectHandler : function(eventInfo) {
     toast('Reading students...');
-    StudentMatrix.loadComponents('iterators');
+    StudentMatrix.loadComponents('fetchers');
     var app = UiApp.createApplication().setTitle('Select which students to process');
     var panel = app.createVerticalPanel().setHeight('100%');
 
@@ -162,7 +162,7 @@ StudentMatrix.modules.studentActions = {
     var processColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
     var nameColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'studentName');
     for (var row in this.studentRows('ProcessAll')) {
-      var values = StudentMatrix.components.iterators.getRowValues(row);
+      var values = StudentMatrix.components.fetchers.getRowValues(row);
       checkboxes[row] = app.createCheckBox(values[0][nameColumn - 1]).setValue(values[0][processColumn - 1] == 1).addClickHandler(toggleHandler).setId(row);
       panel.add(checkboxes[row]);
     }
@@ -269,8 +269,8 @@ StudentMatrix.modules.studentActions = {
     StudentMatrix.toast('Running action...');
     UiApp.getActiveApplication().close();
 
-    // Get the name of the iterator that should be used.
-    StudentMatrix.loadComponents('iterators');
+    // Get the name of the fetcher that should be used.
+    StudentMatrix.loadComponents('fetchers');
     var skipped = '';
     // Loop through all relevant students.
     for (var row in this.studentRows(mode)) {
@@ -290,10 +290,10 @@ StudentMatrix.modules.studentActions = {
   },
 };
 
-// Declares an iterator used by the StudentActions module.
+// Declares an fetcher used by the StudentActions module.
 StudentMatrix.plugins.studentActions = {
-  // One iterator used by core, for selecting students.
-  iterators : {
+  // One fetcher used by core, for selecting students.
+  fetchers : {
     getRowValues : function(row) {
       return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues()[0];
     },

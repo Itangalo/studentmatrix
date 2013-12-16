@@ -54,8 +54,8 @@ StudentMatrix.plugins.matrixtemplate = {
 
       processor : function(row, options) {
         // Fetch the relevant data for this row.
-        var matrixFileCell = StudentMatrix.components.iterators.matrixFileCell(row);
-        var studentEmail = StudentMatrix.components.iterators.studentEmailValue(row);
+        var matrixFileCell = StudentMatrix.components.fetchers.matrixFileCell(row);
+        var studentEmail = StudentMatrix.components.fetchers.studentEmailValue(row);
         var fileName = StudentMatrix.replaceColumnTokens(options.fileName, row);
 
         // Create the student sheet if it doesn't already exist. In any case, load it into the varible 'copy'.
@@ -165,7 +165,7 @@ StudentMatrix.plugins.matrixtemplate = {
     },
   },
   
-  iterators : {
+  fetchers : {
     matrixFileCell : function(row) {
       return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID'));
     },

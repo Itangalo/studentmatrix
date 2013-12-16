@@ -136,9 +136,9 @@ StudentMatrix.plugins.example = {
    //  item the studentAction expects. Returning false signals that the row
    //  should be skipped. Since a plugin can have multiple iterators, they are
    //  declared as sub properties.
-  iterators : {
-    // This example iterator returns the cell containing the student's name.
-    myIterator : function(row) {
+  fetchers : {
+    // This example fetcher returns the cell containing the student's name.
+    myfetcher : function(row) {
       return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentName'));
     },
   },

@@ -167,7 +167,7 @@ var StudentMatrix = (function() {
 
   // Takes a string and replaces all '[column-NN]' with the values in the columns of a given student.
   replaceColumnTokens = function(string, row) {
-    var columnValues = StudentMatrix.plugins.studentActions.iterators.getRowValues(row);
+    var columnValues = StudentMatrix.plugins.studentActions.fetchers.getRowValues(row);
     // Note that the column values start on zero, while the user expects one. Thus the +1 shift.
     for (var column in columnValues) {
       while (string.indexOf('[column-' + (parseInt(column) + 1) + ']') > -1) {
@@ -195,7 +195,7 @@ var StudentMatrix = (function() {
     addPluginHandler : addPluginHandler,
     addModuleHandler : addModuleHandler,
     loadComponents : loadComponents,
-    replaceTokens : replaceTokens,
+    replaceColumnTokens : replaceColumnTokens,
   }
 })();
 
