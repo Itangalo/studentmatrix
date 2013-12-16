@@ -26,11 +26,6 @@ StudentMatrix.plugins.spreadsheet = {
       },
     },
   },
-  iterators : {
-    studentRow : function(row) {
-      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn());
-    },
-  },
   handlers : {
     filePicker : function(eventInfo) {
       var app = UiApp.getActiveApplication();

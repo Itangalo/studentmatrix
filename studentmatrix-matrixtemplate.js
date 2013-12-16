@@ -85,7 +85,10 @@ StudentMatrix.plugins.matrixtemplate = {
           }
         }
         
-        
+        if (options.addStudentView == 'true') {
+//          StudentMatrix.components.iterators.studentEmailValue(row);
+          
+        }
 
         
       },
@@ -139,7 +142,13 @@ StudentMatrix.plugins.matrixtemplate = {
   
   iterators : {
     matrixFileCell : function(row) {
-      return SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID'));
+      return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID'));
+    },
+    studentEmailValue : function(row) {
+      return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentMail')).getValue();
+    },
+    studentRowValues : function(row) {
+      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn()).getValues();
     },
   },
   
