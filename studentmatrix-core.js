@@ -74,7 +74,7 @@ var StudentMatrix = (function() {
   toast = function(message, title) {
     SpreadsheetApp.getActiveSpreadsheet().toast(message, title || '');
   };
-  
+
   // Fetches all menu entries from StudentMatrix modules.
   getMenuEntries = function() {
     var menuEntries = [];
@@ -88,7 +88,7 @@ var StudentMatrix = (function() {
     }
     return menuEntries;
   };
-  
+
   // Fetches all menu entries from StudentMatrix modules. (Private function.)
   getColumns = function() {
     var columns = {};
@@ -101,7 +101,7 @@ var StudentMatrix = (function() {
     }
     return columns;
   };
-  
+
   // Writes all columns declared by modules to the main sheet.
   setUpColumns = function() {
     var columns = getColumns();
@@ -117,7 +117,7 @@ var StudentMatrix = (function() {
     }
     StudentMatrix.mainSheet().setFrozenRows(StudentMatrix.firstStudentRow() - 1);
   };
-  
+
   // Helper function for creating a handler pointing to a function within a module.
   addModuleHandler = function(moduleName, functionName) {
     var app = UiApp.getActiveApplication();
@@ -125,14 +125,14 @@ var StudentMatrix = (function() {
     var handler = app.createServerHandler('StudentMatrixCallbackRouter').addCallbackElement(callback);
     return handler;
   };
-  
+
   // Helper function for creating a handler pointing to a function within a plugin.
   addPluginHandler = function(pluginName, functionName) {
     var app = UiApp.getActiveApplication();
     var callback = app.createHidden('callback', JSON.stringify({base : 'plugins', objectName : pluginName, functionName : functionName}));
     var handler = app.createServerHandler('StudentMatrixCallbackRouter').addCallbackElement(callback);
     return handler;
-  };  
+  };
 
   // Builds a list of component groups, with each group containing the component names.
   getComponentsByGroup = function(type) {
@@ -149,7 +149,7 @@ var StudentMatrix = (function() {
     }
     return groupedComponents;
   };
-  
+
   // Loads all components of a particular type into StudentMatrix.components[componentType].
   loadComponents = function(componentType) {
     // Look through all plugins, and add all components of the relevant type to StudentMatrix.components.
@@ -163,6 +163,18 @@ var StudentMatrix = (function() {
         }
       }
     }
+  };
+
+  // Takes a string and replaces all '[column-NN]' with the values in the columns of a given student.
+  replaceColumnTokens = function(string, row) {
+    var columnValues = StudentMatrix.plugins.studentActions.iterators.getRowValues(row);
+    // Note that the column values start on zero, while the user expects one. Thus the +1 shift.
+    for (var column in columnValues) {
+      while (string.indexOf('[column-' + (parseInt(column) + 1) + ']') > -1) {
+        string = string.replace('[column-' + (parseInt(column) + 1) + ']', columnValues[column]);
+      }
+    }
+    return string;
   };
 
   // Reveal the public methods and properties.
@@ -183,6 +195,7 @@ var StudentMatrix = (function() {
     addPluginHandler : addPluginHandler,
     addModuleHandler : addModuleHandler,
     loadComponents : loadComponents,
+    replaceTokens : replaceTokens,
   }
 })();
 
