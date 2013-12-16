@@ -8,6 +8,7 @@ StudentMatrix.modules.matrixtemplate = {
   columns : {
     // Column used for ID and link to student sheets.
     studentSheetID : 'Student sheet ID',
+    studentSheetUrl : 'Student sheet url',
     studentFolderID : 'Student folder ID',
   },
 };
@@ -54,7 +55,8 @@ StudentMatrix.plugins.matrixtemplate = {
 
       processor : function(row, options) {
         // Fetch the relevant data for this row.
-        var matrixFileCell = StudentMatrix.components.fetchers.matrixFileCell(row);
+        var matrixFileCell = StudentMatrix.components.fetchers.studentColumnCell(row, 'studentSheetID');
+        var matrixUrlCell = StudentMatrix.components.fetchers.studentColumnCell(row, 'studentSheetUrl');
         var studentEmail = StudentMatrix.components.fetchers.studentEmailValue(row);
         var fileName = StudentMatrix.replaceColumnTokens(options.fileName, row);
 
@@ -67,6 +69,10 @@ StudentMatrix.plugins.matrixtemplate = {
         else {
           var copy = SpreadsheetApp.openById(matrixFileCell.getValue());
           var newlyCreated = false;
+        }
+        
+        if (matrixUrlCell.getValue() == '') {
+          matrixUrlCell.setValue(copy.getUrl());
         }
         
         // Go through the options to set permissions (and some other things), one at a time.
