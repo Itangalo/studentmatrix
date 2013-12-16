@@ -130,6 +130,26 @@ StudentMatrix.plugins.core = {
       },
     },
   },
+  fetchers : {
+    studentColumnCell : function(row, columnID) {
+      var columnNumber = StudentMatrix.getProperty('StudentMatrixColumns', columnID);
+      if (columnNumber == undefined) {
+        return false;
+      }
+      return StudentMatrix.mainSheet().getRange(row, columnNumber);
+    },
+    studentColumnValue : function(row, columnID) {
+      var columnNumber = StudentMatrix.getProperty('StudentMatrixColumns', columnID);
+      if (columnNumber == undefined) {
+        return false;
+      }
+      return StudentMatrix.mainSheet().getRange(row, columnNumber).getValue();
+    },
+    allValues : function(row) {
+      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues()[0];
+    },
+
+  },
   handlers : {
     filePickerShow : function(eventInfo) {
       var app = UiApp.getActiveApplication();
