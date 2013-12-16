@@ -162,8 +162,8 @@ StudentMatrix.modules.studentActions = {
     var processColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'process');
     var nameColumn = StudentMatrix.getProperty('StudentMatrixColumns', 'studentName');
     for (var row in this.studentRows('ProcessAll')) {
-      var values = StudentMatrix.components.fetchers.getRowValues(row);
-      checkboxes[row] = app.createCheckBox(values[0][nameColumn - 1]).setValue(values[0][processColumn - 1] == 1).addClickHandler(toggleHandler).setId(row);
+      var values = StudentMatrix.components.fetchers.allValues(row);
+      checkboxes[row] = app.createCheckBox(values[nameColumn - 1]).setValue(values[processColumn - 1] == 1).addClickHandler(toggleHandler).setId(row);
       panel.add(checkboxes[row]);
     }
 
@@ -287,15 +287,5 @@ StudentMatrix.modules.studentActions = {
     else {
       StudentMatrix.toast('Skipped students on these rows:' + skipped, 'Actions completed.');
     }
-  },
-};
-
-// Declares an fetcher used by the StudentActions module.
-StudentMatrix.plugins.studentActions = {
-  // One fetcher used by core, for selecting students.
-  fetchers : {
-    getRowValues : function(row) {
-      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues()[0];
-    },
   },
 };
