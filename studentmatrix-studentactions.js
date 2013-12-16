@@ -201,21 +201,27 @@ StudentMatrix.modules.studentActions = {
     // Check for an options builder for the component. If found, display a form with options.
     StudentMatrix.loadComponents('studentActions');
     if (typeof StudentMatrix.components.studentActions[component].optionsBuilder == 'function') {
+      app.setTitle('Set options for this action');
+      // Options may overfill the normal popup, so we need a panel container.
+      var wrapper = app.createScrollPanel().setWidth('100%').setHeight('100%').setAlwaysShowScrollBars(true);
+      var panel = app.createVerticalPanel();
+      wrapper.add(panel);
       // Create a handler and call the options builder to add any form elements.
       var handler = StudentMatrix.addModuleHandler('studentActions', 'optionsProcessor');
-      StudentMatrix.components.studentActions[component].optionsBuilder(handler);
+      StudentMatrix.components.studentActions[component].optionsBuilder(handler, panel);
 
       // Add the component and mode as hidden widgets, to pass on their information.
       var componentWidget = app.createHidden('component', component).setId('component');
       var modeWidget = app.createHidden('mode', mode).setId('mode');
       handler.addCallbackElement(componentWidget);
       handler.addCallbackElement(modeWidget);
-      app.add(componentWidget);
-      app.add(modeWidget);
+      panel.add(componentWidget);
+      panel.add(modeWidget);
 
-      app.add(app.createHTML('<hr />'));
-      app.add(app.createButton('Cancel', handler).setId('Cancel'));
-      app.add(app.createButton('OK', handler).setId('OK'));
+      panel.add(app.createHTML('<hr />'));
+      panel.add(app.createButton('Cancel', handler).setId('Cancel'));
+      panel.add(app.createButton('OK', handler).setId('OK'));
+      app.add(wrapper);
       SpreadsheetApp.getActiveSpreadsheet().show(app);
     }
     // If no options builder is found, just call the action execution method without any options.
@@ -279,7 +285,7 @@ StudentMatrix.modules.studentActions = {
         StudentMatrix.components.studentActions[component].processor(item, options, row);
       }
     }
-    
+
     if (skipped == '') {
       StudentMatrix.toast('All relevant students processed.', 'Actions completed.');
     }
@@ -294,7 +300,7 @@ StudentMatrix.plugins.studentActions = {
   // One iterator used by core, for selecting students.
   iterators : {
     getRowValues : function(row) {
-      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues();
+      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn() - 1).getValues()[0];
     },
   },
 };
