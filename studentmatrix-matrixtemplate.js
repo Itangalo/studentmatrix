@@ -52,17 +52,28 @@ StudentMatrix.plugins.matrixtemplate = {
       group : 'Student sheet setup',
       description : 'Makes a copy of the matrix template for each student. Can also be used for changing access settings to existing student sheets.',
 
-      processor : function(item, options, row) {
+      processor : function(row, options) {
+        // Fetch the relevant data for this row.
+        var matrixFileCell = StudentMatrix.components.iterators.matrixFileCell(row);
+        var studentEmail = StudentMatrix.components.iterators.studentEmailValue(row);
+        var fileName = StudentMatrix.replaceColumnTokens(options.fileName, row);
+
         // Create the student sheet if it doesn't already exist. In any case, load it into the varible 'copy'.
-        if (item.getValue() == '') {
-          var copy = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID')).copy('Test copy (delete)');
-          item.setFormula('=hyperlink("' + copy.getUrl() + '";"' + copy.getId() + '")');
+        if (matrixFileCell.getValue() == '') {
+          var copy = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID')).copy(fileName);
+          var newlyCreated = true;
+          matrixFileCell.setFormula('=hyperlink("' + copy.getUrl() + '";"' + copy.getId() + '")');
         }
         else {
-          var copy = SpreadsheetApp.openById(item.getValue());
+          var copy = SpreadsheetApp.openById(matrixFileCell.getValue());
+          var newlyCreated = false;
         }
         
         // Go through the options to set permissions (and some other things), one at a time.
+        if (options.rewriteNames == 'true' && newlyCreated == false) {
+          copy.rename(fileName);
+        }
+        
         if (options.resetPermissions == 'true') {
           copy.setAnonymousAccess(false, false);
           var editors = copy.getEditors();
@@ -86,14 +97,20 @@ StudentMatrix.plugins.matrixtemplate = {
         }
         
         if (options.addStudentView == 'true') {
-//          StudentMatrix.components.iterators.studentEmailValue(row);
-          
+          copy.addViewer(studentEmail);
         }
-
+        if (options.addStudentEdit == 'true') {
+          copy.addEditor(studentEmail);
+        }
         
+        if (options.addAllView == 'true') {
+          copy.setAnonymousAccess(true, false);
+        }
       },
       
       options : {
+        fileName : 'Student sheet for [column-2]',
+        rewriteNames : false,
         resetPermissions : false,
         addTeachers : true,
         addStudentView : true,
@@ -103,6 +120,7 @@ StudentMatrix.plugins.matrixtemplate = {
       },
       // This is just a helper, to reduce code repeat.
       descriptions : {
+        rewriteNames : 'Also rewrite the names of existing student sheets (if any).',
         resetPermissions : 'Remove all permissions on existing student sheets, then set new permissions.',
         addTeachers : 'Add edit permissions to all accounts specified in the teacher emails box in the settings.',
         addStudentView : 'Add student view permission to the student sheet.',
@@ -110,12 +128,19 @@ StudentMatrix.plugins.matrixtemplate = {
         addAllView : 'Make the student sheet public, so that anyone can view it.',
         moveToFolder : 'Move the student sheet to any folder specified in the "student folder ID" column.',
       },
-      optionsBuilder : function(handler) {
+      optionsBuilder : function(handler, container) {
         var app = UiApp.getActiveApplication();
+        container.add(app.createLabel('Name for new student sheets:'));
+        var fileName = app.createTextBox().setName('fileName').setWidth('100%').setText('Student sheet for [column-2]');
+        container.add(fileName);
+        handler.addCallbackElement(fileName);
+        container.add(app.createLabel('(Tokens like "[column-2]" will be replaced with values in student rows.)'));
+        container.add(app.createHTML('<br />'))
+        
         var checkboxes = {};
         for (var checkbox in this.descriptions) {
           checkboxes[checkbox] = app.createCheckBox(this.descriptions[checkbox]).setName(checkbox).setValue(this.options[checkbox]);
-          app.add(checkboxes[checkbox]).add(app.createHTML('<br />'));
+          container.add(checkboxes[checkbox]).add(app.createHTML('<br />'));
           handler.addCallbackElement(checkboxes[checkbox]);
         }
       },
