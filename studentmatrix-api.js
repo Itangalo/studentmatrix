@@ -174,7 +174,7 @@ StudentMatrix.plugins.example = {
       },
 
       // See the example studentAction.
-      optionsBuilder : function(handler) {
+      optionsBuilder : function(handler, container) {
       },
       options : {
       },

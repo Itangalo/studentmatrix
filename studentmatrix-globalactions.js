@@ -23,11 +23,11 @@ StudentMatrix.modules.globalActions = {
     description : 'string',
     processor : 'function',
   },
-  
+
   // Displays dialog for running globalActions. Starting point for this module.
   actionsDialog : function() {
     StudentMatrix.loadComponents('globalActions');
-    
+
     var app = UiApp.createApplication().setTitle('Run global actions');
     var descriptionHandler = StudentMatrix.addModuleHandler('globalActions', 'showDescriptions');
 
@@ -46,13 +46,13 @@ StudentMatrix.modules.globalActions = {
     // Add two elements for description and help link, to be populated later.
     app.add(app.createLabel('', true).setId('ActionDescription'));
     app.add(app.createAnchor('', false, '').setId('ActionHelpLink'));
-    
+
     // Add the button for running actions.
     var optionsHandler = StudentMatrix.addModuleHandler('globalActions', 'optionsHandler');
     optionsHandler.addCallbackElement(actionsList);
 
     app.add(app.createButton('Run the action', optionsHandler).setId('Process').setEnabled(false));
-    
+
     // We also have spot for an error message, should there be one.
     app.add(app.createLabel('', true).setId('ErrorMessage'));
 
@@ -87,7 +87,7 @@ StudentMatrix.modules.globalActions = {
     if (typeof StudentMatrix.components.globalActions[component].helpLink == 'string') {
       helpLink.setHref(StudentMatrix.components.globalActions[component].helpLink).setHTML('Help page<br />');
     }
-    
+
     // Run basic validator on the component, if available.
     if (typeof StudentMatrix.components.globalActions[component].validator == 'function') {
       if (StudentMatrix.components.globalActions[component].validator() != null) {
@@ -96,10 +96,10 @@ StudentMatrix.modules.globalActions = {
         return app;
       }
     }
-    
+
     // All systems go. Enable the ok button.
     app.getElementById('Process').setEnabled(true);
-    
+
     return app;
   },
 
@@ -109,22 +109,28 @@ StudentMatrix.modules.globalActions = {
     // Get the component to run and which mode to run in. Add as hidden elements.
     var component = eventInfo.parameter.SelectedAction;
     var mode = eventInfo.parameter.source;
-        
+
     // Check for an options builder for the component. If found, display a form with options.
     StudentMatrix.loadComponents('globalActions');
     if (typeof StudentMatrix.components.globalActions[component].optionsBuilder == 'function') {
+      // Options may overfill the normal popup, so we need a panel container.
+      var wrapper = app.createScrollPanel().setWidth('100%').setHeight('100%').setAlwaysShowScrollBars(true);
+      var panel = app.createVerticalPanel();
+      wrapper.add(panel);
+
       // Create a handler and call the options builder to add any form elements.
       var handler = StudentMatrix.addModuleHandler('globalActions', 'optionsProcessor');
-      StudentMatrix.components.globalActions[component].optionsBuilder(handler);
+      StudentMatrix.components.globalActions[component].optionsBuilder(handler, panel);
 
       // Add the component and mode as hidden widgets, to pass on their information.
       var componentWidget = app.createHidden('component', component).setId('component');
       handler.addCallbackElement(componentWidget);
-      app.add(componentWidget);
+      panel.add(componentWidget);
 
-      app.add(app.createHTML('<hr />'));
-      app.add(app.createButton('Cancel', handler).setId('Cancel'));
-      app.add(app.createButton('OK', handler).setId('OK'));
+      panel.add(app.createHTML('<hr />'));
+      panel.add(app.createButton('Cancel', handler).setId('Cancel'));
+      panel.add(app.createButton('OK', handler).setId('OK'));
+      app.add(wrapper);
       SpreadsheetApp.getActiveSpreadsheet().show(app);
     }
     // If no options builder is found, just call the action execution method without any options.
@@ -132,7 +138,7 @@ StudentMatrix.modules.globalActions = {
       this.componentExecute(component);
     }
   },
-  
+
   // Handler for the componentOptionsDialog, allowing OK and Cancel.
   optionsProcessor : function(eventInfo) {
     // If it wasn't the OK button being clicked, close the dialog -- we're done.
@@ -158,13 +164,13 @@ StudentMatrix.modules.globalActions = {
           options[option] = eventInfo.parameter[option];
         }
       }
-      
+
       // Execute the action with the given options, in the given mode.
       this.componentExecute(component, options);
       return app;
     }
   },
-  
+
   // Calls the actual action and runs it.
   componentExecute : function(component, options) {
     // This process may be slow, so it makes sense to display a message while processing.
