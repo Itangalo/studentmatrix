@@ -72,19 +72,17 @@ StudentMatrix.plugins.example = {
       helpLink : 'http://link.to/help-page-with-further-information',
 
       // The processor is the method doing the actual work on each student entry.
-      // The item it takes as parameter is prepared by the iterator and could
-      // be anything the iterator throws together (such as a range of the
-      // student's sheet, the student e-mail, or an object containing a
-      // combination of a lot of things). If your action uses options, they are
-      // passed in the options parameter. If you for some reason want to know
-      // which row is being processed, that is passed in the row parameter.
-      processor : function(item, options, row) {
-        item.setFontWeight('bold');
-        item.setBackgroundColor(options.color);
+      // If your action uses options, they are passed in the options parameter.
+      // If you for some reason want to know which row is being processed, that
+      // is passed in the row parameter.
+      processor : function(row, options) {
+        // You will most likely want to use some fetchers, to get various data
+        // derived from the student row.
+        var studentNameCell = StudentMatrix.components.fetchers.studentName(row);
+        
+        studentNameCell.setFontWeight('bold');
+        studentNameCell.setBackgroundColor(options.color);
       },
-      // The iterator is the name of the iterator this action uses. Reuse
-      // existing iterators in other plugins if they suit your needs.
-      iterator : 'myIterator',
 
       // Validators can be used to disallow the action in some circumstances. If
       // no validator is declared, you can always run the action.
@@ -101,22 +99,25 @@ StudentMatrix.plugins.example = {
       },
 
       // Options builders are used to display options to the user before running
-      // the action. The builder is passed a handler, and must add any elements
-      // that should be evaluated to this handler. Use the active UI application
-      // to add anything that should be displayed.
-      optionsBuilder : function(handler) {
+      // the action. The builder is passed a handler and a container. All
+      // elements that should be displayed should be added to the container (to
+      // allow scrolling), and any elements that should be evaluated must be
+      // added to the handler.
+      optionsBuilder : function(handler, container) {
         var app = UiApp.getActiveApplication();
-        app.add(app.createHTML('Background color'));
+        container.add(app.createHTML('Background color'));
         var color = app.createTextBox().setId('color').setName('color');
-        app.add(color);
+        container.add(color);
         handler.addCallbackElement(color);
       },
       // Any entries in the options property will be used to look for values
       // added by the options builder. It will also be used for setting default
-      // values, in case they aren't populated by the builder.
+      // values, in case they aren't populated by the builder. This is also a
+      // neat trick to build expensive objects only once.
       options : {
         color : 'blue',
         someOtherOption : 'some other default value',
+        expensiveObject : SpreadsheetApp.getActiveRange(),
       },
       // In case the plugin options cannot just be read from eventInfo, you need
       // an optionsProcessor. If you declare this function, it needs to take
@@ -126,18 +127,25 @@ StudentMatrix.plugins.example = {
         var options = {};
         options.color = ensureColorCode(eventInfo.color);
         options.someOtherOption = eventInfo.someOtherOption;
+        // Note that any default values are overwritten.
+        options.expensiveObject = SpreadsheetApp.getActiveRange();
         return options;
       },
     },
   },
 
-   // Iterators are used to build items that should be processed by
-   //  studentActions. They are passed a row number, and return whatever type of
-   //  item the studentAction expects. Returning false signals that the row
-   //  should be skipped. Since a plugin can have multiple iterators, they are
-   //  declared as sub properties.
+   // Fetchers are usually called from within studentActions, to fetch data
+   // related to a particular student row. Fetchers usually only take the row
+   // number as argument, and use that to build whatever item is relevant.
+   // Returning false signals that the fetch process could not be completed.
+   // Since a plugin can have multiple fetchers, they are declared as sub
+   // properties.
   fetchers : {
     // This example fetcher returns the cell containing the student's name.
+    // There is actually a fetcher 'studentColumnCell' and 'studentColumnValue'
+    // that could do this fetching (and you really should reuse existing
+    // fetchers rather than building your own), but this still serves as an
+    // example.
     myfetcher : function(row) {
       return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentName'));
     },
