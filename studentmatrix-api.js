@@ -134,12 +134,12 @@ StudentMatrix.plugins.example = {
     },
   },
 
-   // Fetchers are usually called from within studentActions, to fetch data
-   // related to a particular student row. Fetchers usually only take the row
-   // number as argument, and use that to build whatever item is relevant.
-   // Returning false signals that the fetch process could not be completed.
-   // Since a plugin can have multiple fetchers, they are declared as sub
-   // properties.
+  // Fetchers are usually called from within studentActions, to fetch data
+  // related to a particular student row. Fetchers usually only take the row
+  // number as argument, and use that to build whatever item is relevant.
+  // Returning false signals that the fetch process could not be completed.
+  // Since a plugin can have multiple fetchers, they are declared as sub
+  // properties.
   fetchers : {
     // This example fetcher returns the cell containing the student's name.
     // There is actually a fetcher 'studentColumnCell' and 'studentColumnValue'
