@@ -143,8 +143,8 @@ StudentMatrix.modules.globalActions = {
   optionsProcessor : function(eventInfo) {
     // If it wasn't the OK button being clicked, close the dialog -- we're done.
     if (eventInfo.parameter.source != 'OK') {
-      app.close();
-      return app;
+      UiApp.getActiveApplication().close();
+      return UiApp.getActiveApplication();
     }
     // If it was the OK button that was clicked: build options and call the action.
     else {
