@@ -153,7 +153,7 @@ StudentMatrix.modules.studentActions = {
   studentSelectHandler : function(eventInfo) {
     toast('Reading students...');
     StudentMatrix.loadComponents('fetchers');
-    var app = UiApp.createApplication().setTitle('Select which students to process');
+    var app = UiApp.getActiveApplication().setTitle('Select which students to process');
     var panel = app.createVerticalPanel().setHeight('100%');
 
     // Build a list of checkboxes, one for each student.

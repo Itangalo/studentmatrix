@@ -36,7 +36,7 @@ StudentMatrix.modules.settings = {
     }
     app.add(groupSelector);
 
-    var panel = app.createVerticalPanel().setId('settingsPanel');//.setHeight('100%');
+    var panel = app.createVerticalPanel().setId('settingsPanel');
     app.add(panel);
 
     SpreadsheetApp.getActiveSpreadsheet().show(app);
