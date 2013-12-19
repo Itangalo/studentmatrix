@@ -79,7 +79,7 @@ StudentMatrix.plugins.matrixtemplate = {
         // Fetch the relevant data for this row.
         var matrixFileCell = StudentMatrix.components.fetchers.studentColumnCell(row, 'studentSheetID');
         var matrixUrlCell = StudentMatrix.components.fetchers.studentColumnCell(row, 'studentSheetUrl');
-        var studentEmail = StudentMatrix.components.fetchers.studentEmailValue(row);
+        var studentEmail = StudentMatrix.components.fetchers.studentColumnValue(row, 'studentMail');
         var fileName = StudentMatrix.replaceColumnTokens(options.fileName, row);
         var folderID = StudentMatrix.components.fetchers.studentColumnValue(row, 'studentFolderID');
 
@@ -182,8 +182,6 @@ StudentMatrix.plugins.matrixtemplate = {
         }
       },
       
-      iterator : 'matrixFileCell',
-
       validator : function() {
         if (StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID') == undefined) {
           return 'You must set up the columns used for student sheets before running this action. Visit the global actions to do this.';
@@ -203,14 +201,14 @@ StudentMatrix.plugins.matrixtemplate = {
   },
   
   fetchers : {
-    matrixFileCell : function(row) {
-      return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID'));
-    },
-    studentEmailValue : function(row) {
-      return StudentMatrix.mainSheet().getRange(row, StudentMatrix.getProperty('StudentMatrixColumns', 'studentMail')).getValue();
-    },
-    studentRowValues : function(row) {
-      return StudentMatrix.mainSheet().getRange(row, 1, 1, StudentMatrix.mainSheet().getLastColumn()).getValues();
+    studentSheet : function(row) {
+      var fileID = StudentMatrix.fetchers.studentColumnValue(row, 'studentSheetID');
+      if (fileID != false) {
+        return SpreadsheetApp.openById(fileID);
+      }
+      else {
+        return false;
+      }
     },
   },
   
