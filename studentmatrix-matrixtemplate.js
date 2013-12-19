@@ -201,14 +201,19 @@ StudentMatrix.plugins.matrixtemplate = {
   },
   
   fetchers : {
-    studentSheet : function(row) {
-      var fileID = StudentMatrix.fetchers.studentColumnValue(row, 'studentSheetID');
-      if (fileID != false) {
-        return SpreadsheetApp.openById(fileID);
-      }
-      else {
+    studentSpreadsheet : function(row) {
+      var fileID = StudentMatrix.components.fetchers.studentColumnValue(row, 'studentSheetID');
+      if (fileID == false) {
         return false;
       }
+      return SpreadsheetApp.openById(fileID);
+    },
+    studentRange : function(row, sheetName, a1Notation) {
+      var sheet = StudentMatrix.components.fetchers.studentSpreadsheet(row);
+      if (sheet == false) {
+        return false;
+      }
+      return sheet.getSheetByName(sheetName).getRange(a1Notation);
     },
   },
   
