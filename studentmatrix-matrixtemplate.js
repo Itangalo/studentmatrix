@@ -45,26 +45,24 @@ StudentMatrix.plugins.matrixtemplate = {
         handler.addCallbackElement(teacherEmails);
       },
     },
-    // Stub setting. @TODO: This setting should allow to view and change the mappings for push sheets.
-    setPushSheets : {
-      group : 'Push sheets',
+    sheetColors : {
+      group : 'Updating student sheets',
       options : {
+        assessmentColors : '#ffffff\n#ff0000\n#ff00ff\n#0000ff',
+        assessmentNames : 'Not assessed\nNot yet ok\nOn its way\nOk'
       },
       optionsBuilder : function(handler, container, defaults) {
         var app = UiApp.getActiveApplication();
-        var mappings = StudentMatrix.getProperty('StudentMatrixPushMapping');
-        var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
-        for (var i in SpreadsheetApp.getActiveSpreadsheet().getSheets()) {
-          container.add(app.createLabel(SpreadsheetApp.getActiveSpreadsheet().getSheets()[i].getName() + ': '));
-          var sourceID = SpreadsheetApp.getActiveSpreadsheet().getSheets()[i].getSheetId();
-          var targetID = mappings[sourceID];
-          if (targetID != undefined) {
-            container.add(app.createHTML(StudentMatrix.plugins.matrixtemplate.getSheetByID(template, targetID).getName()));
-          }
-          else {
-            container.add(app.createHTML('(no tab connected)'));
-          }
-        }
+
+        container.add(app.createHTML('Colors used for assessments in the student sheets. One per line, lowest on top.'));
+        var assessmentColors = app.createTextArea().setName('assessmentColors').setWidth('100%').setText(defaults.assessmentColors);
+        container.add(assessmentColors);
+        handler.addCallbackElement(assessmentColors);
+
+        container.add(app.createHTML('Labes for assessment colors. One per line, lowest on top.'));
+        var assessmentNames = app.createTextArea().setName('assessmentNames').setWidth('100%').setText(defaults.assessmentNames);
+        container.add(assessmentNames);
+        handler.addCallbackElement(assessmentNames);
       },
     },
   },
@@ -289,5 +287,16 @@ StudentMatrix.plugins.matrixtemplate = {
         return spreadsheet.getSheets()[i];
       }
     }
+  },
+  
+  // Helper function to get the name of the tab in the student sheets corresponding to the active push sheet.
+  getTargetSheetName : function() {
+    var tabID = SpreadsheetApp.getActiveSheet().getSheetId();
+    var targetID = StudentMatrix.getProperty('StudentMatrixPushMapping', tabID.toString());
+    if (targetID == undefined) {
+      return false;
+    }
+    var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
+    return this.getSheetByID(template, targetID).getSheetName();
   },
 };
