@@ -250,10 +250,10 @@ StudentMatrix.modules.studentActions = {
       }
       // If no optionsProcessor was found, just look for values for the declared options.
       else {
-        // Load default options from the action component, overwrite with options in eventInfo.
+        // Load default options from the action component, overwrite with options in eventInfo (when such exist).
         var options = StudentMatrix.components.studentActions[component].options;
         for (var option in StudentMatrix.components.studentActions[component].options) {
-          options[option] = eventInfo.parameter[option];
+          options[option] = eventInfo.parameter[option] || options[option];
         }
       }
 
