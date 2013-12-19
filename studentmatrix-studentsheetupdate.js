@@ -28,10 +28,10 @@ StudentMatrix.plugins.studentSheetUpdates = {
             if (options.raiseOrLower == '') {
               targetBackgrounds[r][c] = sourceBackgrounds[r][c];
             }
-            else if (options.raiseOrLower == 'onlyRaise' && options.colors.indexOf(sourceBackgrounds[r][c]) < options.colors.indexOf(targetBackgrounds[r][c])) {
+            else if (options.raiseOrLower == 'onlyRaise' && options.colors.indexOf(sourceBackgrounds[r][c]) > options.colors.indexOf(targetBackgrounds[r][c])) {
               targetBackgrounds[r][c] = sourceBackgrounds[r][c];
             }
-            else if (options.raiseOrLower == 'onlyLower' && options.colors.indexOf(sourceBackgrounds[r][c]) > options.colors.indexOf(targetBackgrounds[r][c])) {
+            else if (options.raiseOrLower == 'onlyLower' && options.colors.indexOf(sourceBackgrounds[r][c]) < options.colors.indexOf(targetBackgrounds[r][c])) {
               targetBackgrounds[r][c] = sourceBackgrounds[r][c];
             }
           }
@@ -47,10 +47,6 @@ StudentMatrix.plugins.studentSheetUpdates = {
       options : {
         onlyMarked : true,
         raiseOrLower : '',
-        // Three expensive objects are loaded once and passed as options.
-        currentSelection : SpreadsheetApp.getActiveRange(),
-        targetTab : StudentMatrix.plugins.matrixtemplate.getTargetSheetName(),
-        colors : StudentMatrix.getProperty('assessmentColors').split('\n'),
       },
       optionsBuilder : function(handler, container) {
         var app = UiApp.getActiveApplication();
@@ -64,6 +60,15 @@ StudentMatrix.plugins.studentSheetUpdates = {
         raiseOrLower.addItem('Don\'t raise any cell colors in student sheets.', 'onlyLower');
         container.add(raiseOrLower);
         handler.addCallbackElement(raiseOrLower);
+      },
+      optionsProcessor : function(eventInfo) {
+        var options = {};
+        options.onlyMarked = eventInfo.parameter.onlyMarked;        
+        options.raiseOrLower = eventInfo.parameter.raiseOrLower;
+        options.currentSelection = SpreadsheetApp.getActiveRange();
+        options.targetTab = StudentMatrix.plugins.matrixtemplate.getTargetSheetName();
+        options.colors = StudentMatrix.getProperty('assessmentColors').split('\n');
+        return options;
       },
     },
   },
