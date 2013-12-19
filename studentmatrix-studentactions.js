@@ -198,9 +198,21 @@ StudentMatrix.modules.studentActions = {
     var component = eventInfo.parameter.SelectedAction;
     var mode = eventInfo.parameter.source;
 
-    // Check for an options builder for the component. If found, display a form with options.
+    // Check for any options for the component.
     StudentMatrix.loadComponents('studentActions');
-    if (typeof StudentMatrix.components.studentActions[component].optionsBuilder == 'function') {
+    // Case 1: If no option are found, just call the action execution method without any options.
+    if (typeof StudentMatrix.components.studentActions[component].options != 'object') {
+      this.componentExecute(component, mode);
+    }
+    // Case 2: There are options, but no options builder. Just pass on to the options processor.
+    else if (typeof StudentMatrix.components.studentActions[component].optionsBuilder != 'function') {
+        eventInfo.parameter.source = 'OK';
+        eventInfo.parameter.component = component;
+        eventInfo.parameter.mode = mode;
+        this.optionsProcessor(eventInfo);
+    }
+    // Case 3: We have an options builder. Call it and display a panel to the user.
+    else {
       app.setTitle('Set options for this action');
       // Options may overfill the normal popup, so we need a panel container.
       var wrapper = app.createScrollPanel().setWidth('100%').setHeight('100%').setAlwaysShowScrollBars(true);
@@ -209,7 +221,7 @@ StudentMatrix.modules.studentActions = {
       // Create a handler and call the options builder to add any form elements.
       var handler = StudentMatrix.addModuleHandler('studentActions', 'optionsProcessor');
       StudentMatrix.components.studentActions[component].optionsBuilder(handler, panel);
-
+      
       // Add the component and mode as hidden widgets, to pass on their information.
       var componentWidget = app.createHidden('component', component).setId('component');
       var modeWidget = app.createHidden('mode', mode).setId('mode');
@@ -217,16 +229,12 @@ StudentMatrix.modules.studentActions = {
       handler.addCallbackElement(modeWidget);
       panel.add(componentWidget);
       panel.add(modeWidget);
-
+      
       panel.add(app.createHTML('<hr />'));
       panel.add(app.createButton('Cancel', handler).setId('Cancel'));
       panel.add(app.createButton('OK', handler).setId('OK'));
       app.add(wrapper);
       SpreadsheetApp.getActiveSpreadsheet().show(app);
-    }
-    // If no options builder is found, just call the action execution method without any options.
-    else {
-      this.componentExecute(component, mode);
     }
   },
 
