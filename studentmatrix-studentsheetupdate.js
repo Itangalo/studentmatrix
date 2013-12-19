@@ -71,5 +71,67 @@ StudentMatrix.plugins.studentSheetUpdates = {
         return options;
       },
     },
+
+    pushContent : {
+      name : 'Update content in student sheets',
+      group : 'Update student sheets',
+      description : 'Uses the current selection in a push sheet to set content in student sheets. Changes will be pushed to the tab "' + StudentMatrix.plugins.matrixtemplate.getTargetSheetName() + '".',
+
+      processor : function(row, options) {
+        var targetRange = StudentMatrix.components.fetchers.studentRange(row, options.targetTab, options.currentSelection.getA1Notation());
+        // Note: This actions is a bit complicated by the fact that formulas and static content are treated differently.
+        var targetValues = targetRange.getValues();
+        var sourceValues = options.currentSelection.getValues();
+        var sourceFormulas = options.currentSelection.getFormulas();
+
+        // First: Push all the static content, but keep track of all cells with formulas.
+        var formulaCells = {};
+        for (var r in sourceFormulas) {
+          for (var c in sourceFormulas[r]) {
+            if (sourceFormulas[r][c] == '') {
+              targetValues[r][c] = sourceValues[r][c];
+            }
+            else {
+              // Store the reference to row and column. The +1 shift is to load each
+              // cell the right way later on, when numbering starts on 1 (not 0).
+              formulaCells['-' + r + '-' + c] = {r : r, c : c};
+            }
+          }
+        }
+        targetRange.setValues(targetValues);
+
+        // Process the cells with formulas.
+        for (var exception in formulaCells) {
+          r = parseInt(formulaCells[exception]['r']);
+          c = parseInt(formulaCells[exception]['c']);
+          if (options.replacement == 'true') {
+            sourceFormulas[r][c] = sourceFormulas[r][c].replace(',', ';');
+          }
+          targetRange.getCell(r + 1, c + 1).setFormula(sourceFormulas[r][c]);
+        }
+      },
+      validator : function() {
+        if (StudentMatrix.plugins.matrixtemplate.getTargetSheetName() == false) {
+          return 'The active sheet is not connected to any tab in the matrix template. Updates cannot be pushed.';
+        }
+      },
+
+      options : {
+        replacement : true,
+      },
+      optionsBuilder : function(handler, container) {
+        var app = UiApp.getActiveApplication();
+        var replacement = app.createCheckBox('Replace any commas in formulas with semicolons. (recommended)').setName('replacement').setValue(true);
+        container.add(replacement);
+        handler.addCallbackElement(replacement);
+      },
+      optionsProcessor : function(eventInfo) {
+        var options = {};
+        options.replacement = eventInfo.parameter.replacement;
+        options.currentSelection = SpreadsheetApp.getActiveRange();
+        options.targetTab = StudentMatrix.plugins.matrixtemplate.getTargetSheetName();
+        return options;
+      },
+    },
   },
 };
