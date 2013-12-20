@@ -171,21 +171,100 @@ StudentMatrix.plugins.filesandfolders = {
         var placeInPrivate = app.createCheckBox('Use private folder as parent folder for viewable and editable folder. (Overrides previous parent folder setting.)').setName('placeInPrivate');
         container.add(placeInPrivate);
         handler.addCallbackElement(placeInPrivate);
-        
+
         var searchFolderName = app.createTextBox().setId('searchFolderName').setName('searchFolderName');
         container.add(searchFolderName);
         var searchHandler = StudentMatrix.addPluginHandler('filesandfolders', 'folderSearch');
         searchHandler.addCallbackElement(searchFolderName);
         container.add(app.createButton('Search for folders', searchHandler));
-        
+
         var parentFolder = app.createListBox().setName('parentFolder').setId('parentFolder').addItem('(search and then select folder)', false);
         container.add(parentFolder);
         handler.addCallbackElement(parentFolder);
       },
     },
+
+    copyFile : {
+      name : 'Copy a file and share with students',
+      group : 'Files and folders',
+      description : 'Select one or more files to share with students. The file will be copied, once per student.',
+      options : {
+        fileID : '',
+        name : 'File copy shared with [column-2]',
+        copyMode : 'editFolder',
+      },
+      optionsBuilder : function(handler, container) {
+        var app = UiApp.getActiveApplication();
+
+        var fileSelect = StudentMatrix.addPluginHandler('filesandfolders', 'showFilePicker');
+        container.add(app.createLabel('Selected file: (none)').setId('selectedFile'));
+        var fileID = app.createTextBox().setId('fileID').setName('fileID');
+        container.add(app.createButton('Select file to share', fileSelect));
+        handler.addCallbackElement(fileID);
+
+        container.add(app.createLabel('Name for file copies. (You may use replacement tokens like "[column-2]".)'));
+        var name = app.createTextBox().setName('name').setText('File copy shared with [column-2]').setWidth('100%');
+        container.add(name);
+        handler.addCallbackElement(name);
+
+        var copyMode = app.createListBox().setName('copyMode');
+        copyMode.addItem('Copy, give view access, and place in root folder', 'view');
+        copyMode.addItem('Copy, give edit access, and place in root folder', 'edit');
+        copyMode.addItem('Copy and place in student\'s private folder', 'studentFolderPrivate');
+        copyMode.addItem('Copy and place in student\'s viewable folder', 'studentFolderViewable');
+        copyMode.addItem('Copy and place in student\'s editable folder', 'studentFolderEditable');
+        container.add(copyMode);
+        handler.addCallbackElement(copyMode);
+      },
+      processor : function(row, options) {
+        if (options.fileID == 'false') {
+          return;
+        }
+        var file = DocsList.getFileById(options.fileID);
+        var copy = file.makeCopy(StudentMatrix.replaceColumnTokens(options.name, row));
+
+        switch (options.copyMode) {
+          case 'view' :
+            var studentEmail = StudentMatrix.components.fetchers.studentColumnValue(row, 'studentMail');
+            copy.addViewer(studentEmail);
+            break;
+          case 'edit' :
+            var studentEmail = StudentMatrix.components.fetchers.studentColumnValue(row, 'studentMail');
+            copy.addEditor(studentEmail);
+            break;
+          case 'studentFolderPrivate' :
+          case 'studentFolderViewable' :
+          case 'studentFolderEditable' :
+            var folderID = StudentMatrix.components.fetchers.studentColumnValue(row, options.copyMode);
+            if (folderID != '') {
+              var folder = DocsList.getFolderById(folderID);
+              copy.addToFolder(folder);
+              copy.removeFromFolder(DocsList.getRootFolder());
+            }
+            else {
+              return false;
+            }
+            break;
+        }
+      },
+    },
   },
 
   handlers : {
+    showFilePicker : function(eventInfo) {
+      var app = UiApp.getActiveApplication();
+      var handler = StudentMatrix.addPluginHandler('filesandfolders', 'closeFilePicker');
+      app.createDocsListDialog().setDialogTitle('Select file to share').addSelectionHandler(handler).showDocsPicker();
+      return app;
+    },
+    closeFilePicker : function(eventInfo) {
+      var app = UiApp.getActiveApplication();
+      app.getElementById('fileID').setText(eventInfo.parameter.items[0].id);
+//      app.add(app.createHidden('fileID', eventInfo.parameter.items[0].id).setId('fileID').setName('fileID'));
+      app.getElementById('selectedFile').setText('Selected file: ' + eventInfo.parameter.items[0].name);
+      return app;
+    },
+
     parentFolderHandler : function(eventInfo) {
       var app = UiApp.getActiveApplication();
       var handler = StudentMatrix.addPluginHandler('filesandfolders', 'parentFolderHandlerClose');
