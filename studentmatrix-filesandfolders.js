@@ -74,11 +74,10 @@ StudentMatrix.plugins.filesandfolders = {
         }
 
         // Add access permissions and parent folders according to the settings.
-        if (typeof options.parentFolder == 'string') {
+        if (options.parentFolder != 'false') {
           var parentFolder = DocsList.getFolderById(options.parentFolder);
         }
         else {
-
           parentFolder = false;
         }
 
@@ -169,16 +168,19 @@ StudentMatrix.plugins.filesandfolders = {
         container.add(editableName);
         handler.addCallbackElement(editableName);
 
-        var parentFolderHandler = StudentMatrix.addPluginHandler('filesandfolders', 'parentFolderHandler');
-        var parentFolderButton = app.createButton('Set parent folder for the student folders', parentFolderHandler)
-        container.add(parentFolderButton);
-        var parentFolder = app.createTextBox().setName('parentFolder').setId('parentFolder');
-        container.add(parentFolder);
-        handler.addCallbackElement(parentFolder);
-
         var placeInPrivate = app.createCheckBox('Use private folder as parent folder for viewable and editable folder. (Overrides previous parent folder setting.)').setName('placeInPrivate');
         container.add(placeInPrivate);
         handler.addCallbackElement(placeInPrivate);
+        
+        var searchFolderName = app.createTextBox().setId('searchFolderName').setName('searchFolderName');
+        container.add(searchFolderName);
+        var searchHandler = StudentMatrix.addPluginHandler('filesandfolders', 'folderSearch');
+        searchHandler.addCallbackElement(searchFolderName);
+        container.add(app.createButton('Search for folders', searchHandler));
+        
+        var parentFolder = app.createListBox().setName('parentFolder').setId('parentFolder').addItem('(search and then select folder)', false);
+        container.add(parentFolder);
+        handler.addCallbackElement(parentFolder);
       },
     },
   },
@@ -187,13 +189,25 @@ StudentMatrix.plugins.filesandfolders = {
     parentFolderHandler : function(eventInfo) {
       var app = UiApp.getActiveApplication();
       var handler = StudentMatrix.addPluginHandler('filesandfolders', 'parentFolderHandlerClose');
-      app.createDocsListDialog().setDialogTitle('Select parent folder').setInitialView(UiApp.FileType.FOLDERS).addSelectionHandler(handler).showDocsPicker();
+      var clickHandler = StudentMatrix.addPluginHandler('filesandfolders', 'parentFolderHandlerClick');
+      app.createDocsListDialog().setDialogTitle('Select parent folder').addView(UiApp.FileType.FOLDERS).addSelectionHandler(clickHandler).showDocsPicker();
       return app;
     },
-    parentFolderHandlerClose : function(eventInfo) {
+    folderSearch : function(eventInfo) {
       var app = UiApp.getActiveApplication();
-      app.getElementById('parentFolder').setText(eventInfo.parameter.items[0].id);
-      return app;
+      var folders = DocsList.getAllFolders();
+      var parentFolder = app.getElementById('parentFolder').clear().addItem('(select folder)', false);
+      var count = 0;
+      for (var folder in folders) {
+        if (folders[folder].getName().indexOf(eventInfo.parameter.searchFolderName) > -1) {
+          parentFolder.addItem(folders[folder].getName(), folders[folder].getId());
+          count++;
+          if (count > 9) {
+            return UiApp.getActiveApplication();
+          }
+        }
+      }
+      return UiApp.getActiveApplication();
     },
   },
 };
