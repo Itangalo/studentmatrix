@@ -17,7 +17,7 @@ StudentMatrix.plugins.filesandfolders = {
       name : 'Create folders for each student',
       group : 'Files and folders',
       description : 'Creates a folder for each student. Folders may be private to the teacher, viewable by the student, or editable by the student.',
-      
+
       processor : function(row, options) {
         var studentFolderPrivateCell = StudentMatrix.components.fetchers.studentColumnCell(row, 'studentFolderPrivate');
         var studentFolderViewableCell = StudentMatrix.components.fetchers.studentColumnCell(row, 'studentFolderViewable');
@@ -55,7 +55,7 @@ StudentMatrix.plugins.filesandfolders = {
         else {
           var studentFolderViewable = false;
         }
-        
+
         // Create and/or rename the editable folder.
         if (options.editableCreate == 'true' && studentFolderEditableCell.getValue() == '') {
           var studentFolderEditable = DocsList.createFolder(StudentMatrix.replaceColumnTokens(options.editableName, row));
@@ -72,7 +72,7 @@ StudentMatrix.plugins.filesandfolders = {
         else {
           var studentFolderEditable = false;
         }
-        
+
         // Add access permissions and parent folders according to the settings.
         if (typeof options.parentFolder == 'string') {
           var parentFolder = DocsList.getFolderById(options.parentFolder);
@@ -81,7 +81,7 @@ StudentMatrix.plugins.filesandfolders = {
 
           parentFolder = false;
         }
-        
+
         // First: the private folder
         if (studentFolderPrivate != false) {
           if (StudentMatrix.getProperty('teacherEmails') != '') {
@@ -92,7 +92,7 @@ StudentMatrix.plugins.filesandfolders = {
             studentFolderPrivate.removeFromFolder(DocsList.getRootFolder());
           }
         }
-        
+
         // Second: the viewable folder
         if (studentFolderViewable != false) {
           if (StudentMatrix.getProperty('teacherEmails') != '') {
@@ -127,7 +127,7 @@ StudentMatrix.plugins.filesandfolders = {
       },
       validator : function() {
       },
-      
+
       options : {
         privateCreate : true,
         privateName : '',
@@ -143,46 +143,46 @@ StudentMatrix.plugins.filesandfolders = {
         var privateCreate = app.createCheckBox('Create a folder which only teachers may access.').setName('privateCreate');
         container.add(privateCreate);
         handler.addCallbackElement(privateCreate);
-        
+
         container.add(app.createLabel('Name for private folders. You may use replacement tokens like "[column-2]". (If private folders already exist, they will be renamed.)'));
         var privateName = app.createTextBox().setName('privateName').setWidth('100%').setText('[column-2] (teachers only)');
         container.add(privateName);
         handler.addCallbackElement(privateName);
-        
+
         var app = UiApp.getActiveApplication();
         var viewableCreate = app.createCheckBox('Create a folder which the student can view.').setName('viewableCreate');
         container.add(viewableCreate);
         handler.addCallbackElement(viewableCreate);
-        
+
         container.add(app.createLabel('Name for viewable folders. You may use replacement tokens like "[column-2]". (If viewable folders already exist, they will be renamed.)'));
         var viewableName = app.createTextBox().setName('viewableName').setWidth('100%').setText('[column-2] (viewable)');
         container.add(viewableName);
         handler.addCallbackElement(viewableName);
-        
+
         var app = UiApp.getActiveApplication();
         var editableCreate = app.createCheckBox('Create a folder where the student may edit files and content.').setName('editableCreate');
         container.add(editableCreate);
         handler.addCallbackElement(editableCreate);
-        
+
         container.add(app.createLabel('Name for editable folders. You may use replacement tokens like "[column-2]". (If editable folders already exist, they will be renamed.)'));
         var editableName = app.createTextBox().setName('editableName').setWidth('100%').setText('[column-2] (editable)');
         container.add(editableName);
         handler.addCallbackElement(editableName);
-        
+
         var parentFolderHandler = StudentMatrix.addPluginHandler('filesandfolders', 'parentFolderHandler');
         var parentFolderButton = app.createButton('Set parent folder for the student folders', parentFolderHandler)
         container.add(parentFolderButton);
         var parentFolder = app.createTextBox().setName('parentFolder').setId('parentFolder');
         container.add(parentFolder);
         handler.addCallbackElement(parentFolder);
-        
+
         var placeInPrivate = app.createCheckBox('Use private folder as parent folder for viewable and editable folder. (Overrides previous parent folder setting.)').setName('placeInPrivate');
         container.add(placeInPrivate);
         handler.addCallbackElement(placeInPrivate);
       },
     },
   },
-  
+
   handlers : {
     parentFolderHandler : function(eventInfo) {
       var app = UiApp.getActiveApplication();
