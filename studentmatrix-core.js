@@ -1,9 +1,9 @@
 // Loads a menu when opening or installing StudentMatrix.
 function onOpen() {
-  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix', StudentMatrix.getMenuEntries());
+  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix 3.0-beta1', StudentMatrix.getMenuEntries());
 }
 function onInstall() {
-  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix', StudentMatrix.getMenuEntries());
+  onOpen();
 }
 
 /**
@@ -83,7 +83,6 @@ var StudentMatrix = (function() {
         for (var entry in modules[module].menuEntries) {
           menuEntries.push({name : modules[module].menuEntries[entry], functionName : entry});
         }
-        menuEntries.push(null);
       }
     }
     return menuEntries;
