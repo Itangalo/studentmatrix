@@ -37,10 +37,15 @@ var StudentMatrix = (function() {
    * on propertyName.
    */
   getProperty = function(propertyName, subPropertyName) {
-    var value = JSON.parse(ScriptProperties.getProperty(propertyName));
+    try {
+      var value = JSON.parse(ScriptProperties.getProperty(propertyName));
+    }
+    catch(e) {
+      value = null;
+    }
     if (typeof subPropertyName == 'string') {
       if (value == null) {
-        return undefined;
+        return;
       }
       else {
         return value[subPropertyName];
@@ -244,6 +249,7 @@ var StudentMatrix = (function() {
     numberOfStudents : numberOfStudents,
     setProperty : setProperty,
     getProperty : getProperty,
+    deleteProperty : deleteProperty,
     callRecursive : callRecursive,
     getMenuEntries : getMenuEntries,
     setUpColumns : setUpColumns,
