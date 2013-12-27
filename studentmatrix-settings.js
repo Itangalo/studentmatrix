@@ -44,8 +44,9 @@ StudentMatrix.modules.settings = {
     }
     app.add(groupSelector);
 
-    var panel = app.createVerticalPanel().setId('settingsPanel');
-    app.add(panel);
+    var panel = app.createVerticalPanel().setId('settingsPanel').setWidth('100%');
+    var scroller = app.createScrollPanel(panel).setAlwaysShowScrollBars(true).setHeight('90%').setWidth('100%');
+    app.add(scroller);
 
     SpreadsheetApp.getActiveSpreadsheet().show(app);
     return app;
