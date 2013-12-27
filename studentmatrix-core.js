@@ -57,18 +57,39 @@ var StudentMatrix = (function() {
    * properties[propertyName][subPropertyName] = value.
    */
   setProperty = function(value, propertyName, subPropertyName) {
-    if (typeof subPropertyName == 'string') {
+    // Setting the value to 'undefined' should be treated as removing the property.
+    if (value == undefined) {
+      StudentMatrix.deleteProperty(propertyName, subPropertyName);
+    }
+
+    if (typeof subPropertyName != 'undefined') {
       var object = StudentMatrix.getProperty(propertyName);
       if (object == null || typeof object != 'object') {
         object = {};
       }
-      object[subPropertyName] = value;
+      object[subPropertyName.toString()] = value;
       StudentMatrix.setProperty(object, propertyName);
     }
     else {
       ScriptProperties.setProperty(propertyName, JSON.stringify(value));
     }
   };
+
+  /**
+   * Removes a property, or sub property, set by StudentMatrix.setProperty().
+   */
+  deleteProperty = function(propertyName, subPropertyName) {
+    if (subPropertyName == undefined) {
+      ScriptProperties.deleteProperty(propertyName);
+    }
+    else {
+      var parentProperty = StudentMatrix.getProperty(propertyName);
+      if (parentProperty[subPropertyName] != undefined) {
+        delete parentProperty[subPropertyName];
+        StudentMatrix.setProperty(parentProperty, propertyName);
+      }
+    }
+  }
 
   // Displays a toaster message, with an optional title.
   toast = function(message, title) {
