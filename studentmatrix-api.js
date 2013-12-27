@@ -250,5 +250,5 @@ StudentMatrix.modules.example = {
 };
 
 // Remove the declarations above, so they aren't implemented.
-StudentMatrix.plugins.example = {};
-StudentMatrix.modules.example = {};
+delete StudentMatrix.plugins.example;
+delete StudentMatrix.modules.example;
