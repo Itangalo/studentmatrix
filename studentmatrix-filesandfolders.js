@@ -1,7 +1,7 @@
 /**
-* @file
-* StudentActions managing files and folders for students.
-*/
+ * @file
+ * StudentActions managing files and folders for students.
+ */
 
 StudentMatrix.modules.filesandfolders = {
   name : 'Files and folders module',
@@ -284,7 +284,6 @@ StudentMatrix.plugins.filesandfolders = {
     closeFilePicker : function(eventInfo) {
       var app = UiApp.getActiveApplication();
       app.getElementById('fileID').setText(eventInfo.parameter.items[0].id);
-//      app.add(app.createHidden('fileID', eventInfo.parameter.items[0].id).setId('fileID').setName('fileID'));
       app.getElementById('selectedFile').setText('Selected file: ' + eventInfo.parameter.items[0].name);
       return app;
     },
