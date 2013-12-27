@@ -142,7 +142,7 @@ var StudentMatrix = (function() {
     var menuEntries = [];
     var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
     for (var module in modules) {
-      if (typeof modules[module].menuEntries == 'object' && moduleStatus[module] != 'autoDisabled') {
+      if (typeof modules[module].menuEntries == 'object' && moduleStatus[module] != 'autoDisabled' && moduleStatus[module] != 'manualDisabled') {
         for (var entry in modules[module].menuEntries) {
           menuEntries.push({name : modules[module].menuEntries[entry], functionName : entry});
         }
@@ -159,9 +159,9 @@ var StudentMatrix = (function() {
   // Fetches all column entries from StudentMatrix modules. (Private function.)
   getColumns = function() {
     var columns = {};
-    var moduleStatus = StudentMatrix.getProperty('moduleStatus');
+    var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
     for (var module in modules) {
-      if (typeof modules[module].columns == 'object' && moduleStatus[module] != 'autoDisabled') {
+      if (typeof modules[module].columns == 'object' && moduleStatus[module] != 'autoDisabled' && moduleStatus[module] != 'manualDisabled') {
         for (var columnID in modules[module].columns) {
           columns[columnID] = modules[module].columns[columnID];
         }
@@ -224,8 +224,9 @@ var StudentMatrix = (function() {
     if (typeof components[componentType] != 'object') {
       components[componentType] = {};
     }
+    var pluginStatus = StudentMatrix.getProperty('pluginStatus') || {};
     for (var plugin in plugins) {
-      if (typeof plugins[plugin][componentType] == 'object') {
+      if (typeof plugins[plugin][componentType] == 'object' && pluginStatus[plugin] != 'autoDisabled' && pluginStatus[plugin] != 'manualDisabled') {
         for (var component in plugins[plugin][componentType]) {
           components[componentType][component] = plugins[plugin][componentType][component];
         }
