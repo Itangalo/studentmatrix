@@ -156,11 +156,12 @@ var StudentMatrix = (function() {
     SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, getMenuEntries());
   };
 
-  // Fetches all menu entries from StudentMatrix modules. (Private function.)
+  // Fetches all column entries from StudentMatrix modules. (Private function.)
   getColumns = function() {
     var columns = {};
+    var moduleStatus = StudentMatrix.getProperty('moduleStatus');
     for (var module in modules) {
-      if (typeof modules[module].columns == 'object') {
+      if (typeof modules[module].columns == 'object' && moduleStatus[module] != 'autoDisabled') {
         for (var columnID in modules[module].columns) {
           columns[columnID] = modules[module].columns[columnID];
         }
