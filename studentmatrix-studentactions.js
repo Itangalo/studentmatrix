@@ -15,6 +15,7 @@ StudentMatrix.modules.studentActions = {
   description : 'Allows running actions on all or selected students.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-studentactions.js',
+  cell : 'D4',
   dependencies : {
     core : '3.0',
   },

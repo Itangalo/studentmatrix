@@ -16,6 +16,7 @@ StudentMatrix.modules.globalActions = {
   description : 'Provides a UI for running global actions in StudentMatrix.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-globalactions.js',
+  cell : 'D6',
   dependencies : {
     core : '3.0',
   },

@@ -8,6 +8,7 @@ StudentMatrix.modules.filesandfolders = {
   description : 'Holds some column information for the Files and folders plugin.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-filesandfolders.js',
+  cell : 'D7',
   dependencies : {
     core : '3.0',
     modules : {
@@ -27,6 +28,7 @@ StudentMatrix.plugins.filesandfolders = {
   description : 'Allows creating, copying and sharing files/folders with students.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-filesandfolders.js',
+  cell : 'D6',
   dependencies : {
     core : '3.0',
     modules : {

@@ -140,7 +140,7 @@ var StudentMatrix = (function() {
   // Fetches all menu entries from StudentMatrix modules.
   getMenuEntries = function() {
     var menuEntries = [];
-    var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
+    var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
     for (var module in modules) {
       if (typeof modules[module].menuEntries == 'object' && moduleStatus[module] != 'autoDisabled' && moduleStatus[module] != 'manualDisabled') {
         for (var entry in modules[module].menuEntries) {
@@ -224,7 +224,7 @@ var StudentMatrix = (function() {
     if (typeof components[componentType] != 'object') {
       components[componentType] = {};
     }
-    var pluginStatus = StudentMatrix.getProperty('pluginStatus') || {};
+    var pluginStatus = StudentMatrix.getProperty('pluginStatus') || {};
     for (var plugin in plugins) {
       if (typeof plugins[plugin][componentType] == 'object' && pluginStatus[plugin] != 'autoDisabled' && pluginStatus[plugin] != 'manualDisabled') {
         for (var component in plugins[plugin][componentType]) {
@@ -297,6 +297,7 @@ StudentMatrix.modules.core = {
   description : 'Core functionality for StudentMatrix',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
+  cell : 'D2',
   dependencies : {},
 
   menuEntries : {
@@ -322,6 +323,7 @@ StudentMatrix.plugins.core = {
   description : 'Core plugins for StudentMatrix',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
+  cell : 'D2',
   dependencies : {},
 
   fetchers : {

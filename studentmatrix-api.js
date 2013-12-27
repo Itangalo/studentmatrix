@@ -22,6 +22,10 @@ StudentMatrix.plugins.example = {
   description : 'One or two sentences describing what the plugin does.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
+  // The cell reference below refers to the spreadsheet on
+  // https://docs.google.com/spreadsheet/ccc?key=0AjgECFpHWbvRdE4yVHZRcGxEamVWUE1TalBLby12blE
+  // and may be used to broadcast information about new versions. Optional.
+  cell : 'A1',
   dependencies : {
     core : '3.0',
     modules : {
@@ -222,6 +226,7 @@ StudentMatrix.modules.example = {
   description : 'One or two sentences describing what the module does.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
+  cell : 'A1',
   dependencies : {
     core : '3.0',
     modules : {

@@ -3,6 +3,7 @@ StudentMatrix.plugins.dev = {
   description : 'Debugging and development tools for StudentMatrix.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-dev.js',
+  cell : 'D3',
   dependencies : {
     core : '3.0',
     modules : {
@@ -52,7 +53,7 @@ function debug(variable, option) {
   SpreadsheetApp.getActiveSpreadsheet().toast(variable, typeof variable);
 }
 
-function dev() {
+function dev() {  
   StudentMatrix.modules.menu.setMenuEntry('plugins.dev.globalActions.rebuildMenu.processor', 'Rebuild menu', 5);
   StudentMatrix.modules.menu.setMenuEntry('plugins.dev.globalActions.dev.processor', 'Dev', 10);
   onOpen();

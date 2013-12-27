@@ -8,6 +8,7 @@ StudentMatrix.plugins.pluginList = {
   description : 'Shows plugins and modules, version info, dependencies, and links for updates.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-pluginlist.js',
+  cell : 'D7',
   dependencies : {
     core : '3.0',
     modules : {
@@ -26,6 +27,7 @@ StudentMatrix.plugins.pluginList = {
       optionsBuilder : function(handler, container, defaults) {
         var app = UiApp.getActiveApplication();
         var statusMapping = StudentMatrix.plugins.pluginList.statusMapping;
+        var updateInfo = SpreadsheetApp.openById('0AjgECFpHWbvRdE4yVHZRcGxEamVWUE1TalBLby12blE');
         
         // Display core version.
         var checkAllDependencies = StudentMatrix.addPluginHandler('pluginList', 'checkAllDependencies');
@@ -61,7 +63,17 @@ StudentMatrix.plugins.pluginList = {
             var extras = '';
           }
           moduleGrid.setWidget(row, 1, app.createHTML('<strong>' + StudentMatrix.modules[module].name + '</strong> (v. ' + StudentMatrix.modules[module].version + ')<br/>' + StudentMatrix.modules[module].description + extras));
-          moduleGrid.setWidget(row, 2, app.createAnchor('code', StudentMatrix.modules[module].updateUrl))
+          
+          // Check for latest version of the module. Display a link if there is an update.
+          if (StudentMatrix.modules[module].cell != undefined) {
+            var latestVersion = updateInfo.getSheetByName('modules').getRange(StudentMatrix.modules[module].cell).getValue();
+            if (StudentMatrix.plugins.pluginList.verifyVersionDependency(latestVersion, StudentMatrix.modules[module].version) == false) {
+              moduleGrid.setWidget(row, 2, app.createAnchor('Updates!', StudentMatrix.modules[module].updateUrl))
+            }
+          }
+          else {
+            moduleGrid.setWidget(row, 2, app.createAnchor('code', StudentMatrix.modules[module].updateUrl))
+          }
           row++;
         }
 
@@ -85,7 +97,16 @@ StudentMatrix.plugins.pluginList = {
 
           pluginGrid.setWidget(row, 1, app.createHTML('<strong>' + StudentMatrix.plugins[plugin].name + '</strong> (v. ' + StudentMatrix.plugins[plugin].version + ')<br/>' + StudentMatrix.plugins[plugin].description));
 
-          pluginGrid.setWidget(row, 2, app.createAnchor('code', StudentMatrix.plugins[plugin].updateUrl))
+          // Check for latest version of the module. Display a link if there is an update.
+          if (StudentMatrix.plugins[plugin].cell != undefined) {
+            var latestVersion = updateInfo.getSheetByName('plugins').getRange(StudentMatrix.plugins[plugin].cell).getValue();
+            if (StudentMatrix.plugins.pluginList.verifyVersionDependency(latestVersion, StudentMatrix.plugins[plugin].version) == false) {
+              pluginGrid.setWidget(row, 2, app.createAnchor('Updates!', StudentMatrix.plugins[plugin].updateUrl))
+            }
+          }
+          else {
+            pluginGrid.setWidget(row, 2, app.createAnchor('code', StudentMatrix.plugins[plugin].updateUrl))
+          }
           row++;
         }
       },

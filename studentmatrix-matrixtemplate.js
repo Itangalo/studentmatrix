@@ -9,6 +9,7 @@ StudentMatrix.modules.matrixtemplate = {
   description : 'Provides student columns used when working with student sheets.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
+  cell : 'D3',
   dependencies : {
     core : '3.0',
     modules : {
@@ -29,6 +30,7 @@ StudentMatrix.plugins.matrixtemplate = {
   description : 'Allows creating and setting access to student sheets.',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
+  cell : 'D4',
   dependencies : {
     core : '3.0',
   },
