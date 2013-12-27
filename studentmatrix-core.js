@@ -268,7 +268,7 @@ var StudentMatrix = (function() {
     loadComponents : loadComponents,
     replaceColumnTokens : replaceColumnTokens,
     version : '3.0',
-    versionName : '3.0-beta1',
+    versionName : '3.0-beta2',
   }
 })();
 
