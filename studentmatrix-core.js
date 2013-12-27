@@ -1,6 +1,6 @@
 // Loads a menu when opening or installing StudentMatrix.
 function onOpen() {
-  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix 3.0-beta1', StudentMatrix.getMenuEntries());
+  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, StudentMatrix.getMenuEntries());
 }
 function onInstall() {
   onOpen();
@@ -259,6 +259,8 @@ var StudentMatrix = (function() {
     addModuleHandler : addModuleHandler,
     loadComponents : loadComponents,
     replaceColumnTokens : replaceColumnTokens,
+    version : '3.0',
+    versionName : '3.0-beta1',
   }
 })();
 
@@ -287,6 +289,7 @@ StudentMatrix.modules.core = {
   description : 'Core functionality for StudentMatrix',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
+  dependencies : {},
 
   menuEntries : {
     setUpColumns : 'Set up columns in the main sheet',
@@ -311,6 +314,7 @@ StudentMatrix.plugins.core = {
   description : 'Core plugins for StudentMatrix',
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
+  dependencies : {},
 
   fetchers : {
     studentColumnCell : function(row, columnID) {
