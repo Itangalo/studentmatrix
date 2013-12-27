@@ -10,6 +10,28 @@
  * type of component are declared in its own way. Examples follow.
  */
 StudentMatrix.plugins.example = {
+  // Each plugin must provide a meta-description of itself, including version
+  // number and an URL where code updates can be found. Version number should
+  // increase in decimals when the API is not broken, and by integers when any
+  // exposed API becomes broken. Dependencies are declared against the mininmum
+  // API version -- dependency on core 1.1 also works with core 1.2 (but not
+  // 2.0, as APIs may have changed between integer versions). Note that version
+  // and dependencies are declared as strings, to allow incrementing 1.9 to
+  // 1.10 (which is different from 1.1).
+  name : 'Example plugin',
+  description : 'One or two sentences describing what the plugin does.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
+  dependencies : {
+    core : '1.0',
+    modules : {
+      menu : '1.0',
+    },
+    plugins : {
+      myPlugin : '1.1',
+    },
+  },
+
   // Any handlers that should be possible to call using StudentMatrix.addPluginHandler('pluginName', 'callbackFunction').
   // These handlers are normally used to process responses in forms, and they
   // should all take an argument containing the event information for the UiApp.
@@ -79,7 +101,7 @@ StudentMatrix.plugins.example = {
         // You will most likely want to use some fetchers, to get various data
         // derived from the student row.
         var studentNameCell = StudentMatrix.components.fetchers.studentName(row);
-        
+
         studentNameCell.setFontWeight('bold');
         studentNameCell.setBackgroundColor(options.color);
       },
@@ -195,6 +217,21 @@ StudentMatrix.plugins.example = {
  * by using StudentMatrix.addModuleHandler('moduleName', 'callbackFunction').
  */
 StudentMatrix.modules.example = {
+  // See example of plugin for explanation of this meta-description.
+  name : 'Example module',
+  description : 'One or two sentences describing what the module does.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
+  dependencies : {
+    core : '1.0',
+    modules : {
+      menu : '1.0',
+    },
+    plugins : {
+      myPlugin : '1.1',
+    },
+  },
+
   // 'columns' property adds columns that is used by your module. You get the
   // assigned column number through StudentMatrix.getProperty('StudentMatrixColumns', columnID).
   // Note that the user must run the action to set up columns manually.

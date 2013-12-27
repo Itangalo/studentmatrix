@@ -4,6 +4,20 @@
 */
 
 StudentMatrix.plugins.studentSheetUpdates = {
+  name : 'Student sheet updates',
+  description : 'Provides actions and some settings for updating student sheets.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-studentsheetupdate.js',
+  dependencies : {
+    core : '1.0',
+    modules : {
+      studentActions : '1.0',
+    },
+    plugins : {
+      matrixtemplate : '1.0',
+    },
+  },
+
   studentActions : {
     pushColor : {
       name : 'Update colors in student sheets',
@@ -63,7 +77,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
       },
       optionsProcessor : function(eventInfo) {
         var options = {};
-        options.onlyMarked = eventInfo.parameter.onlyMarked;        
+        options.onlyMarked = eventInfo.parameter.onlyMarked;
         options.raiseOrLower = eventInfo.parameter.raiseOrLower;
         options.currentSelection = SpreadsheetApp.getActiveRange();
         options.targetTab = StudentMatrix.plugins.matrixtemplate.getTargetSheetName();

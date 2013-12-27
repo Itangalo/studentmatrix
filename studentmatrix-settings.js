@@ -12,6 +12,14 @@ function settingsDialog() {
  * Module for handling StudentMatrix settings.
  */
 StudentMatrix.modules.settings = {
+  name : 'Settings module',
+  description : 'Manages global settings for StudentMatrix.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-settings.js',
+  dependencies : {
+    core : '1.0',
+  },
+
   // Declares all menu entries for this module.
   menuEntries : {
     settingsDialog : 'Settings',
@@ -67,7 +75,7 @@ StudentMatrix.modules.settings = {
       // Call the options builder for the setting, populating the panel with form elements.
       StudentMatrix.components.settings[setting].optionsBuilder(saveHandler, panel, options);
     }
-    
+
     var hidden = app.createHidden('settingsgroup', eventInfo.parameter.settingsGroup);
     app.add(hidden);
     saveHandler.addCallbackElement(hidden);

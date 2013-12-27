@@ -5,15 +5,34 @@
  */
 
 StudentMatrix.modules.matrixtemplate = {
+  name : 'Matrix template module',
+  description : 'Provides student columns used when working with student sheets.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
+  dependencies : {
+    core : '1.0',
+    modules : {
+      studentActions : '1.0',
+    },
+  },
+
   columns : {
     // Column used for ID and link to student sheets.
     studentSheetID : 'Student sheet ID',
     studentSheetUrl : 'Student sheet url',
-    studentFolderID : 'Student folder ID',
+    studentFolderViewable : 'ID for folder viewable by student',
   },
 };
 
 StudentMatrix.plugins.matrixtemplate = {
+  name : 'Matrix template plugin',
+  description : 'Allows creating and setting access to student sheets.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
+  dependencies : {
+    core : '1.0',
+  },
+
   settings : {
     matrixtemplate : {
       group : 'Student sheet setup',
@@ -34,12 +53,12 @@ StudentMatrix.plugins.matrixtemplate = {
         var textBox = app.createTextBox().setName('templateID').setId('templateID').setText(defaults.templateID);
         container.add(textBox);
         handler.addCallbackElement(textBox);
-        
+
         var fileHandler = StudentMatrix.addPluginHandler('matrixtemplate', 'showFilePicker');
         container.add(app.createButton('Select template file', fileHandler));
-        
+
         container.add(app.createHTML('Emails for teachers, which should have edit access to all student sheets. (One per line.)'));
-        
+
         var teacherEmails = app.createTextArea().setName('teacherEmails').setWidth('100%').setText(defaults.teacherEmails);
         container.add(teacherEmails);
         handler.addCallbackElement(teacherEmails);
@@ -48,7 +67,7 @@ StudentMatrix.plugins.matrixtemplate = {
     sheetColors : {
       group : 'Updating student sheets',
       options : {
-        assessmentColors : '#ffffff\n#ff0000\n#ff00ff\n#0000ff',
+        assessmentColors : 'white\n#ff0000\n#ffff00\n#00ff00',
         assessmentNames : 'Not assessed\nNot yet ok\nOn its way\nOk'
       },
       optionsBuilder : function(handler, container, defaults) {
@@ -66,7 +85,7 @@ StudentMatrix.plugins.matrixtemplate = {
       },
     },
   },
-  
+
   studentActions : {
     copySheet : {
       name : 'Create student sheets from matrix template',
@@ -91,16 +110,16 @@ StudentMatrix.plugins.matrixtemplate = {
           var copy = SpreadsheetApp.openById(matrixFileCell.getValue());
           var newlyCreated = false;
         }
-        
+
         if (matrixUrlCell.getValue() == '') {
           matrixUrlCell.setValue(copy.getUrl());
         }
-        
+
         // Go through the options to set permissions (and some other things), one at a time.
         if (options.rewriteNames == 'true' && newlyCreated == false) {
           copy.rename(fileName);
         }
-        
+
         if (options.resetPermissions == 'true') {
           copy.setAnonymousAccess(false, false);
           var editors = copy.getEditors();
@@ -116,24 +135,24 @@ StudentMatrix.plugins.matrixtemplate = {
             }
           }
         }
-        
+
         if (options.addTeachers == 'true') {
           if (StudentMatrix.getProperty('teacherEmails') != '') {
             copy.addEditors(StudentMatrix.getProperty('teacherEmails').split("\n"));
           }
         }
-        
+
         if (options.addStudentView == 'true') {
           copy.addViewer(studentEmail);
         }
         if (options.addStudentEdit == 'true') {
           copy.addEditor(studentEmail);
         }
-        
+
         if (options.addAllView == 'true') {
           copy.setAnonymousAccess(true, false);
         }
-        
+
         // Note that this final part of the checks changes the copy.
         if (options.moveToFolder == 'true' && folderID != false) {
           var folder = DocsList.getFolderById(folderID);
@@ -142,7 +161,7 @@ StudentMatrix.plugins.matrixtemplate = {
           copy.removeFromFolder(DocsList.getRootFolder());
         }
       },
-      
+
       options : {
         fileName : 'Student sheet for [column-2]',
         rewriteNames : false,
@@ -171,7 +190,7 @@ StudentMatrix.plugins.matrixtemplate = {
         handler.addCallbackElement(fileName);
         container.add(app.createLabel('(Tokens like "[column-2]" will be replaced with values in student rows.)'));
         container.add(app.createHTML('<br />'))
-        
+
         var checkboxes = {};
         for (var checkbox in this.descriptions) {
           checkboxes[checkbox] = app.createCheckBox(this.descriptions[checkbox]).setName(checkbox).setValue(this.options[checkbox]);
@@ -179,7 +198,7 @@ StudentMatrix.plugins.matrixtemplate = {
           handler.addCallbackElement(checkboxes[checkbox]);
         }
       },
-      
+
       validator : function() {
         if (StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID') == undefined) {
           return 'You must set up the columns used for student sheets before running this action. Visit the global actions to do this.';
@@ -194,10 +213,10 @@ StudentMatrix.plugins.matrixtemplate = {
           return 'The matrix template could not be loaded. Please verify that it is set correctly in the global settings.';
         }
       },
-      
+
     },
   },
-  
+
   fetchers : {
     studentSpreadsheet : function(row) {
       var fileID = StudentMatrix.components.fetchers.studentColumnValue(row, 'studentSheetID');
@@ -214,13 +233,13 @@ StudentMatrix.plugins.matrixtemplate = {
       return sheet.getSheetByName(sheetName).getRange(a1Notation);
     },
   },
-  
+
   globalActions : {
     addPushSheet : {
       name : 'Add a sheet to push updates to student sheets',
       group : 'Update student sheets',
       description : 'Adds a "push sheet", used to make changes that will be pushed to selected student sheets. If your student sheets have more than one tab, the push sheet will update the same tab as it was created from.',
-      
+
       validator : function() {
         try {
           SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
@@ -229,7 +248,7 @@ StudentMatrix.plugins.matrixtemplate = {
           return 'Could not open the matrix template. Please make sure one is set in the settings.';
         }
       },
-      
+
       options : {
         tabID : false,
         newName : 'new push sheet',
@@ -240,7 +259,7 @@ StudentMatrix.plugins.matrixtemplate = {
         container.add(app.createLabel('Which tab to you want to use to create a push sheet?'));
         var tabID = app.createListBox().setName('tabID');
         handler.addCallbackElement(tabID);
-        
+
         for (var tab in template.getSheets()) {
           tabID.addItem(template.getSheets()[tab].getSheetName(), template.getSheets()[tab].getSheetId());
         }
@@ -250,10 +269,10 @@ StudentMatrix.plugins.matrixtemplate = {
         var newName = app.createTextBox().setName('newName').setWidth('100%').setText('new push sheet');
         handler.addCallbackElement(newName);
         container.add(newName);
-        
+
         return app;
       },
-      
+
       processor : function(options) {
         var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
         var sheet = StudentMatrix.plugins.matrixtemplate.getSheetByID(template, options.tabID);
@@ -264,7 +283,7 @@ StudentMatrix.plugins.matrixtemplate = {
       },
     },
   },
-  
+
   handlers : {
     showFilePicker : function(eventInfo) {
       var app = UiApp.getActiveApplication();
@@ -278,7 +297,7 @@ StudentMatrix.plugins.matrixtemplate = {
       return app;
     },
   },
-  
+
   // Helper function to get a sheet by ID, from a spreadsheet.
   getSheetByID : function(spreadsheet, sheetID) {
     // This is a rather silly way of loading a sheet by ID, but I found no better.
@@ -288,7 +307,7 @@ StudentMatrix.plugins.matrixtemplate = {
       }
     }
   },
-  
+
   // Helper function to get the name of the tab in the student sheets corresponding to the active push sheet.
   getTargetSheetName : function() {
     var tabID = SpreadsheetApp.getActiveSheet().getSheetId();

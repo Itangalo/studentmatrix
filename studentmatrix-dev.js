@@ -1,10 +1,15 @@
-StudentMatrix.modules.dev = {
-//  menuEntries : {
-//    dev : 'dev',
-//  },
-};
-
 StudentMatrix.plugins.dev = {
+  name : 'Development',
+  description : 'Debugging and development tools for StudentMatrix.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-dev.js',
+  dependencies : {
+    core : '1.0',
+    modules : {
+      menu : '1.0',
+    },
+  },
+
   globalActions : {
     reset : {
       name : 'Reset all properties and settings',
@@ -19,6 +24,13 @@ StudentMatrix.plugins.dev = {
       group : 'Development',
       processor : function() {
         onOpen();
+      },
+    },
+    dev : {
+      name : 'Run temporary dev function',
+      group : 'Development',
+      processor : function() {
+        dev();
       },
     },
   },
@@ -41,23 +53,7 @@ function debug(variable, option) {
 }
 
 function dev() {
-  debug(SpreadsheetApp.getActiveRange().getCell(1, 1).getValue());
-//  var colors = StudentMatrix.getProperty('assessmentColors').split('\n');
-//  debug(colors.indexOf('#bf9000'));
-  
-//  StudentMatrix.loadComponents('fetchers');
-//  var ss = StudentMatrix.components.fetchers.studentSpreadsheet(2);
-//  debug(ss.getName());
-
-//  var selection = SpreadsheetApp.getActiveRange().getA1Notation();
-//  StudentMatrix.components.fetchers.studentRange(2, 'Betygsunderlag', selection).setBackground('green');
-//  debug(ss.getRange(selection).getValue());
-  
-  
-//  var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
-//  var tabID = 4;
-//  var sheetID = SpreadsheetApp.getActiveSheet().getSheetId();
-//  StudentMatrix.setProperty(15, 'StudentMatrixPushMapping', 1.toString());
-  
-//  debug(StudentMatrix.getProperty('StudentMatrixPushMapping'));
+  StudentMatrix.modules.menu.setMenuEntry('plugins.dev.globalActions.rebuildMenu.processor', 'Rebuild menu', 5);
+  StudentMatrix.modules.menu.setMenuEntry('plugins.dev.globalActions.dev.processor', 'Dev', 10);
+  onOpen();
 }

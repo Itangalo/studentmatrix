@@ -12,6 +12,14 @@ function globalActionsDialog() {
 
 // Declares the GlobalActions module.
 StudentMatrix.modules.globalActions = {
+  name : 'Global actions',
+  description : 'Provides a UI for running global actions in StudentMatrix.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-globalactions.js',
+  dependencies : {
+    core : '1.0',
+  },
+
   // Declares all menu entries for this module.
   menuEntries : {
     globalActionsDialog : 'Run global actions',

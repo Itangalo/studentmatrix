@@ -108,7 +108,7 @@ var StudentMatrix = (function() {
       object = this;
       stack = 'StudentMatrix';
     }
-    
+
     // If we are at the end of the recursion, run the method and return its output.
     if (methodName.indexOf('.') == -1) {
       if (typeof object[methodName] == 'function') {
@@ -119,13 +119,13 @@ var StudentMatrix = (function() {
         return;
       }
     }
-    
+
     // If we are *not* at the end of the recursion, dig one level deeper into the object
     // and call this same function for keep digging.
     var parts = methodName.split('.');
     var head = parts.shift();
     var subMethod = parts.join('.');
-    
+
     if (typeof object[head] == 'undefined') {
       throw 'Property ' + head + ' in object ' + stack + ' is not defined.';
     }
@@ -277,6 +277,11 @@ function StudentMatrixCallbackRouter(eventInfo) {
  * Menu entries and columns included in StudentMatrix core.
  */
 StudentMatrix.modules.core = {
+  name : 'Core',
+  description : 'Core functionality for StudentMatrix',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
+
   menuEntries : {
     setUpColumns : 'Set up columns in the main sheet',
   },
@@ -296,6 +301,11 @@ function setUpColumns() {
 
 // Fetchers included in StudentMatrix core.
 StudentMatrix.plugins.core = {
+  name : 'Core',
+  description : 'Core plugins for StudentMatrix',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
+
   fetchers : {
     studentColumnCell : function(row, columnID) {
       var columnNumber = StudentMatrix.getProperty('StudentMatrixColumns', columnID);

@@ -11,6 +11,14 @@ function studentActionsDialog() {
 
 // Declares the StudentActions module.
 StudentMatrix.modules.studentActions = {
+  name : 'Student actions module',
+  description : 'Allows running actions on all or selected students.',
+  version : '1.0',
+  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-studentactions.js',
+  dependencies : {
+    core : '1.0',
+  },
+
   // Declares all menu entries for this module.
   menuEntries : {
     studentActionsDialog : 'Run actions on students',
@@ -221,7 +229,7 @@ StudentMatrix.modules.studentActions = {
       // Create a handler and call the options builder to add any form elements.
       var handler = StudentMatrix.addModuleHandler('studentActions', 'optionsProcessor');
       StudentMatrix.components.studentActions[component].optionsBuilder(handler, panel);
-      
+
       // Add the component and mode as hidden widgets, to pass on their information.
       var componentWidget = app.createHidden('component', component).setId('component');
       var modeWidget = app.createHidden('mode', mode).setId('mode');
@@ -229,7 +237,7 @@ StudentMatrix.modules.studentActions = {
       handler.addCallbackElement(modeWidget);
       panel.add(componentWidget);
       panel.add(modeWidget);
-      
+
       panel.add(app.createHTML('<hr />'));
       panel.add(app.createButton('Cancel', handler).setId('Cancel'));
       panel.add(app.createButton('OK', handler).setId('OK'));
