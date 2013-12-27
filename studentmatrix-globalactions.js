@@ -17,7 +17,7 @@ StudentMatrix.modules.globalActions = {
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-globalactions.js',
   dependencies : {
-    core : '1.0',
+    core : '3.0',
   },
 
   // Declares all menu entries for this module.

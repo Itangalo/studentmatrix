@@ -67,7 +67,7 @@ StudentMatrix.modules.menu = function() {
     version : '1.0',
     updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-menu.js',
     dependencies : {
-      core : '1.0',
+      core : '3.0',
     },
     menuEntries : buildMenuEntries(),
     setMenuEntry : setMenuEntry,

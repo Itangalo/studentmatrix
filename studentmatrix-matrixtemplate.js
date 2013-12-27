@@ -10,7 +10,7 @@ StudentMatrix.modules.matrixtemplate = {
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
   dependencies : {
-    core : '1.0',
+    core : '3.0',
     modules : {
       studentActions : '1.0',
     },
@@ -30,7 +30,7 @@ StudentMatrix.plugins.matrixtemplate = {
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
   dependencies : {
-    core : '1.0',
+    core : '3.0',
   },
 
   settings : {

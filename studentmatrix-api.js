@@ -23,7 +23,7 @@ StudentMatrix.plugins.example = {
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
   dependencies : {
-    core : '1.0',
+    core : '3.0',
     modules : {
       menu : '1.0',
     },
@@ -223,7 +223,7 @@ StudentMatrix.modules.example = {
   version : '1.0',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
   dependencies : {
-    core : '1.0',
+    core : '3.0',
     modules : {
       menu : '1.0',
     },
