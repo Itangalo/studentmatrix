@@ -1,9 +1,9 @@
 // Loads a menu when opening or installing StudentMatrix.
 function onOpen() {
-  SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, StudentMatrix.getMenuEntries());
+  StudentMatrix.buildMenu();
 }
 function onInstall() {
-  onOpen();
+  StudentMatrix.buildMenu();
 }
 
 /**
@@ -140,14 +140,20 @@ var StudentMatrix = (function() {
   // Fetches all menu entries from StudentMatrix modules.
   getMenuEntries = function() {
     var menuEntries = [];
+    var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
     for (var module in modules) {
-      if (typeof modules[module].menuEntries == 'object') {
+      if (typeof modules[module].menuEntries == 'object' && moduleStatus[module] != 'autoDisabled') {
         for (var entry in modules[module].menuEntries) {
           menuEntries.push({name : modules[module].menuEntries[entry], functionName : entry});
         }
       }
     }
     return menuEntries;
+  };
+
+  // Adds a menu to the spreadsheet.
+  buildMenu = function() {
+    SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, getMenuEntries());
   };
 
   // Fetches all menu entries from StudentMatrix modules. (Private function.)
@@ -251,7 +257,7 @@ var StudentMatrix = (function() {
     getProperty : getProperty,
     deleteProperty : deleteProperty,
     callRecursive : callRecursive,
-    getMenuEntries : getMenuEntries,
+    buildMenu : buildMenu,
     setUpColumns : setUpColumns,
     toast : toast,
     getComponentsByGroup : getComponentsByGroup,
