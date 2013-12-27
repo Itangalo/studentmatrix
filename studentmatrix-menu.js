@@ -9,7 +9,7 @@
 StudentMatrix.modules.menu = function() {
   // Reads entries in StudentMatrixMenu and builds menu callbacks for them.
   buildMenuEntries = function() {
-    var customEntries = StudentMatrix.getProperty('StudentMatrixMenu');
+    var customEntries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
     var sortable = [];
     for (var entry in customEntries) {
       sortable.push([entry, customEntries[entry].weight]);
@@ -27,7 +27,7 @@ StudentMatrix.modules.menu = function() {
   setMenuEntry = function(callback, label, weight, menuItemID) {
     if (menuItemID == undefined) {
       // Find the first unused entry in StudentMatrixMenu.
-      var entries = StudentMatrix.getProperty('StudentMatrixMenu');
+      var entries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
       for (i = 24; i >= 1; i--) {
         if (entries[i.toString()] == undefined) {
           menuItemID = i.toString();
@@ -56,6 +56,10 @@ StudentMatrix.modules.menu = function() {
     var entries = StudentMatrix.deleteProperty('StudentMatrixMenu', menuItemID);
   };
 
+  resetMenu = function(menuItemID) {
+    StudentMatrix.deleteProperty('StudentMatrixMenu');
+  };
+
   // Reveal public functions and properties.
   return {
     name : 'Menu',
@@ -68,6 +72,7 @@ StudentMatrix.modules.menu = function() {
     menuEntries : buildMenuEntries(),
     setMenuEntry : setMenuEntry,
     removeMenuEntry : removeMenuEntry,
+    resetMenu : resetMenu,
   };
 }();
 
