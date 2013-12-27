@@ -6,7 +6,7 @@
 StudentMatrix.plugins.pluginList = {
   name : 'Plugin list',
   description : 'Shows plugins and modules, version info, dependencies, and links for updates.',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-pluginlist.js',
   cell : 'D7',
   dependencies : {
@@ -28,11 +28,12 @@ StudentMatrix.plugins.pluginList = {
         var app = UiApp.getActiveApplication();
         var statusMapping = StudentMatrix.plugins.pluginList.statusMapping;
         var updateInfo = SpreadsheetApp.openById('0AjgECFpHWbvRdE4yVHZRcGxEamVWUE1TalBLby12blE');
-        
+
         // Display core version.
         var checkAllDependencies = StudentMatrix.addPluginHandler('pluginList', 'checkAllDependencies');
         container.add(app.createButton('Check unchecked dependencies', checkAllDependencies).setId('checkDependencies'));
         container.add(app.createButton('Check all dependencies', checkAllDependencies).setId('recheckDependencies'));
+        container.add(app.createAnchor('Video on how to update modules and plugins', 'http://www.youtube.com/watch?v=3u675Bnnlx0'));
         container.add(app.createHTML('<strong>StudentMatrix version:</strong> ' + StudentMatrix.versionName + ' (api version ' + StudentMatrix.version + ')<br/><br/>'));
 
         // Build a grid displaying status, name, description and link to source code for each module.
@@ -63,7 +64,7 @@ StudentMatrix.plugins.pluginList = {
             var extras = '';
           }
           moduleGrid.setWidget(row, 1, app.createHTML('<strong>' + StudentMatrix.modules[module].name + '</strong> (v. ' + StudentMatrix.modules[module].version + ')<br/>' + StudentMatrix.modules[module].description + extras));
-          
+
           // Check for latest version of the module. Display a link if there is an update.
           if (StudentMatrix.modules[module].cell != undefined) {
             var latestVersion = updateInfo.getSheetByName('modules').getRange(StudentMatrix.modules[module].cell).getValue();
@@ -118,7 +119,7 @@ StudentMatrix.plugins.pluginList = {
           moduleStatus[module] = eventInfo.parameter['moduleStatus-' + module];
         }
         StudentMatrix.setProperty(moduleStatus, 'moduleStatus');
-        
+
         var pluginStatus = {};
         for (var plugin in StudentMatrix.plugins) {
           pluginStatus[plugin] = eventInfo.parameter['pluginStatus-' + plugin];
@@ -128,13 +129,13 @@ StudentMatrix.plugins.pluginList = {
       },
     },
   },
-  
+
   handlers : {
     checkAllDependencies : function(eventInfo) {
       var app = UiApp.getActiveApplication();
       var statusMapping = StudentMatrix.plugins.pluginList.statusMapping;
       var anythingDisabled = false;
-      
+
       // Check dependencies for all present modules.
       for (module in StudentMatrix.modules) {
         if (eventInfo.parameter['moduleStatus-' + module] == 'needsCheck' || eventInfo.parameter.source == 'recheckDependencies') {
@@ -176,7 +177,7 @@ StudentMatrix.plugins.pluginList = {
       }
     },
   },
-  
+
   // Helper function taking an object of core, module and plugin dependencies, and checking if they are met.
   verifyDependencies : function(dependencyList) {
     // Check core compatibility, if specified.
@@ -210,7 +211,7 @@ StudentMatrix.plugins.pluginList = {
     // If we got this far, all dependencies are met.
     return true;
   },
-  
+
   // Helper function, checking if a version number meets requirements.
   verifyVersionDependency : function(required, existing) {
     if (required.indexOf('.') == -1 || existing.indexOf('.') == -1) {
@@ -218,17 +219,17 @@ StudentMatrix.plugins.pluginList = {
     }
     required = required.split('.');
     existing = existing.split('.');
-    
+
     if (required[0] != existing[0]) {
       return false;
     }
-    
+
     if (parseInt(required[1]) > parseInt(existing[1])) {
       return false;
     }
     return true;
   },
-  
+
   // Helper object to map indices in select lists with stored data.
   statusMapping : {
     needsCheck : {
