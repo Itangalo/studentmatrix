@@ -8,7 +8,7 @@
  */
 StudentMatrix.modules.menu = function() {
   // Reads entries in StudentMatrixMenu and builds menu callbacks for them.
-  buildMenuEntries = function() {
+  function buildMenuEntries() {
     var customEntries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
     var sortable = [];
     for (var entry in customEntries) {
@@ -24,47 +24,60 @@ StudentMatrix.modules.menu = function() {
   };
 
   // Adds a new menu entry to StudentMatrixMenu, or replaces an existing one.
-  setMenuEntry = function(callback, label, weight, menuItemID) {
+  function setMenuEntry(callback, label, weight, menuItemID) {
+    // If no menu item ID is specified, see if there is a free one.
     if (menuItemID == undefined) {
-      // Find the first unused entry in StudentMatrixMenu.
+      // Find the lowest unused entry in the span 1--7.
       var entries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
-      for (i = 24; i >= 1; i--) {
+      for (i = 7; i >= 1; i--) {
         if (entries[i.toString()] == undefined) {
           menuItemID = i.toString();
         }
       }
     }
     if (menuItemID == undefined) {
-      StudentMatrix.toast('All 24 menu places filled. Cannot add more.');
+      StudentMatrix.toast('All custom menu places filled. Cannot add more.');
       return;
     }
     if (typeof menuItemID != 'string') {
-      StudentMatrix.toast('Cannot set menu entry: Menu item ID must be between 1 and 24, represented as a string.');
+      StudentMatrix.toast('Cannot set menu entry: Menu item ID must be a string.');
       return;
     }
 
-    // Build an entry and store it.
+    // Build an entry and store it, then rebuild the menu.
     var entry = {
       callback : callback,
       name : label,
       weight : weight,
     };
     StudentMatrix.setProperty(entry, 'StudentMatrixMenu', menuItemID);
+    StudentMatrix.buildMenu();
   };
 
-  removeMenuEntry = function(menuItemID) {
+  function removeMenuEntry(menuItemID) {
     var entries = StudentMatrix.deleteProperty('StudentMatrixMenu', menuItemID);
+    StudentMatrix.buildMenu();
   };
 
-  resetMenu = function(menuItemID) {
+  function resetMenu(menuItemID) {
     StudentMatrix.deleteProperty('StudentMatrixMenu');
+    StudentMatrix.buildMenu();
+  };
+
+  // Wrapper function to fetch and call a menu callback item.
+  function callMenuItem(menuItemID) {
+    debug(menuItemID);
+    var menuItem = StudentMatrix.getProperty('StudentMatrixMenu', menuItemID.toString());
+    if (menuItem != undefined && menuItem.callback != undefined) {
+      StudentMatrix.callRecursive(menuItem.callback);
+    }
   };
 
   // Reveal public functions and properties.
   return {
     name : 'Menu',
     description : 'Allows customizing menu entries for StudentMatrix.',
-    version : '1.0',
+    version : '1.1',
     updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-menu.js',
     cell : 'D8',
     dependencies : {
@@ -74,152 +87,38 @@ StudentMatrix.modules.menu = function() {
     setMenuEntry : setMenuEntry,
     removeMenuEntry : removeMenuEntry,
     resetMenu : resetMenu,
+    callMenuItem : callMenuItem,
   };
 }();
 
-// A number of function aliases, to make the menus work with Google API.
+// A number of global functions, to make the menus work with Google API.
 // The point of the functions is to call the appropriate callback stored in the
-// StudentMatrix property 'StudentMatrixMenu'. BTW: Repeating code like this sucks.
+// StudentMatrix property 'StudentMatrixMenu'.
 
 function StudentMatrixMenu_1() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('1');
 }
 
 function StudentMatrixMenu_2() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('2');
 }
 
 function StudentMatrixMenu_3() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('3');
 }
 
 function StudentMatrixMenu_4() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('4');
 }
 
 function StudentMatrixMenu_5() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('5');
 }
 
 function StudentMatrixMenu_6() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('6');
 }
 
 function StudentMatrixMenu_7() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_8() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_9() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_10() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_11() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_12() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_13() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_14() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_15() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_16() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_17() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_18() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_19() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_20() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-function StudentMatrixMenu_21() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_22() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_23() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
-}
-
-function StudentMatrixMenu_24() {
-  var index = arguments.callee.name.split('_')[1];
-  var callback = StudentMatrix.getProperty('StudentMatrixMenu', index)['callback'];
-  StudentMatrix.callRecursive(callback);
+  StudentMatrix.modules.menu.callMenuItem('7');
 }
