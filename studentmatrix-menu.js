@@ -66,7 +66,6 @@ StudentMatrix.modules.menu = function() {
 
   // Wrapper function to fetch and call a menu callback item.
   function callMenuItem(menuItemID) {
-    debug(menuItemID);
     var menuItem = StudentMatrix.getProperty('StudentMatrixMenu', menuItemID.toString());
     if (menuItem != undefined && menuItem.callback != undefined) {
       StudentMatrix.callRecursive(menuItem.callback);
