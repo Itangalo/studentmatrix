@@ -70,6 +70,7 @@ StudentMatrix.modules.settings = {
   // Handler for displaying settings for a selected group. If a preselected group is
   // passed, settings for that group will be displayed as a stand-alone dialog.
   showSettings : function(eventInfo, preselected) {
+
     // If we are passed eventInfo rather than a preselected choice, get the
     // settings panel so we can populate it.
     if (preselected == undefined) {
@@ -92,7 +93,6 @@ StudentMatrix.modules.settings = {
       app.add(scroller);
     }
 
-    // If we have a proper group; display all settings in the group.
     var saveHandler = StudentMatrix.addModuleHandler('settings', 'saveSettings');
     // Get all the settings in this group and loop through them.
     StudentMatrix.loadComponents('settings');
@@ -116,6 +116,7 @@ StudentMatrix.modules.settings = {
 
     // If we act on a preselected group, we must make the UI appear before we're done.
     if (preselected != undefined) {
+      saveHandler.addCallbackElement(app.createHidden('closeOnSave', true));
       SpreadsheetApp.getActiveSpreadsheet().show(app);
       return app;
     }
@@ -138,6 +139,9 @@ StudentMatrix.modules.settings = {
           StudentMatrix.setProperty(eventInfo.parameter[option], option);
         }
       }
+    }
+    if (eventInfo.parameter.closeOnSave == true) {
+      UiApp.getActiveApplication().close();
     }
     return UiApp.getActiveApplication();
   },
