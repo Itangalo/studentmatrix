@@ -23,6 +23,14 @@ StudentMatrix.modules.menu = function() {
     return menuEntries;
   };
 
+  // Wrapper function to fetch and call a menu callback item.
+  function callMenuItem(menuItemID) {
+    var menuItem = StudentMatrix.getProperty('StudentMatrixMenu', menuItemID.toString());
+    if (menuItem != undefined && menuItem.callback != undefined) {
+      StudentMatrix.callRecursive(menuItem.callback, menuItem.arguments);
+    }
+  };
+
   // Adds a new menu entry to StudentMatrixMenu, or replaces an existing one.
   function setMenuEntry(callback, label, weight, menuItemID) {
     // If no menu item ID is specified, see if there is a free one.
@@ -64,14 +72,6 @@ StudentMatrix.modules.menu = function() {
     StudentMatrix.buildMenu();
   };
 
-  // Wrapper function to fetch and call a menu callback item.
-  function callMenuItem(menuItemID) {
-    var menuItem = StudentMatrix.getProperty('StudentMatrixMenu', menuItemID.toString());
-    if (menuItem != undefined && menuItem.callback != undefined) {
-      StudentMatrix.callRecursive(menuItem.callback);
-    }
-  };
-
   // Reveal public functions and properties.
   return {
     name : 'Menu',
@@ -83,10 +83,10 @@ StudentMatrix.modules.menu = function() {
       core : '3.0',
     },
     menuEntries : buildMenuEntries(),
+    callMenuItem : callMenuItem,
     setMenuEntry : setMenuEntry,
     removeMenuEntry : removeMenuEntry,
     resetMenu : resetMenu,
-    callMenuItem : callMenuItem,
   };
 }();
 

@@ -131,13 +131,14 @@ var StudentMatrix = (function() {
   };
 
   /**
-   * Function allowing dynamic calls to methods and sub methods.
+   * Function allowing dynamic calls to methods and sub methods of StudentMatrix.
    *
    * This function is used for working around Google Spreadsheet's limitation in
-   * menu callbacks. The object and stack arguments are used for internal and
-   * recursive purposes -- only the methodName is set when calling the function.
+   * menu callbacks. The methodName is the path to the method ('StudentMatrix.'
+   * excluded), and arguments contains an array of arguments to pass to the method.
+   * Object and stack are used for internal and recursive purposes only.
    */
-  callRecursive = function(methodName, object, stack) {
+  callRecursive = function(methodName, arguments, object, stack) {
     if (object == undefined) {
       object = this;
       stack = 'StudentMatrix';
@@ -146,7 +147,7 @@ var StudentMatrix = (function() {
     // If we are at the end of the recursion, run the method and return its output.
     if (methodName.indexOf('.') == -1) {
       if (typeof object[methodName] == 'function') {
-        return object[methodName]();
+        return object[methodName].apply(this, arguments);
       }
       else {
         throw 'Error: ' + stack + '.' + methodName + ' is not a function.';
@@ -163,7 +164,7 @@ var StudentMatrix = (function() {
     if (typeof object[head] == 'undefined') {
       throw 'Property ' + head + ' in object ' + stack + ' is not defined.';
     }
-    return this.callRecursive(subMethod, object[head], stack + '.' + head);
+    return this.callRecursive(subMethod, arguments, object[head], stack + '.' + head);
   };
 
   // Fetches all menu entries from StudentMatrix modules.
