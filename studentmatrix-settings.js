@@ -140,7 +140,7 @@ StudentMatrix.modules.settings = {
         }
       }
     }
-    if (eventInfo.parameter.closeOnSave == true) {
+    if (eventInfo.parameter.closeOnSave == 'true') {
       UiApp.getActiveApplication().close();
     }
     return UiApp.getActiveApplication();
