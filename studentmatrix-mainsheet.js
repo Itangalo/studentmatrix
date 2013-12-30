@@ -17,7 +17,7 @@ StudentMatrix.plugins.mainsheet = {
   },
 
   settings : {
-    viewPlugins : {
+    mainSheetAndColumns : {
       group : 'Main sheet settings',
       options : {
         mainSheet : {},
