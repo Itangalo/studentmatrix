@@ -73,6 +73,13 @@ var StudentMatrix = (function() {
         return value[subPropertyName];
       }
     }
+    if (value == null) {
+      value = StudentMatrix.modules.settings.getPropertyFallback(propertyName);
+      if (value != null) {
+        StudentMatrix.toast('Reading and storing default value for property "' + propertyName + '".');
+        StudentMatrix.setProperty(value, propertyName);
+      }
+    }
     return value;
   };
 
@@ -328,7 +335,7 @@ function StudentMatrixCallbackRouter(eventInfo) {
 StudentMatrix.modules.core = {
   name : 'Core',
   description : 'Core functionality for StudentMatrix',
-  version : '1.1',
+  version : '1.2',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
   cell : 'D2',
   dependencies : {},

@@ -14,7 +14,7 @@ function settingsDialog() {
 StudentMatrix.modules.settings = {
   name : 'Settings module',
   description : 'Manages global settings for StudentMatrix.',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-settings.js',
   cell : 'D5',
   dependencies : {
@@ -29,6 +29,19 @@ StudentMatrix.modules.settings = {
   properties : {
     group : 'string',
     optionsBuilder : 'function',
+  },
+
+  // Looks for any settings component declaring the given property, and returns its default value.
+  getPropertyFallback : function(property) {
+    StudentMatrix.loadComponents('settings');
+    for (var setting in StudentMatrix.components.settings) {
+      for (var option in StudentMatrix.components.settings[setting].options) {
+        if (option == property && StudentMatrix.components.settings[setting].options[option] != null) {
+          return StudentMatrix.components.settings[setting].options[option];
+        }
+      }
+    }
+    return null;
   },
 
   // The dialog for displaying StudentMatrix settings. Main starting point for this module.
