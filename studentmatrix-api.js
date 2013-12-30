@@ -280,7 +280,7 @@ StudentMatrix.modules.example = {
       name : 'Name displayed in the menu',
       weight : -4, // Lower weights floats to the top in the menu.
       callback : 'path.to.internal.method', // Used for dynamic callbacks only.
-      arguments : [arg1, arg2], // Used for dynamic callbacks only.
+      arguments : ['arg1', 'arg2'], // Used for dynamic callbacks only.
     },
   },
 };
