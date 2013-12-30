@@ -9,7 +9,7 @@
 StudentMatrix.modules.menu = function() {
   // Reads entries in the StudentMatrixMenu property and builds a menu for them.
   function buildMenuEntries() {
-    var customEntries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
+    var customEntries = StudentMatrix.getProperty('StudentMatrixMenu') || StudentMatrix.getPluginAndModuleProperties('menuEntries');
     var sortable = [];
     for (var entry in customEntries) {
       sortable.push([entry, customEntries[entry].weight]);
