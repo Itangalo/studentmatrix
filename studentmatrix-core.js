@@ -156,7 +156,7 @@ var StudentMatrix = (function() {
     SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, getMenuEntries());
   };
 
-  // Fetches all column entries from StudentMatrix modules. (Private function.)
+  // Fetches all column entries from StudentMatrix modules and plugins. (Private function.)
   getColumns = function() {
     var columns = {};
     var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
@@ -167,6 +167,16 @@ var StudentMatrix = (function() {
         }
       }
     }
+
+    var pluginStatus = StudentMatrix.getProperty('pluginStatus') || {};
+    for (var plugin in plugins) {
+      if (typeof plugins[plugin].columns == 'object' && pluginStatus[plugin] != 'autoDisabled' && pluginStatus[plugin] != 'manualDisabled') {
+        for (var columnID in plugins[plugin].columns) {
+          columns[columnID] = plugins[plugin].columns[columnID];
+        }
+      }
+    }
+
     return columns;
   };
 
@@ -267,8 +277,8 @@ var StudentMatrix = (function() {
     addModuleHandler : addModuleHandler,
     loadComponents : loadComponents,
     replaceColumnTokens : replaceColumnTokens,
-    version : '3.0',
-    versionName : '3.0-beta2',
+    version : '3.1',
+    versionName : '3.0-beta3',
   }
 })();
 

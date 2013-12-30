@@ -4,35 +4,21 @@
  * copies.
  */
 
-StudentMatrix.modules.matrixtemplate = {
-  name : 'Matrix template module',
-  description : 'Provides student columns used when working with student sheets.',
-  version : '1.0',
-  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
-  cell : 'D3',
-  dependencies : {
-    core : '3.0',
-    modules : {
-      studentActions : '1.0',
-    },
-  },
-
-  columns : {
-    // Column used for ID and link to student sheets.
-    studentSheetID : 'Student sheet ID',
-    studentSheetUrl : 'Student sheet url',
-    studentFolderViewable : 'ID for folder viewable by student',
-  },
-};
-
 StudentMatrix.plugins.matrixtemplate = {
   name : 'Matrix template plugin',
   description : 'Allows creating and setting access to student sheets.',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
   cell : 'D4',
   dependencies : {
-    core : '3.0',
+    core : '3.1',
+  },
+
+  // Column used for ID and link to student sheets.
+  columns : {
+    studentSheetID : 'Student sheet ID',
+    studentSheetUrl : 'Student sheet url',
+    studentFolderViewable : 'ID for folder viewable by student',
   },
 
   settings : {

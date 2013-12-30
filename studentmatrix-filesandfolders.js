@@ -3,14 +3,14 @@
  * StudentActions managing files and folders for students.
  */
 
-StudentMatrix.modules.filesandfolders = {
-  name : 'Files and folders module',
-  description : 'Holds some column information for the Files and folders plugin.',
-  version : '1.0',
+StudentMatrix.plugins.filesandfolders = {
+  name : 'Files and folders plugin',
+  description : 'Allows creating, copying and sharing files/folders with students.',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-filesandfolders.js',
-  cell : 'D7',
+  cell : 'D6',
   dependencies : {
-    core : '3.0',
+    core : '3.1',
     modules : {
       studentActions : '1.0',
     },
@@ -20,20 +20,6 @@ StudentMatrix.modules.filesandfolders = {
     studentFolderPrivate : 'ID for folder private to teacher',
     studentFolderViewable : 'ID for folder viewable by student',
     studentFolderEditable : 'ID for folder editable by student',
-  },
-};
-
-StudentMatrix.plugins.filesandfolders = {
-  name : 'Files and folders plugin',
-  description : 'Allows creating, copying and sharing files/folders with students.',
-  version : '1.0',
-  updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-filesandfolders.js',
-  cell : 'D6',
-  dependencies : {
-    core : '3.0',
-    modules : {
-      studentActions : '1.0',
-    },
   },
 
   studentActions : {
