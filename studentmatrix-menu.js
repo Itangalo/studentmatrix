@@ -7,7 +7,7 @@
  * Module for handling StudentMatrix menu entries.
  */
 StudentMatrix.modules.menu = function() {
-  // Reads entries in StudentMatrixMenu and builds menu callbacks for them.
+  // Reads entries in the StudentMatrixMenu property and builds a menu for them.
   function buildMenuEntries() {
     var customEntries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
     var sortable = [];
@@ -16,17 +16,18 @@ StudentMatrix.modules.menu = function() {
     }
     sortable.sort(function(a, b) {return a[1] - b[1]});
 
-    var menuEntries = {};
+    var menuEntries = [];
     for (var i in sortable) {
-      menuEntries['StudentMatrixMenu_' + sortable[i][0]] = customEntries[sortable[i][0]].name;
+      menuEntries.push({name : customEntries[sortable[i][0]].name, functionName : 'StudentMatrixMenu_' + sortable[i][0]});
     }
-    return menuEntries;
+    
+    SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, menuEntries);
   };
 
   // Wrapper function to fetch and call a menu callback item.
   function callMenuItem(menuItemID) {
     var menuItem = StudentMatrix.getProperty('StudentMatrixMenu', menuItemID.toString());
-    if (menuItem != undefined && menuItem.callback != undefined) {
+    if (menuItem != null && menuItem.callback != undefined) {
       StudentMatrix.callRecursive(menuItem.callback, menuItem.arguments);
     }
   };
@@ -68,8 +69,9 @@ StudentMatrix.modules.menu = function() {
   };
 
   function resetMenu(menuItemID) {
-    StudentMatrix.deleteProperty('StudentMatrixMenu');
-    StudentMatrix.buildMenu();
+    var menuEntries = StudentMatrix.getPluginAndModuleProperties('menuEntries2');
+    StudentMatrix.setProperty(menuEntries, 'StudentMatrixMenu');
+    this.buildMenuEntries();
   };
 
   // Reveal public functions and properties.
@@ -84,6 +86,7 @@ StudentMatrix.modules.menu = function() {
       core : '3.0',
     },
     menuEntries : buildMenuEntries(),
+    buildMenuEntries : buildMenuEntries,
     callMenuItem : callMenuItem,
     setMenuEntry : setMenuEntry,
     removeMenuEntry : removeMenuEntry,

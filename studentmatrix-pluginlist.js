@@ -6,7 +6,7 @@
 StudentMatrix.plugins.pluginList = {
   name : 'Plugin list',
   description : 'Shows plugins and modules, version info, dependencies, and links for updates.',
-  version : '1.2',
+  version : '1.3',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-pluginlist.js',
   cell : 'D7',
@@ -135,6 +135,7 @@ StudentMatrix.plugins.pluginList = {
           pluginStatus[plugin] = eventInfo.parameter['pluginStatus-' + plugin];
         }
         StudentMatrix.setProperty(pluginStatus, 'pluginStatus');
+        StudentMatrix.modules.menu.buildMenuEntries();
         return UiApp.getActiveApplication();
       },
     },

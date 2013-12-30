@@ -55,27 +55,28 @@ StudentMatrix.modules.infopages = {
     app.add(buttonPanel);
 
     SpreadsheetApp.getActiveSpreadsheet().show(app);
-    return app;
   },
 
   buttonHandler : function(eventInfo) {
+    var app = UiApp.getActiveApplication();
+    app.close();
     StudentMatrix.loadComponents('infoPages');
     var infoPage = StudentMatrix.components.infoPages[eventInfo.parameter.pageID];
 
     // First: Check if there are any functions to call when going forth from this page.
-    if ((eventInfo.parameter.source == 'nextButton' || eventInfo.parameter.source == 'doneButton') && typeof infoPage.afterProcess == 'array') {
-      for (var i in infoPage.afterProcess) {
-        StudentMatrix.modules.menu.callMenuItem(infoPage.afterProcess[i]);
-      }
+    if ((eventInfo.parameter.source == 'nextButton' || eventInfo.parameter.source == 'doneButton') && typeof infoPage.afterProcess == 'function') {
+      infoPage.afterProcess();
     }
 
-    // Close this page, and open a new one if demanded.
+    // Then: Open a new one if demanded. @TODO: Creating new dialogs before destroying
+    // the old one seems to cause an alert. This should be fixed.
     if (eventInfo.parameter.source == 'nextButton') {
       this.showPage(infoPage.next);
+      return app;
     }
     if (eventInfo.parameter.source == 'previousButton') {
       this.showPage(infoPage.previous);
+      return app;
     }
-    UiApp.getActiveApplication().close();
   },
 };

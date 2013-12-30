@@ -1,9 +1,9 @@
 // Loads a menu when opening or installing StudentMatrix.
 function onOpen() {
-  StudentMatrix.buildMenu();
+  StudentMatrix.modules.menu.buildMenuEntries();
 }
 function onInstall() {
-  StudentMatrix.buildMenu();
+  StudentMatrix.modules.menu.buildMenuEntries();
 }
 
 /**
@@ -182,33 +182,33 @@ var StudentMatrix = (function() {
     return menuEntries;
   };
 
-  // Adds a menu to the spreadsheet.
-  buildMenu = function() {
-    SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, getMenuEntries());
-  };
-
-  // Fetches all column entries from StudentMatrix modules and plugins.
-  getColumns = function() {
-    var columns = {};
+  // Fetches properties of a certain type from both plugins and modules.
+  getPluginAndModuleProperties = function(property) {
+    var properties = {};
     var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
     for (var module in modules) {
-      if (typeof modules[module].columns == 'object' && moduleStatus[module] != 'autoDisabled' && moduleStatus[module] != 'manualDisabled') {
-        for (var columnID in modules[module].columns) {
-          columns[columnID] = modules[module].columns[columnID];
+      if (typeof modules[module][property] == 'object' && moduleStatus[module] != 'autoDisabled' && moduleStatus[module] != 'manualDisabled') {
+        for (var propertyID in modules[module][property]) {
+          properties[propertyID] = modules[module][property][propertyID];
         }
       }
     }
 
     var pluginStatus = StudentMatrix.getProperty('pluginStatus') || {};
     for (var plugin in plugins) {
-      if (typeof plugins[plugin].columns == 'object' && pluginStatus[plugin] != 'autoDisabled' && pluginStatus[plugin] != 'manualDisabled') {
-        for (var columnID in plugins[plugin].columns) {
-          columns[columnID] = plugins[plugin].columns[columnID];
+      if (typeof plugins[plugin][property] == 'object' && pluginStatus[plugin] != 'autoDisabled' && pluginStatus[plugin] != 'manualDisabled') {
+        for (var propertyID in plugins[plugin][property]) {
+          properties[propertyID] = plugins[plugin][property][propertyID];
         }
       }
     }
 
-    return columns;
+    return properties;
+  };
+
+  // Alias for allowing quicker fetching of columns declared by plugins and modules.
+  getColumns = function() {
+    return getPluginAndModuleProperties('columns');
   };
 
   // Writes all columns declared by modules to the main sheet.
@@ -300,7 +300,7 @@ var StudentMatrix = (function() {
     getProperty : getProperty,
     deleteProperty : deleteProperty,
     callRecursive : callRecursive,
-    buildMenu : buildMenu,
+    getPluginAndModuleProperties : getPluginAndModuleProperties,
     getColumns : getColumns,
     setUpColumns : setUpColumns,
     toast : toast,
@@ -337,7 +337,7 @@ function StudentMatrixCallbackRouter(eventInfo) {
 StudentMatrix.modules.core = {
   name : 'Core',
   description : 'Core functionality for StudentMatrix',
-  version : '1.2',
+  version : '1.3',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
   cell : 'D2',
