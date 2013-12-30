@@ -19,8 +19,6 @@ StudentMatrix.plugins.installwizard = {
   
   menuEntries : {
     install1 : {
-      callback : 'modules.infopages.showPage',
-      arguments : ['install1'],
       name : 'Step 1: Choose plugins and modules',
       weight : -7,
     },
@@ -41,6 +39,7 @@ StudentMatrix.plugins.installwizard = {
       },
       doneText : 'Show the list of plugins',
       afterProcess : function() {
+        StudentMatrix.setProperty(this.menuEntries.install1, 'StudentMatrixMenu', 'install1');
         var entry = {
           callback : 'modules.infopages.showPage',
           arguments : ['install2'],
@@ -114,7 +113,7 @@ StudentMatrix.plugins.installwizard = {
 };
 
 function StudentMatrixMenu_install1() {
-  StudentMatrix.modules.menu.callMenuItem('install1');
+  StudentMatrix.modules.infopages.showPage('install1');
 }
 
 function StudentMatrixMenu_install2() {
