@@ -15,6 +15,7 @@ StudentMatrix.modules.globalActions = {
   name : 'Global actions',
   description : 'Provides a UI for running global actions in StudentMatrix.',
   version : '1.1',
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-globalactions.js',
   cell : 'D6',
   dependencies : {
@@ -114,7 +115,7 @@ StudentMatrix.modules.globalActions = {
 
   // Displays any options for an action, before running it.
   optionsHandler : function(eventInfo) {
-    var app = UiApp.createApplication();
+    var app = UiApp.getActiveApplication();
     // Get the component to run.
     var component = eventInfo.parameter.SelectedAction;
 

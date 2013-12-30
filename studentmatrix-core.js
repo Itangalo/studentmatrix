@@ -147,6 +147,7 @@ var StudentMatrix = (function() {
     // If we are at the end of the recursion, run the method and return its output.
     if (methodName.indexOf('.') == -1) {
       if (typeof object[methodName] == 'function') {
+        // The 'apply' thing allows us to pass arguments. Quite useful.
         return object[methodName].apply(this, arguments);
       }
       else {
@@ -337,6 +338,7 @@ StudentMatrix.modules.core = {
   name : 'Core',
   description : 'Core functionality for StudentMatrix',
   version : '1.2',
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
   cell : 'D2',
   dependencies : {},
@@ -363,6 +365,7 @@ StudentMatrix.plugins.core = {
   name : 'Core',
   description : 'Core plugins for StudentMatrix',
   version : '1.0',
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
   cell : 'D2',
   dependencies : {},

@@ -15,6 +15,7 @@ StudentMatrix.modules.settings = {
   name : 'Settings module',
   description : 'Manages global settings for StudentMatrix.',
   version : '1.1',
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-settings.js',
   cell : 'D5',
   dependencies : {

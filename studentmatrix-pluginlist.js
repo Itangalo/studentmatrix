@@ -7,6 +7,7 @@ StudentMatrix.plugins.pluginList = {
   name : 'Plugin list',
   description : 'Shows plugins and modules, version info, dependencies, and links for updates.',
   version : '1.1',
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-pluginlist.js',
   cell : 'D7',
   dependencies : {
@@ -52,6 +53,10 @@ StudentMatrix.plugins.pluginList = {
           if (defaults.moduleStatus[module] != undefined) {
             moduleSelect[row].setSelectedIndex(statusMapping[defaults.moduleStatus[module]].index);
           }
+          if (StudentMatrix.modules[module].required == true) {
+            moduleSelect[row].setSelectedIndex(statusMapping.required.index);
+            moduleSelect[row].setEnabled(false);
+          }
           handler.addCallbackElement(moduleSelect[row]);
           checkAllDependencies.addCallbackElement(moduleSelect[row]);
           moduleGrid.setWidget(row, 0, moduleSelect[row]);
@@ -92,6 +97,11 @@ StudentMatrix.plugins.pluginList = {
           if (defaults.pluginStatus[plugin] != undefined) {
             pluginSelect[row].setSelectedIndex(statusMapping[defaults.pluginStatus[plugin]].index);
           }
+          if (StudentMatrix.plugins[plugin].required == true) {
+            pluginSelect[row].setSelectedIndex(statusMapping.required.index);
+            pluginSelect[row].setEnabled(false);
+          }
+
           handler.addCallbackElement(pluginSelect[row]);
           checkAllDependencies.addCallbackElement(pluginSelect[row]);
           pluginGrid.setWidget(row, 0, pluginSelect[row]);
@@ -138,7 +148,7 @@ StudentMatrix.plugins.pluginList = {
 
       // Check dependencies for all present modules.
       for (module in StudentMatrix.modules) {
-        if (eventInfo.parameter['moduleStatus-' + module] == 'needsCheck' || eventInfo.parameter.source == 'recheckDependencies') {
+        if (eventInfo.parameter['moduleStatus-' + module] == 'needsCheck' || (eventInfo.parameter.source == 'recheckDependencies' && eventInfo.parameter.source == 'required')) {
           var selectList = app.getElementById('moduleStatus-' + module);
           var dependencies = StudentMatrix.modules[module].dependencies;
           if (dependencies == undefined) {
@@ -158,7 +168,7 @@ StudentMatrix.plugins.pluginList = {
 
       // Check dependencies for all present plugins.
       for (plugin in StudentMatrix.plugins) {
-        if (eventInfo.parameter['pluginStatus-' + plugin] == 'needsCheck' || eventInfo.parameter.source == 'recheckDependencies') {
+        if (eventInfo.parameter['pluginStatus-' + plugin] == 'needsCheck' || (eventInfo.parameter.source == 'recheckDependencies' && eventInfo.parameter.source == 'required')) {
           var selectList = app.getElementById('pluginStatus-' + plugin);
           var dependencies = StudentMatrix.plugins[plugin].dependencies;
           if (dependencies == undefined) {
@@ -236,20 +246,24 @@ StudentMatrix.plugins.pluginList = {
       index : 0,
       name : 'not checked',
     },
-    autoEnabled : {
+    required : {
       index : 1,
+      name : 'required',
+    },
+    autoEnabled : {
+      index : 2,
       name : 'checked and enabled',
     },
     autoDisabled : {
-      index : 2,
+      index : 3,
       name : 'automatically disabled',
     },
     manualDisabled : {
-      index : 3,
+      index : 4,
       name : 'manually disabled',
     },
     forced : {
-      index : 4,
+      index : 5,
       name : 'forced enabled',
     },
   },

@@ -7,6 +7,7 @@ StudentMatrix.plugins.mainsheet = {
   name : 'Main sheet and column settings',
   description : 'Allows changing which sheet to read student list from, and changing/viewing which columns are used by modules and plugins.',
   version : '1.0',
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-mainsheet.js',
   cell : 'D8',
   dependencies : {
