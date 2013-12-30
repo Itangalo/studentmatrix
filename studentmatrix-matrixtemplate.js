@@ -12,6 +12,9 @@ StudentMatrix.plugins.matrixtemplate = {
   cell : 'D4',
   dependencies : {
     core : '3.1',
+    plugins : {
+      mainsheet : '1.0',
+    },
   },
 
   // Column used for ID and link to student sheets.
@@ -263,7 +266,7 @@ StudentMatrix.plugins.matrixtemplate = {
 
       processor : function(options) {
         var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
-        var sheet = StudentMatrix.plugins.matrixtemplate.getSheetByID(template, options.tabID);
+        var sheet = StudentMatrix.plugins.mainsheet.getSheetByID(template, options.tabID);
         sheet.copyTo(SpreadsheetApp.getActiveSpreadsheet()).activate().setName(options.newName);
         var copy = SpreadsheetApp.getActiveSpreadsheet();
         copy.moveActiveSheet(2);
@@ -286,16 +289,6 @@ StudentMatrix.plugins.matrixtemplate = {
     },
   },
 
-  // Helper function to get a sheet by ID, from a spreadsheet.
-  getSheetByID : function(spreadsheet, sheetID) {
-    // This is a rather silly way of loading a sheet by ID, but I found no better.
-    for (var i in spreadsheet.getSheets()) {
-      if (spreadsheet.getSheets()[i].getSheetId() == sheetID) {
-        return spreadsheet.getSheets()[i];
-      }
-    }
-  },
-
   // Helper function to get the name of the tab in the student sheets corresponding to the active push sheet.
   getTargetSheetName : function() {
     var tabID = SpreadsheetApp.getActiveSheet().getSheetId();
@@ -304,6 +297,6 @@ StudentMatrix.plugins.matrixtemplate = {
       return false;
     }
     var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
-    return this.getSheetByID(template, targetID).getSheetName();
+    return StudentMatrix.plugins.mainsheet.getSheetByID(template, targetID).getSheetName();
   },
 };

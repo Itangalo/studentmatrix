@@ -16,7 +16,29 @@ var StudentMatrix = (function() {
 
   // Returns the sheet containing main student information.
   mainSheet = function() {
-    return SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
+    // Default is that main sheet name is stored as a property.
+    var mainSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(StudentMatrix.getProperty('StudentMatrixMainSheetName'));
+    if (typeof mainSheet == 'Sheet') {
+      return mainSheet;
+    }
+
+    // If the sheet couldn't be loaded, it might never have been set or it could be renamed.
+    // We check these cases, and store relevant properties for quicker fetching next time.
+    var mainSheetID = StudentMatrix.getProperty('StudentMatrixMainSheetID');
+    if (mainSheetID == undefined) {
+      var mainSheetName = SpreadsheetApp.getActiveSheet().getName();
+      var mainSheetID = SpreadsheetApp.getActiveSheet().getSheetId();
+      StudentMatrix.setProperty(mainSheetName, 'StudentMatrixMainSheetName');
+      StudentMatrix.setProperty(mainSheetID, 'StudentMatrixMainSheetID');
+      StudentMatrix.toast('No main sheet is set: using the active sheet. Use settings to change main sheet.');
+      return SpreadsheetApp.getActiveSheet();
+    }
+    else {
+      var mainSheet = StudentMatrix.plugins.mainsheet.getSheetByID(SpreadsheetApp.getActiveSpreadsheet(), mainSheetID);
+      StudentMatrix.setProperty(mainSheet.getName(), 'StudentMatrixMainSheetName');
+      StudentMatrix.toast('Main sheet seems to be renamed: updating the settings.');
+      return mainSheet;
+    }
   };
 
   // Three functions keeping track of which rows are used for storing students.
@@ -156,7 +178,7 @@ var StudentMatrix = (function() {
     SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, getMenuEntries());
   };
 
-  // Fetches all column entries from StudentMatrix modules and plugins. (Private function.)
+  // Fetches all column entries from StudentMatrix modules and plugins.
   getColumns = function() {
     var columns = {};
     var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
@@ -270,6 +292,7 @@ var StudentMatrix = (function() {
     deleteProperty : deleteProperty,
     callRecursive : callRecursive,
     buildMenu : buildMenu,
+    getColumns : getColumns,
     setUpColumns : setUpColumns,
     toast : toast,
     getComponentsByGroup : getComponentsByGroup,
@@ -277,7 +300,7 @@ var StudentMatrix = (function() {
     addModuleHandler : addModuleHandler,
     loadComponents : loadComponents,
     replaceColumnTokens : replaceColumnTokens,
-    version : '3.1',
+    version : '3.2',
     versionName : '3.0-beta3',
   }
 })();
