@@ -244,7 +244,7 @@ StudentMatrix.plugins.pluginList = {
   statusMapping : {
     needsCheck : {
       index : 0,
-      name : 'not checked',
+      name : 'dependency not checked',
     },
     required : {
       index : 1,
