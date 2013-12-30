@@ -14,7 +14,7 @@ function globalActionsDialog() {
 StudentMatrix.modules.globalActions = {
   name : 'Global actions',
   description : 'Provides a UI for running global actions in StudentMatrix.',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-globalactions.js',
   cell : 'D6',
   dependencies : {
@@ -114,10 +114,9 @@ StudentMatrix.modules.globalActions = {
 
   // Displays any options for an action, before running it.
   optionsHandler : function(eventInfo) {
-    var app = UiApp.getActiveApplication();
-    // Get the component to run and which mode to run in. Add as hidden elements.
+    var app = UiApp.createApplication();
+    // Get the component to run.
     var component = eventInfo.parameter.SelectedAction;
-    var mode = eventInfo.parameter.source;
 
     // Check for an options builder for the component. If found, display a form with options.
     StudentMatrix.loadComponents('globalActions');
@@ -131,7 +130,7 @@ StudentMatrix.modules.globalActions = {
       var handler = StudentMatrix.addModuleHandler('globalActions', 'optionsProcessor');
       StudentMatrix.components.globalActions[component].optionsBuilder(handler, panel);
 
-      // Add the component and mode as hidden widgets, to pass on their information.
+      // Add the component as a hidden widgets, to pass on the information.
       var componentWidget = app.createHidden('component', component).setId('component');
       handler.addCallbackElement(componentWidget);
       panel.add(componentWidget);
