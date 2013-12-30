@@ -227,6 +227,9 @@ StudentMatrix.modules.example = {
   name : 'Example module',
   description : 'One or two sentences describing what the module does.',
   version : '1.0',
+  // Setting 'required' property to true makes it impossible to disable the module (or
+  // plugin) manually.
+  required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-api.js',
   cell : 'A1',
   dependencies : {
