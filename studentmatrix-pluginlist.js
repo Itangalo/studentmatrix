@@ -6,7 +6,7 @@
 StudentMatrix.plugins.pluginList = {
   name : 'Plugin list',
   description : 'Shows plugins and modules, version info, dependencies, and links for updates.',
-  version : '1.1',
+  version : '1.2',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-pluginlist.js',
   cell : 'D7',
