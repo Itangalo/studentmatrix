@@ -210,6 +210,25 @@ StudentMatrix.plugins.example = {
       },
     },
   },
+
+  // Information pages can be used for building guides/wizards, or just to
+  // display static information (such as help pages).
+  infoPages : {
+    pageID : {
+      title : 'Title of the info page',
+      content : function(container) {
+        var app = UiApp.getActiveApplication();
+        container.add(app.createHTML('Content must be placed in the container, so it is scrollable.'));
+      },
+      doneText : 'It is possible to override text on the "done" button',
+      next : 'nextPageID', // Optional, used for browsing.
+      previous : 'previousPageID', // Optional, used for browsing.
+      afterProcess : function() {
+        // Add any code you want to run when the user clicks 'done' or 'next'
+        // from this information page. Optional.
+      },
+    },
+  },
 };
 
 /**
@@ -245,6 +264,7 @@ StudentMatrix.modules.example = {
   // 'columns' property adds columns that is used by your module. You get the
   // assigned column number through StudentMatrix.getProperty('StudentMatrixColumns', columnID).
   // Note that the user must run the action to set up columns manually.
+  // Columns can be added by both modules and plugins.
   columns : {
     myColumnID : 'Visible lable for the column',
     myColumnID2 : 'Another label',
@@ -252,10 +272,16 @@ StudentMatrix.modules.example = {
 
   // 'menuEntries' property adds menu entries to the StudentMatrix menu. Note
   // that all callback functions must be global, due to how the Google script
-  // works. Best practice is to just add an alias function, and let that
-  // function call a method in your module.
+  // works. The menu entry below will need a global function called
+  // StudentMatrixMenu_callbackSuffix().
+  // Menu entries can be added by both modules and plugins.
   menuEntries : {
-    myCallbackFunction : 'Command to be displayed in menu',
+    callbackSuffix : {
+      name : 'Name displayed in the menu',
+      weight : -4, // Lower weights floats to the top in the menu.
+      callback : 'path.to.internal.method', // Used for dynamic callbacks only.
+      arguments : [arg1, arg2], // Used for dynamic callbacks only.
+    },
   },
 };
 
