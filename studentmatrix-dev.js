@@ -53,8 +53,5 @@ function debug(variable, option) {
   SpreadsheetApp.getActiveSpreadsheet().toast(variable, typeof variable);
 }
 
-function dev() {  
-  StudentMatrix.modules.menu.setMenuEntry('plugins.dev.globalActions.rebuildMenu.processor', 'Rebuild menu', 5);
-  StudentMatrix.modules.menu.setMenuEntry('plugins.dev.globalActions.dev.processor', 'Dev', 10);
-  onOpen();
+function dev() {
 }
