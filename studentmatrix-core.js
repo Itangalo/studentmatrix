@@ -305,7 +305,7 @@ function StudentMatrixCallbackRouter(eventInfo) {
 StudentMatrix.modules.core = {
   name : 'Core',
   description : 'Core functionality for StudentMatrix',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
   cell : 'D2',
   dependencies : {},
