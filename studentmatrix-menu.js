@@ -18,7 +18,12 @@ StudentMatrix.modules.menu = function() {
 
     var menuEntries = [];
     for (var i in sortable) {
-      menuEntries.push({name : customEntries[sortable[i][0]].name, functionName : 'StudentMatrixMenu_' + sortable[i][0]});
+      if (customEntries[sortable[i][0]].name == undefined || customEntries[sortable[i][0]].name == null) {
+        menuEntries.push(null);
+      }
+      else {
+        menuEntries.push({name : customEntries[sortable[i][0]].name, functionName : 'StudentMatrixMenu_' + sortable[i][0]});
+      }
     }
     
     SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, menuEntries);
@@ -60,16 +65,16 @@ StudentMatrix.modules.menu = function() {
       weight : weight,
     };
     StudentMatrix.setProperty(entry, 'StudentMatrixMenu', menuItemID);
-    StudentMatrix.buildMenu();
+    StudentMatrix.modules.menu.buildMenuEntries();
   };
 
   function removeMenuEntry(menuItemID) {
     var entries = StudentMatrix.deleteProperty('StudentMatrixMenu', menuItemID);
-    StudentMatrix.buildMenu();
+    StudentMatrix.modules.menu.buildMenuEntries();
   };
 
-  function resetMenu(menuItemID) {
-    var menuEntries = StudentMatrix.getPluginAndModuleProperties('menuEntries2');
+  function resetMenu() {
+    var menuEntries = StudentMatrix.getPluginAndModuleProperties('menuEntries');
     StudentMatrix.setProperty(menuEntries, 'StudentMatrixMenu');
     this.buildMenuEntries();
   };
@@ -85,7 +90,6 @@ StudentMatrix.modules.menu = function() {
     dependencies : {
       core : '3.0',
     },
-    menuEntries : buildMenuEntries(),
     buildMenuEntries : buildMenuEntries,
     callMenuItem : callMenuItem,
     setMenuEntry : setMenuEntry,

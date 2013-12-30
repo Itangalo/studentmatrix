@@ -168,20 +168,6 @@ var StudentMatrix = (function() {
     return this.callRecursive(subMethod, arguments, object[head], stack + '.' + head);
   };
 
-  // Fetches all menu entries from StudentMatrix modules.
-  getMenuEntries = function() {
-    var menuEntries = [];
-    var moduleStatus = StudentMatrix.getProperty('moduleStatus') || {};
-    for (var module in modules) {
-      if (typeof modules[module].menuEntries == 'object' && moduleStatus[module] != 'autoDisabled' && moduleStatus[module] != 'manualDisabled') {
-        for (var entry in modules[module].menuEntries) {
-          menuEntries.push({name : modules[module].menuEntries[entry], functionName : entry});
-        }
-      }
-    }
-    return menuEntries;
-  };
-
   // Fetches properties of a certain type from both plugins and modules.
   getPluginAndModuleProperties = function(property) {
     var properties = {};
@@ -343,22 +329,12 @@ StudentMatrix.modules.core = {
   cell : 'D2',
   dependencies : {},
 
-  menuEntries : {
-    setUpColumns : 'Set up columns in the main sheet',
-  },
   columns : {
     process : 'Process',
     studentName : 'Student name',
     studentMail : 'Student email',
   }
 };
-
-/**
- * Menu alias: Sets up column headers for all columns declared in StudentMatrix.columns.
- */
-function setUpColumns() {
-  StudentMatrix.setUpColumns();
-}
 
 // Fetchers included in StudentMatrix core.
 StudentMatrix.plugins.core = {

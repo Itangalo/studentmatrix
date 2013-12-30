@@ -4,7 +4,7 @@
  */
 
 // Menu alias: Opens the settings dialog.
-function settingsDialog() {
+function StudentMatrixMenu_settings() {
   StudentMatrix.modules.settings.settingsDialog();
 }
 
@@ -14,17 +14,20 @@ function settingsDialog() {
 StudentMatrix.modules.settings = {
   name : 'Settings module',
   description : 'Manages global settings for StudentMatrix.',
-  version : '1.2',
+  version : '1.3',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-settings.js',
   cell : 'D5',
   dependencies : {
-    core : '3.0',
+    core : '3.2',
   },
 
   // Declares all menu entries for this module.
   menuEntries : {
-    settingsDialog : 'Settings',
+    settings : {
+      name : 'Settings',
+      weight : 20,
+    },
   },
   // Declare required properties for components of type 'settings'.
   properties : {

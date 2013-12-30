@@ -5,7 +5,7 @@
  */
 
 // Menu alias: Dialog for running actions on students.
-function studentActionsDialog() {
+function StudentMatrixMenu_studentActions() {
   StudentMatrix.modules.studentActions.actionsDialog();
 };
 
@@ -13,17 +13,20 @@ function studentActionsDialog() {
 StudentMatrix.modules.studentActions = {
   name : 'Student actions module',
   description : 'Allows running actions on all or selected students.',
-  version : '1.0',
+  version : '1.1',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-studentactions.js',
   cell : 'D4',
   dependencies : {
-    core : '3.0',
+    core : '3.2',
   },
 
   // Declares all menu entries for this module.
   menuEntries : {
-    studentActionsDialog : 'Run actions on students',
+    studentActions : {
+      name : 'Run actions on students',
+      weight : 15,
+    },
   },
   // Declare required properties for components of type 'studentActions'.
   properties : {

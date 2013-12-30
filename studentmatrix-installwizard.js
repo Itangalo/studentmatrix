@@ -17,13 +17,17 @@ StudentMatrix.plugins.installwizard = {
     },
   },
   
-  menuEntries2 : {
+  menuEntries : {
     install1 : {
       callback : 'modules.infopages.showPage',
       arguments : ['install1'],
       name : 'Step 1: Choose plugins and modules',
       weight : -7,
     },
+    installBreak : {
+      name : null,
+      weight : -1,
+    }
   },
   
   infoPages : {

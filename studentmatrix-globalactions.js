@@ -6,7 +6,7 @@
  */
 
 // Menu alias: Dialog for running actions on students.
-function globalActionsDialog() {
+function StudentMatrixMenu_globalActions() {
   StudentMatrix.modules.globalActions.actionsDialog();
 };
 
@@ -14,17 +14,20 @@ function globalActionsDialog() {
 StudentMatrix.modules.globalActions = {
   name : 'Global actions',
   description : 'Provides a UI for running global actions in StudentMatrix.',
-  version : '1.1',
+  version : '1.2',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-globalactions.js',
   cell : 'D6',
   dependencies : {
-    core : '3.0',
+    core : '3.2',
   },
 
   // Declares all menu entries for this module.
   menuEntries : {
-    globalActionsDialog : 'Run global actions',
+    globalActions : {
+      name : 'Run global actions',
+      weight : 15,
+    },
   },
   // Declare required properties for components of type 'globalActions'.
   properties : {

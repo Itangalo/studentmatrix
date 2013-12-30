@@ -24,7 +24,7 @@ StudentMatrix.plugins.dev = {
       name : 'Rebuild the menu',
       group : 'Development',
       processor : function() {
-        onOpen();
+        StudentMatrix.modules.menu.resetMenu();
       },
     },
     dev : {
