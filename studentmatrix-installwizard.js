@@ -39,7 +39,7 @@ StudentMatrix.plugins.installwizard = {
       },
       doneText : 'Show the list of plugins',
       afterProcess : function() {
-        StudentMatrix.setProperty(this.menuEntries.install1, 'StudentMatrixMenu', 'install1');
+        StudentMatrix.setProperty(StudentMatrix.plugins.installwizard.menuEntries.install1, 'StudentMatrixMenu', 'install1');
         var entry = {
           callback : 'modules.infopages.showPage',
           arguments : ['install2'],
