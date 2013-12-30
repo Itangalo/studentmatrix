@@ -14,7 +14,7 @@ function settingsDialog() {
 StudentMatrix.modules.settings = {
   name : 'Settings module',
   description : 'Manages global settings for StudentMatrix.',
-  version : '1.1',
+  version : '1.2',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-settings.js',
   cell : 'D5',
@@ -67,21 +67,36 @@ StudentMatrix.modules.settings = {
     return app;
   },
 
-  // Handler for displaying settings for a selected group.
-  showSettings : function(eventInfo) {
-    var app = UiApp.getActiveApplication();
-    var panel = app.getElementById('settingsPanel');
-    panel.clear();
-
-    // The 'null' value is used for groups that are not groups.
-    if (eventInfo.parameter.settingsGroup == 'null') {
-      return app;
+  // Handler for displaying settings for a selected group. If a preselected group is
+  // passed, settings for that group will be displayed as a stand-alone dialog.
+  showSettings : function(eventInfo, preselected) {
+    // If we are passed eventInfo rather than a preselected choice, get the
+    // settings panel so we can populate it.
+    if (preselected == undefined) {
+      var settingsGroup = eventInfo.parameter.settingsGroup;
+      var app = UiApp.getActiveApplication();
+      var panel = app.getElementById('settingsPanel');
+      panel.clear();
+      // The 'null' value is used for groups that are not groups.
+      if (eventInfo.parameter.settingsGroup == 'null') {
+        return app;
+      }
     }
+    // If we are passed a preselected group rather than eventInfo, build a new app
+    // and add a panel where we put the settings information.
+    else {
+      var settingsGroup = preselected;
+      var app = UiApp.createApplication().setTitle(preselected);
+      var panel = app.createVerticalPanel().setId('settingsPanel').setWidth('100%');
+      var scroller = app.createScrollPanel(panel).setAlwaysShowScrollBars(true).setHeight('90%').setWidth('100%');
+      app.add(scroller);
+    }
+
     // If we have a proper group; display all settings in the group.
     var saveHandler = StudentMatrix.addModuleHandler('settings', 'saveSettings');
     // Get all the settings in this group and loop through them.
     StudentMatrix.loadComponents('settings');
-    var settings = StudentMatrix.getComponentsByGroup('settings')[eventInfo.parameter.settingsGroup];
+    var settings = StudentMatrix.getComponentsByGroup('settings')[settingsGroup];
     for (var setting in settings) {
       // Fetch default values from the component, then overwrite with any manually set properties.
       var options = StudentMatrix.components.settings[setting].options;
@@ -92,12 +107,18 @@ StudentMatrix.modules.settings = {
       StudentMatrix.components.settings[setting].optionsBuilder(saveHandler, panel, options);
     }
 
-    var hidden = app.createHidden('settingsgroup', eventInfo.parameter.settingsGroup);
+    var hidden = app.createHidden('settingsgroup', settingsGroup);
     app.add(hidden);
     saveHandler.addCallbackElement(hidden);
     panel.add(app.createHTML('<hr />'));
     // Add a button to save the settings.
     panel.add(app.createButton('Save group settings', saveHandler));
+
+    // If we act on a preselected group, we must make the UI appear before we're done.
+    if (preselected != undefined) {
+      SpreadsheetApp.getActiveSpreadsheet().show(app);
+      return app;
+    }
   },
 
   // Handler for saving settings for a selected group.
