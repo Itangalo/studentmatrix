@@ -83,12 +83,12 @@ StudentMatrix.modules.menu = function() {
   return {
     name : 'Menu',
     description : 'Allows customizing menu entries for StudentMatrix.',
-    version : '1.1',
+    version : '1.2',
     required : true,
     updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-menu.js',
     cell : 'D8',
     dependencies : {
-      core : '3.0',
+      core : '3.2',
     },
     buildMenuEntries : buildMenuEntries,
     callMenuItem : callMenuItem,
