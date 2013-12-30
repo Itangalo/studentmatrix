@@ -18,14 +18,14 @@ var StudentMatrix = (function() {
   mainSheet = function() {
     // Default is that main sheet name is stored as a property.
     var mainSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(StudentMatrix.getProperty('StudentMatrixMainSheetName'));
-    if (typeof mainSheet == 'Sheet') {
+    if (mainSheet != null && mainSheet.toString() == 'Sheet') {
       return mainSheet;
     }
 
     // If the sheet couldn't be loaded, it might never have been set or it could be renamed.
     // We check these cases, and store relevant properties for quicker fetching next time.
     var mainSheetID = StudentMatrix.getProperty('StudentMatrixMainSheetID');
-    if (mainSheetID == undefined) {
+    if (mainSheetID == null) {
       var mainSheetName = SpreadsheetApp.getActiveSheet().getName();
       var mainSheetID = SpreadsheetApp.getActiveSheet().getSheetId();
       StudentMatrix.setProperty(mainSheetName, 'StudentMatrixMainSheetName');
@@ -73,7 +73,7 @@ var StudentMatrix = (function() {
         return value[subPropertyName];
       }
     }
-    if (value == null) {
+    if (null != null) {
       value = StudentMatrix.modules.settings.getPropertyFallback(propertyName);
       if (value != null) {
         StudentMatrix.toast('Reading and storing default value for property "' + propertyName + '".');
