@@ -21,7 +21,6 @@ StudentMatrix.plugins.mainsheet = {
       group : 'Main sheet settings',
       options : {
         mainSheet : {},
-        StudentMatrixColumns : {},
       },
 
       optionsBuilder : function(handler, container, defaults) {
@@ -37,7 +36,7 @@ StudentMatrix.plugins.mainsheet = {
 
         container.add(app.createHTML('<strong>Columns used by StudentMatrix</strong>'));
         var columns = StudentMatrix.getColumns();
-        var columnValues = StudentMatrix.getProperty('StudentMatrixColumns');
+        var columnValues = StudentMatrix.getProperty('StudentMatrixColumns') || {};
 
         var columnGrid = app.createGrid(Object.keys(columns).length, 2);
         var columnSelectors = {};
@@ -46,12 +45,14 @@ StudentMatrix.plugins.mainsheet = {
         for (var column in columns) {
           columnGrid.setText(row, 0, columns[column]);
           columnSelectors[column] = app.createListBox().setName('column-' + column);
-          columnSelectors[column].addItem('use first blank column', null);
+          columnSelectors[column].addItem('add new column', null);
           for (var i in columnHeaders) {
             var number = parseInt(i) + 1;
             columnSelectors[column].addItem(columnHeaders[i] + ' (' + number + ')', number);
           }
-          columnSelectors[column].setSelectedIndex(parseInt(columnValues[column]));
+          if (columnValues[column] != undefined) {
+            columnSelectors[column].setSelectedIndex(parseInt(columnValues[column]));
+          }
           handler.addCallbackElement(columnSelectors[column]);
 
           columnGrid.setWidget(row, 1, columnSelectors[column]);
