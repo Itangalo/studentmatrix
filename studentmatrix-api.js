@@ -59,7 +59,9 @@ StudentMatrix.plugins.example = {
     },
 
     // All options used by the setting are declared in the options property,
-    // along with default values.
+    // along with default values. If the name of the options match any
+    // properties used through StudentMatrix.getProperty(), the default values
+    // will be used as fallback by that function.
     options : {
       color : 'hotpink',
     },
