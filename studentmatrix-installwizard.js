@@ -14,20 +14,21 @@ StudentMatrix.plugins.installwizard = {
     modules : {
       settings : '1.0',
       menu : '1.2',
+      infopages : '1.0',
     },
   },
-  
+
   menuEntries : {
     install1 : {
       name : 'Step 1: Choose plugins and modules',
       weight : -7,
     },
-    installBreak : {
+    installwizard_break : {
       name : null,
       weight : -1,
     }
   },
-  
+
   infoPages : {
     install1 : {
       title : 'Step 1: Choose plugins and modules',
@@ -35,7 +36,8 @@ StudentMatrix.plugins.installwizard = {
         var app = UiApp.getActiveApplication();
         container.add(app.createHTML('StudentMatrix is a tool for making it easier to digitally manage student data. With StudentMatrix you can select a number of students, and do things like send customized e-mail, share files, or create and update spreadsheets with assessment information.<br /><br />'));
         container.add(app.createHTML('What you can and cannot do with your students depend on which plugins you have enabled. First step is to choose which plugins you want to use.<br /><br />'));
-        container.add(app.createHTML('(If the settings are confusing, you can just leave all plugins on, and change them later on from the settings menu.)<br /><br />'));
+        container.add(app.createHTML('Hint 1: If the settings are confusing, you can just leave all plugins on, and change them later on from the settings menu.<br /><br />'));
+        container.add(app.createHTML('Hint 2: Once you have clicked the button below, a "step 2" option in the menu will appear. Try it!<br /><br />'));
       },
       doneText : 'Show the list of plugins',
       afterProcess : function() {
@@ -100,9 +102,8 @@ StudentMatrix.plugins.installwizard = {
       title : 'Step 4: Check the settings',
       content : function(container) {
         var app = UiApp.getActiveApplication();
-        container.add(app.createHTML('That\'s it! But before you start working with StudentMatrix, it makes sense to have a look at the settings. For example:<br /><br />'));
-        container.add(app.createHTML('* If you want to use StudentMatrix for spreadsheets with assessment information, you have to specify a spreadsheet template. Check the "student sheet setup" settings for this.<br /><br />'));
-        container.add(app.createHTML('* <br /><br />'));
+        container.add(app.createHTML('That\'s it! But before you start working with StudentMatrix, it makes sense to have a look at the settings.<br /><br />'));
+        container.add(app.createHTML('(For example: If you want to use StudentMatrix for spreadsheets with assessment information, you have to specify a spreadsheet template. Check the "student sheet setup" settings for this.)<br /><br />'));
       },
       doneText : 'Show me the settings',
       afterProcess : function() {

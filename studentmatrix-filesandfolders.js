@@ -178,10 +178,6 @@ StudentMatrix.plugins.filesandfolders = {
         container.add(editableName);
         handler.addCallbackElement(editableName);
 
-        var placeInPrivate = app.createCheckBox('Use private folder as parent folder for viewable and editable folder. (Overrides previous parent folder setting.)').setName('placeInPrivate');
-        container.add(placeInPrivate);
-        handler.addCallbackElement(placeInPrivate);
-
         var searchFolderName = app.createTextBox().setId('searchFolderName').setName('searchFolderName');
         container.add(searchFolderName);
         var searchHandler = StudentMatrix.addPluginHandler('filesandfolders', 'folderSearch');
@@ -191,6 +187,10 @@ StudentMatrix.plugins.filesandfolders = {
         var parentFolder = app.createListBox().setName('parentFolder').setId('parentFolder').addItem('(search and then select folder)', false);
         container.add(parentFolder);
         handler.addCallbackElement(parentFolder);
+
+        var placeInPrivate = app.createCheckBox('Use private folder as parent folder for viewable and editable folder. (Overrides the setting for parent folder above.)').setName('placeInPrivate');
+        container.add(placeInPrivate);
+        handler.addCallbackElement(placeInPrivate);
       },
     },
 
