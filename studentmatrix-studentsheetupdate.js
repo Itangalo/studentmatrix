@@ -148,5 +148,100 @@ StudentMatrix.plugins.studentSheetUpdates = {
         return options;
       },
     },
+
+    readColors : {
+      name : 'Read status of selected cells',
+      group : 'Update student sheets',
+      description : 'Reads the values of the selected cells, to see how many are marked with specified colors. Results are displayed in the student list.',
+      options : {},
+      optionsBuilder : function(handler, container) {
+        // There are three parts to this form.
+        // One: How colors (cell status) should be compared.
+        var app = UiApp.getActiveApplication();
+        var operator = app.createListBox().setName('operator');
+        container.add(app.createLabel('Count the number of cells that...'));
+        operator.addItem('exactly match', 'equal');
+        operator.addItem('are equal or above to', 'greater');
+        operator.addItem('are equal or less to', 'less');
+        handler.addCallbackElement(operator);
+        container.add(operator);
+
+        // Two: Which color (status) to compare against.
+        var colors = StudentMatrix.getProperty('assessmentColors', null, true);
+        var colorNames = StudentMatrix.getProperty('assessmentNames', null, true);
+        var color = app.createListBox().setName('color');
+        for (var i in colors) {
+          color.addItem(colorNames[i], colors[i]);
+        }
+        handler.addCallbackElement(color);
+        container.add(color);
+
+        // Three: What column to write the result to.
+        container.add(app.createLabel('Write the result in the following column:'));
+        var columnHeaders = StudentMatrix.mainSheet().getRange('1:1').getValues()[0];
+        var column = app.createListBox().setName('column');
+        for (var i in columnHeaders) {
+          // The index and column number are off by one, thus this correction.
+          var number = parseInt(i) + 1;
+          column.addItem(columnHeaders[i] + ' (' + number + ')', number);
+        }
+        handler.addCallbackElement(column);
+        container.add(column);
+
+        return app;
+      },
+      optionsProcessor : function(eventInfo) {
+        var options = {};
+        options.operator = eventInfo.parameter.operator;
+        options.colorIndex = StudentMatrix.getProperty('assessmentColors').indexOf(eventInfo.parameter.color);
+        options.colorList = StudentMatrix.getProperty('assessmentColors');
+        options.currentSelection = SpreadsheetApp.getActiveRange();
+        options.targetTab = StudentMatrix.plugins.matrixtemplate.getTargetSheetName();
+        options.column = eventInfo.parameter.column;
+        return options;
+      },
+      validator : function() {
+        if (StudentMatrix.getProperty('StudentMatrixColumns', 'studentSheetID') == undefined) {
+          return 'You must set up the columns used for student sheets before running this action. Visit the global actions to do this.';
+        }
+        if (StudentMatrix.getProperty('templateID') == undefined) {
+          return 'You must set a matrix template in the settings before running this action.';
+        }
+        try {
+          var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
+        }
+        catch(e) {
+          return 'The matrix template could not be loaded. Please verify that it is set correctly in the global settings.';
+        }
+      },
+
+      processor : function(row, options) {
+        var targetRange = StudentMatrix.components.fetchers.studentRange(row, options.targetTab, options.currentSelection.getA1Notation());
+        var backgrounds = targetRange.getBackgrounds();
+        // Loop through the backgrounds, and count the matches.
+        var count = 0;
+        for (var i in backgrounds) {
+          for (var j in backgrounds[i]) {
+            var colorIndex = options.colorList.indexOf(backgrounds[i][j]);
+            // Easist case: Target cell doesn't match any of the listed colors.
+            if (colorIndex == -1) {
+            }
+            // Next easiest case: Target cell is equal to the selected color.
+            else if (colorIndex == options.colorIndex) {
+              count++;
+            }
+            // Other cases: We have a greater/lesser than match.
+            else if (colorIndex > options.colorIndex && options.operator == 'greater') {
+              count++;
+            }
+            else if (colorIndex < options.colorIndex && options.operator == 'less') {
+              count++;
+            }
+          }
+        }
+        // Write the count to the relevant column in the main sheet.
+        StudentMatrix.mainSheet().getRange(row, options.column).setValue(count);
+      }
+    },
   },
 };
