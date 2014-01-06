@@ -11,7 +11,7 @@ StudentMatrix.modules.menu = function() {
   function buildMenuEntries() {
     // Get default entries defined in code, and combine with entries stored in properties.
     var defaultEntries = StudentMatrix.getPluginAndModuleProperties('menuEntries');
-    var customEntries = StudentMatrix.getProperty('StudentMatrixMenu');
+    var customEntries = StudentMatrix.getProperty('StudentMatrixMenu') || {};
     for (var entry in defaultEntries) {
       if (customEntries[entry] == undefined) {
         customEntries[entry] = defaultEntries[entry];
