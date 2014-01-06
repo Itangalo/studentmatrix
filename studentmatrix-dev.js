@@ -17,6 +17,7 @@ StudentMatrix.plugins.dev = {
       group : 'Development',
       processor : function() {
         ScriptProperties.deleteAllProperties();
+        StudentMatrix.modules.menu.resetMenu();
         debug('All properties deleted.');
       },
     },

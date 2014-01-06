@@ -30,7 +30,7 @@ var StudentMatrix = (function() {
       var mainSheetID = SpreadsheetApp.getActiveSheet().getSheetId();
       StudentMatrix.setProperty(mainSheetName, 'StudentMatrixMainSheetName');
       StudentMatrix.setProperty(mainSheetID, 'StudentMatrixMainSheetID');
-      StudentMatrix.toast('No main sheet is set: using the active sheet. Use settings to change main sheet.');
+      StudentMatrix.toast('No main sheet is set: using the active sheet. Use settings if you wish to change which sheet to use as main sheet.');
       return SpreadsheetApp.getActiveSheet();
     }
     else {
