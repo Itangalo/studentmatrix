@@ -1,7 +1,7 @@
 StudentMatrix.plugins.dev = {
   name : 'Development',
   description : 'Debugging and development tools for StudentMatrix.',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-dev.js',
   cell : 'D3',
   dependencies : {
