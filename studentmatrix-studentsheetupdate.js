@@ -19,36 +19,36 @@ StudentMatrix.plugins.studentSheetUpdates = {
       matrixtemplate : '1.3',
     },
   },
-
+  
   studentActions : {
     pushColor : {
       name : 'Update colors in student sheets',
       group : 'Update student sheets',
-      description : 'Uses the current selection in a push sheet to set colors in student sheets. Changes will be pushed to the tab "' + StudentMatrix.plugins.matrixtemplate.getTargetSheetName() + '".',
-
+      description : 'Uses the current selection in a push sheet to set colors in student sheets. Changes will be pushed to the tab connected to the currently viewed sheet.',
+      
       processor : function(row, options) {
         var targetRange = StudentMatrix.components.fetchers.studentRange(row, options.targetTab, options.currentSelection.getA1Notation());
         var targetBackgrounds = targetRange.getBackgrounds();
         var sourceBackgrounds = options.currentSelection.getBackgrounds();
-
+        
         // Process each background color in the target sheet, depending on the options.
-        for (var r in sourceBackgrounds) {
-          for (var c in sourceBackgrounds[r]) {
+        for (var i in sourceBackgrounds) {
+          for (var j in sourceBackgrounds[i]) {
             // If we only should update cells with signal colors, and the current cell doesn't have a
             // signal color, copy the target to the source to avoid changing any values.
-            if (options.onlyMarked == 'true' && options.colors.indexOf(sourceBackgrounds[r][c]) == -1) {
-              sourceBackgrounds[r][c] = targetBackgrounds[r][c];
+            if (options.onlyMarked == 'true' && options.colors.indexOf(sourceBackgrounds[i][j]) == -1) {
+              sourceBackgrounds[i][j] = targetBackgrounds[i][j];
             }
-
+            
             // Check the mode of raiseOrLower, and if necessary compare the colors in source and target.
             if (options.raiseOrLower == '') {
-              targetBackgrounds[r][c] = sourceBackgrounds[r][c];
+              targetBackgrounds[i][j] = sourceBackgrounds[i][j];
             }
-            else if (options.raiseOrLower == 'onlyRaise' && options.colors.indexOf(sourceBackgrounds[r][c]) > options.colors.indexOf(targetBackgrounds[r][c])) {
-              targetBackgrounds[r][c] = sourceBackgrounds[r][c];
+            else if (options.raiseOrLower == 'onlyRaise' && options.colors.indexOf(sourceBackgrounds[i][j]) > options.colors.indexOf(targetBackgrounds[i][j])) {
+              targetBackgrounds[i][j] = sourceBackgrounds[i][j];
             }
-            else if (options.raiseOrLower == 'onlyLower' && options.colors.indexOf(sourceBackgrounds[r][c]) < options.colors.indexOf(targetBackgrounds[r][c])) {
-              targetBackgrounds[r][c] = sourceBackgrounds[r][c];
+            else if (options.raiseOrLower == 'onlyLower' && options.colors.indexOf(sourceBackgrounds[i][j]) < options.colors.indexOf(targetBackgrounds[i][j])) {
+              targetBackgrounds[i][j] = sourceBackgrounds[i][j];
             }
           }
         }
@@ -59,7 +59,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
           return 'The active sheet is not connected to any tab in the matrix template. Updates cannot be pushed.';
         }
       },
-
+      
       options : {
         onlyMarked : true,
         raiseOrLower : '',
@@ -69,7 +69,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
         var onlyMarked = app.createCheckBox('Only update cells with signal colors in the push sheet.').setName('onlyMarked');
         container.add(onlyMarked);
         handler.addCallbackElement(onlyMarked);
-
+        
         var raiseOrLower = app.createListBox().setName('raiseOrLower');
         raiseOrLower.addItem('Don\'t mind the existing cell colors in the student sheets.', '');
         raiseOrLower.addItem('Don\'t lower any cell colors in student sheets.', 'onlyRaise');
@@ -87,19 +87,19 @@ StudentMatrix.plugins.studentSheetUpdates = {
         return options;
       },
     },
-
+    
     pushContent : {
       name : 'Update content in student sheets',
       group : 'Update student sheets',
-      description : 'Uses the current selection in a push sheet to set content in student sheets. Changes will be pushed to the tab "' + StudentMatrix.plugins.matrixtemplate.getTargetSheetName() + '".',
-
+      description : 'Uses the current selection in a push sheet to set colors in student sheets. Changes will be pushed to the tab connected to the currently viewed sheet.',
+      
       processor : function(row, options) {
         var targetRange = StudentMatrix.components.fetchers.studentRange(row, options.targetTab, options.currentSelection.getA1Notation());
         // Note: This actions is a bit complicated by the fact that formulas and static content are treated differently.
         var targetValues = targetRange.getValues();
         var sourceValues = options.currentSelection.getValues();
         var sourceFormulas = options.currentSelection.getFormulas();
-
+        
         // First: Push all the static content, but keep track of all cells with formulas.
         var formulaCells = {};
         for (var r in sourceFormulas) {
@@ -115,7 +115,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
           }
         }
         targetRange.setValues(targetValues);
-
+        
         // Process the cells with formulas.
         for (var exception in formulaCells) {
           r = parseInt(formulaCells[exception]['r']);
@@ -131,7 +131,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
           return 'The active sheet is not connected to any tab in the matrix template. Updates cannot be pushed.';
         }
       },
-
+      
       options : {
         replacement : true,
       },
@@ -149,7 +149,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
         return options;
       },
     },
-
+    
     readColors : {
       name : 'Read status of selected cells',
       group : 'Update student sheets',
@@ -166,7 +166,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
         operator.addItem('are equal or less to', 'less');
         handler.addCallbackElement(operator);
         container.add(operator);
-
+        
         // Two: Which color (status) to compare against.
         var colors = StudentMatrix.getProperty('assessmentColors', null, true);
         var colorNames = StudentMatrix.getProperty('assessmentNames', null, true);
@@ -176,7 +176,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
         }
         handler.addCallbackElement(color);
         container.add(color);
-
+        
         // Three: What column to write the result to.
         container.add(app.createLabel('Write the result in the following column:'));
         var columnHeaders = StudentMatrix.mainSheet().getRange('1:1').getValues()[0];
@@ -188,7 +188,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
         }
         handler.addCallbackElement(column);
         container.add(column);
-
+        
         return app;
       },
       optionsProcessor : function(eventInfo) {
@@ -214,8 +214,11 @@ StudentMatrix.plugins.studentSheetUpdates = {
         catch(e) {
           return 'The matrix template could not be loaded. Please verify that it is set correctly in the global settings.';
         }
+        if (StudentMatrix.plugins.matrixtemplate.getTargetSheetName() == false) {
+          return 'The active sheet is not connected to any tab in the matrix template. Can\'t read status: Don\'t know which tab to read from.';
+        }
       },
-
+      
       processor : function(row, options) {
         var targetRange = StudentMatrix.components.fetchers.studentRange(row, options.targetTab, options.currentSelection.getA1Notation());
         var backgrounds = targetRange.getBackgrounds();
