@@ -17,12 +17,26 @@ StudentMatrix.plugins.dev = {
       group : 'Development',
       processor : function() {
         ScriptProperties.deleteAllProperties();
-        StudentMatrix.modules.menu.resetMenu();
+        StudentMatrix.modules.menu.buildMenuEntries();
         debug('All properties deleted.');
       },
     },
     rebuildMenu : {
       name : 'Rebuild the menu',
+      group : 'Development',
+      processor : function() {
+        StudentMatrix.modules.menu.buildMenuEntries();
+      },
+    },
+    resetMenu : {
+      name : 'Reset the menu',
+      group : 'Development',
+      processor : function() {
+        StudentMatrix.modules.menu.resetMenu();
+      },
+    },
+    devMenu : {
+      name : 'Add development menu items',
       group : 'Development',
       processor : function() {
         StudentMatrix.modules.menu.resetMenu();
@@ -32,7 +46,7 @@ StudentMatrix.plugins.dev = {
       name : 'Run temporary dev function',
       group : 'Development',
       processor : function() {
-        dev();
+        addDevMenu();
       },
     },
   },
@@ -52,6 +66,20 @@ function debug(variable, option) {
     return;
   }
   SpreadsheetApp.getActiveSpreadsheet().toast(variable, typeof variable);
+}
+
+function addDevMenu() {
+  var entry = {
+    weight : 50,
+  };
+  StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'dev_bar');
+  var entry = {
+    callback : 'dev',
+    name : 'Dev',
+    weight : 51,
+  };
+  StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'dev');
+  StudentMatrix.modules.menu.buildMenuEntries();
 }
 
 function dev() {
