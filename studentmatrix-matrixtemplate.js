@@ -328,6 +328,11 @@ StudentMatrix.plugins.matrixtemplate = {
       return false;
     }
     var template = SpreadsheetApp.openById(StudentMatrix.getProperty('templateID'));
+    // Sometimes this function is called before all plugins are declared, thus
+    // this check. @TODO: Make plugins load before code is run.
+    if (StudentMatrix.plugins.mainsheet == undefined) {
+      return;
+    }
     return StudentMatrix.plugins.mainsheet.getSheetByID(template, targetID).getSheetName();
   },
 };
