@@ -296,7 +296,7 @@ var StudentMatrix = (function() {
     loadComponents : loadComponents,
     replaceColumnTokens : replaceColumnTokens,
     version : '3.2',
-    versionName : '3.0-beta4',
+    versionName : '3.0-RC1',
   }
 })();
 
