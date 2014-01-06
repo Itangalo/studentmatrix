@@ -6,16 +6,17 @@
 StudentMatrix.plugins.studentSheetUpdates = {
   name : 'Student sheet updates',
   description : 'Provides actions and some settings for updating student sheets.',
-  version : '1.1',
+  version : '1.2',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-studentsheetupdate.js',
   cell : 'D5',
   dependencies : {
     core : '3.0',
     modules : {
+      core : '1.4',
       studentActions : '1.0',
     },
     plugins : {
-      matrixtemplate : '1.2',
+      matrixtemplate : '1.3',
     },
   },
 
