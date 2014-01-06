@@ -273,14 +273,19 @@ StudentMatrix.modules.example = {
   // 'menuEntries' property adds menu entries to the StudentMatrix menu. Note
   // that all callback functions must be global, due to how the Google script
   // works. The menu entry below will need a global function called
-  // StudentMatrixMenu_callbackSuffix().
-  // Menu entries can be added by both modules and plugins.
+  // StudentMatrixMenu_callbackSuffix(). You can also store menu entries as
+  // properties, by calling
+  // StudentMatrix.setProperty(entry, 'StudentMatrixMenu', itemID), where the
+  // itemID corresponds to the callback suffix and the entry is the menu item
+  // object.
+  // Menu entries can be declared by both modules and plugins.
   menuEntries : {
     callbackSuffix : {
       name : 'Name displayed in the menu',
       weight : -4, // Lower weights floats to the top in the menu.
       callback : 'path.to.internal.method', // Used for dynamic callbacks only.
       arguments : ['arg1', 'arg2'], // Used for dynamic callbacks only.
+      disabled : true, // May be used to disable entries stored as properties.
     },
   },
 };
