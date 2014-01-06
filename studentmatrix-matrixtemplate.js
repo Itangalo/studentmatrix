@@ -58,7 +58,7 @@ StudentMatrix.plugins.matrixtemplate = {
     sheetColors : {
       group : 'Updating student sheets',
       options : {
-        assessmentColors : ['white', '#ff0000', '#ffff00', '#00ff00'],
+        assessmentColors : ['#ffffff', '#ff0000', '#ffff00', '#00ff00'],
         assessmentNames : ['Not assessed', 'Not yet ok', 'On its way', 'Ok'],
       },
       optionsBuilder : function(handler, container, defaults) {
