@@ -6,14 +6,14 @@
 StudentMatrix.plugins.installwizard = {
   name : 'Installation wizard',
   description : 'Adds menu entries for step by step installation.',
-  version : '1.1',
+  version : '1.2',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-installwizard.js',
   cell : 'D9',
   dependencies : {
     core : '3.2',
     modules : {
       settings : '1.0',
-      menu : '1.2',
+      menu : '1.3',
       infopages : '1.0',
     },
   },
@@ -128,12 +128,16 @@ StudentMatrix.plugins.installwizard = {
       },
       doneText : 'I\'m done, remove the installation from the menu',
       afterProcess : function() {
-        StudentMatrix.deleteProperty('StudentMatrixMenu', 'install1');
+        var entry = StudentMatrix.getProperty('StudentMatrixMenu', 'installwizard_break');
+        entry.disabled = true;
+        StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'installwizard_break');
+        entry = StudentMatrix.getProperty('StudentMatrixMenu', 'install1');
+        entry.disabled = true;
+        StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'install1');
         StudentMatrix.deleteProperty('StudentMatrixMenu', 'install2');
         StudentMatrix.deleteProperty('StudentMatrixMenu', 'install3');
         StudentMatrix.deleteProperty('StudentMatrixMenu', 'install4');
         StudentMatrix.deleteProperty('StudentMatrixMenu', 'install5');
-        StudentMatrix.deleteProperty('StudentMatrixMenu', 'installwizard_break');
         StudentMatrix.modules.menu.buildMenuEntries();
       },
     },
