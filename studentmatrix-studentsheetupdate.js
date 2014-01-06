@@ -82,7 +82,7 @@ StudentMatrix.plugins.studentSheetUpdates = {
         options.raiseOrLower = eventInfo.parameter.raiseOrLower;
         options.currentSelection = SpreadsheetApp.getActiveRange();
         options.targetTab = StudentMatrix.plugins.matrixtemplate.getTargetSheetName();
-        options.colors = StudentMatrix.getProperty('assessmentColors').split('\n');
+        options.colors = StudentMatrix.getProperty('assessmentColors');
         return options;
       },
     },

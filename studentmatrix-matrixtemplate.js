@@ -58,21 +58,27 @@ StudentMatrix.plugins.matrixtemplate = {
     sheetColors : {
       group : 'Updating student sheets',
       options : {
-        assessmentColors : 'white\n#ff0000\n#ffff00\n#00ff00',
-        assessmentNames : 'Not assessed\nNot yet ok\nOn its way\nOk'
+        assessmentColors : ['white', '#ff0000', '#ffff00', '#00ff00'],
+        assessmentNames : ['Not assessed', 'Not yet ok', 'On its way', 'Ok'],
       },
       optionsBuilder : function(handler, container, defaults) {
         var app = UiApp.getActiveApplication();
 
-        container.add(app.createHTML('Colors used for assessments in the student sheets. One per line, lowest on top.'));
-        var assessmentColors = app.createTextArea().setName('assessmentColors').setWidth('100%').setText(defaults.assessmentColors);
-        container.add(assessmentColors);
-        handler.addCallbackElement(assessmentColors);
+        var assessmentColors = defaults.assessmentColors;
+        var assessmentNames = defaults.assessmentNames;
 
-        container.add(app.createHTML('Labes for assessment colors. One per line, lowest on top.'));
-        var assessmentNames = app.createTextArea().setName('assessmentNames').setWidth('100%').setText(defaults.assessmentNames);
-        container.add(assessmentNames);
-        handler.addCallbackElement(assessmentNames);
+        var colorGrid = app.createGrid(assessmentColors.length, 1).setBorderWidth(1).setCellPadding(2).setId('colorGrid');
+        for (var i in assessmentColors) {
+          colorGrid.setText(parseInt(i), 0, assessmentNames[i]);
+          colorGrid.setStyleAttributes(parseInt(i), 0, {background : assessmentColors[i]});
+        }
+
+        container.add(colorGrid);
+
+        container.add(app.createLabel('Use the button below to read the content and background colors of the current selection in the spreadsheet, using them for setting new colors.'));
+        var setAssessmentColors = StudentMatrix.addPluginHandler('matrixtemplate', 'setAssessmentColors');
+        var colorButton = app.createButton('Read new names and colors from current selection', setAssessmentColors);
+        container.add(colorButton);
       },
     },
   },
@@ -285,6 +291,31 @@ StudentMatrix.plugins.matrixtemplate = {
     closeFilePicker : function(eventInfo) {
       var app = UiApp.getActiveApplication();
       app.getElementById('templateID').setText(eventInfo.parameter.items[0].id);
+      return app;
+    },
+    setAssessmentColors : function(eventInfo) {
+      var assessmentColors = [];
+      var assessmentNames = [];
+      var colors = SpreadsheetApp.getActiveRange().getBackgrounds();
+      var names = SpreadsheetApp.getActiveRange().getValues();
+      for (var row in colors) {
+        for (var column in colors[row]) {
+          assessmentColors.push(colors[row][column]);
+          assessmentNames.push(names[row][column]);
+        }
+      }
+      StudentMatrix.setProperty(assessmentColors, 'assessmentColors');
+      StudentMatrix.setProperty(assessmentNames, 'assessmentNames');
+
+      var app = UiApp.getActiveApplication();
+      var colorGrid = app.getElementById('colorGrid').resize(assessmentColors.length, 1);
+      for (var i in assessmentColors) {
+        colorGrid.setText(parseInt(i), 0, assessmentNames[i]);
+        colorGrid.setStyleAttributes(parseInt(i), 0, {background : assessmentColors[i]});
+      }
+
+
+      StudentMatrix.toast('Stored new assessment colors.');
       return app;
     },
   },
