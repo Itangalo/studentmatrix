@@ -12,41 +12,39 @@ StudentMatrix.plugins.dev = {
   },
 
   globalActions : {
+    devMenu : {
+      name : 'Add development menu',
+      group : 'Development',
+      processor : function() {
+        addDevMenu();
+      },
+    },
     reset : {
       name : 'Reset all properties and settings',
       group : 'Development',
       processor : function() {
-        ScriptProperties.deleteAllProperties();
-        StudentMatrix.modules.menu.buildMenuEntries();
-        debug('All properties deleted.');
+        StudentMatrixMenu_resetProperties();
       },
     },
     rebuildMenu : {
       name : 'Rebuild the menu',
       group : 'Development',
       processor : function() {
-        StudentMatrix.modules.menu.buildMenuEntries();
+        StudentMatrixMenu_buildMenu();
       },
     },
     resetMenu : {
       name : 'Reset the menu',
       group : 'Development',
       processor : function() {
-        StudentMatrix.modules.menu.resetMenu();
-      },
-    },
-    devMenu : {
-      name : 'Add development menu items',
-      group : 'Development',
-      processor : function() {
-        StudentMatrix.modules.menu.resetMenu();
+        StudentMatrixMenu_resetMenu();
       },
     },
     dev : {
       name : 'Run temporary dev function',
       group : 'Development',
       processor : function() {
-        addDevMenu();
+        dev();
       },
     },
   },
@@ -79,7 +77,36 @@ function addDevMenu() {
     weight : 51,
   };
   StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'dev');
+  var entry = {
+    name : 'Rebuild menu',
+    weight : 52,
+  };
+  StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'buildMenu');
+  var entry = {
+    name : 'Reset menu',
+    weight : 55,
+  };
+  StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'resetMenu');
+  var entry = {
+    name : 'Reset all properties',
+    weight : 57,
+  };
+  StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'resetProperties');
   StudentMatrix.modules.menu.buildMenuEntries();
+}
+
+function StudentMatrixMenu_buildMenu() {
+  StudentMatrix.modules.menu.buildMenuEntries();
+}
+
+function StudentMatrixMenu_resetMenu() {
+  StudentMatrix.modules.menu.resetMenu();
+}
+
+function StudentMatrixMenu_resetProperties() {
+  ScriptProperties.deleteAllProperties();
+  StudentMatrix.modules.menu.buildMenuEntries();
+  debug('All properties deleted.');
 }
 
 function dev() {
