@@ -25,7 +25,7 @@ StudentMatrix.plugins.help = {
       weight : 41,
     },
     helpBeta : {
-      name : 'Help for beta testers',
+      name : 'Info for beta testers',
       weight : 42,
     },
     about : {
@@ -46,7 +46,7 @@ StudentMatrix.plugins.help = {
       },
     },
     helpBeta : {
-      title : 'Help for beta testers',
+      title : 'Info for beta testers',
       content : function(container) {
         var app = UiApp.getActiveApplication();
         container.add(app.createHTML('If you\'re using StudentMatrix as a beta tester, this feedback is particularly appreciated:<br /><br />'));
