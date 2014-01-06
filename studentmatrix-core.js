@@ -58,7 +58,7 @@ var StudentMatrix = (function() {
    * If subPropertyName is set, the property will be fetched from the object stored
    * on propertyName.
    */
-  getProperty = function(propertyName, subPropertyName) {
+  getProperty = function(propertyName, subPropertyName, useFallback) {
     try {
       var value = JSON.parse(ScriptProperties.getProperty(propertyName));
     }
@@ -73,9 +73,12 @@ var StudentMatrix = (function() {
         return value[subPropertyName];
       }
     }
-    if (null != null) {
+
+    // If there is no matching property, try to find fallback values defined by a setting.
+    if (value == null && useFallback == true) {
       value = StudentMatrix.modules.settings.getPropertyFallback(propertyName);
       if (value != null) {
+        // Notify of default value being used, and store it as a property for quicker fetching next time.
         StudentMatrix.toast('Reading and storing default value for property "' + propertyName + '".');
         StudentMatrix.setProperty(value, propertyName);
       }
@@ -323,7 +326,7 @@ function StudentMatrixCallbackRouter(eventInfo) {
 StudentMatrix.modules.core = {
   name : 'Core',
   description : 'Core functionality for StudentMatrix',
-  version : '1.3',
+  version : '1.4',
   required : true,
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-core.js',
   cell : 'D2',
