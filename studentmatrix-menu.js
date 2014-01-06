@@ -9,27 +9,35 @@
 StudentMatrix.modules.menu = function() {
   // Reads entries in the StudentMatrixMenu property and builds a menu for them.
   function buildMenuEntries() {
+    // Get default entries defined in code, and combine with entries stored in properties.
+    var defaultEntries = StudentMatrix.getPluginAndModuleProperties('menuEntries');
     var customEntries = StudentMatrix.getProperty('StudentMatrixMenu');
-    if (customEntries == null) {
-      customEntries = StudentMatrix.getPluginAndModuleProperties('menuEntries');
-      StudentMatrix.setProperty(customEntries, 'StudentMatrixMenu');
+    for (var entry in defaultEntries) {
+      if (customEntries[entry] == undefined) {
+        customEntries[entry] = defaultEntries[entry];
+      }
     }
+
+    // Sort the entries by weight.
     var sortable = [];
     for (var entry in customEntries) {
       sortable.push([entry, customEntries[entry].weight]);
     }
     sortable.sort(function(a, b) {return a[1] - b[1]});
 
+    // Build the final menu entry list.
     var menuEntries = [];
     for (var i in sortable) {
-      if (customEntries[sortable[i][0]].name == undefined || customEntries[sortable[i][0]].name == null) {
-        menuEntries.push(null);
-      }
-      else {
-        menuEntries.push({name : customEntries[sortable[i][0]].name, functionName : 'StudentMatrixMenu_' + sortable[i][0]});
+      if (customEntries[sortable[i][0]].disabled != true) {
+        if (customEntries[sortable[i][0]].name == undefined || customEntries[sortable[i][0]].name == null) {
+          menuEntries.push(null);
+        }
+        else {
+          menuEntries.push({name : customEntries[sortable[i][0]].name, functionName : 'StudentMatrixMenu_' + sortable[i][0]});
+        }
       }
     }
-    
+
     SpreadsheetApp.getActiveSpreadsheet().addMenu('StudentMatrix ' + StudentMatrix.versionName, menuEntries);
   };
 
@@ -87,7 +95,7 @@ StudentMatrix.modules.menu = function() {
   return {
     name : 'Menu',
     description : 'Allows customizing menu entries for StudentMatrix.',
-    version : '1.2',
+    version : '1.3',
     required : true,
     updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-menu.js',
     cell : 'D8',
