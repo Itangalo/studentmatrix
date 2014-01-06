@@ -6,7 +6,7 @@
 StudentMatrix.plugins.installwizard = {
   name : 'Installation wizard',
   description : 'Adds menu entries for step by step installation.',
-  version : '1.0',
+  version : '1.1',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-installwizard.js',
   cell : 'D9',
   dependencies : {
@@ -107,7 +107,34 @@ StudentMatrix.plugins.installwizard = {
       },
       doneText : 'Show me the settings',
       afterProcess : function() {
+        var entry = {
+          callback : 'modules.infopages.showPage',
+          arguments : ['install5'],
+          name : 'Step 5: How to get further help',
+          weight : -2,
+        };
+        StudentMatrix.setProperty(entry, 'StudentMatrixMenu', 'install5');
+        StudentMatrix.modules.menu.buildMenuEntries();
+
         StudentMatrix.modules.settings.settingsDialog();
+      },
+    },
+    install5 : {
+      title : 'Step 5: How to get furter help',
+      content : function(container) {
+        var app = UiApp.getActiveApplication();
+        container.add(app.createHTML('You have now set up StudentMatrix. Congratulations!<br /><br />'));
+        container.add(app.createHTML('You can find links to video guides and more in the "help" section in the menu. Good luck!<br /><br />'));
+      },
+      doneText : 'I\'m done, remove the installation from the menu',
+      afterProcess : function() {
+        StudentMatrix.deleteProperty('StudentMatrixMenu', 'install1');
+        StudentMatrix.deleteProperty('StudentMatrixMenu', 'install2');
+        StudentMatrix.deleteProperty('StudentMatrixMenu', 'install3');
+        StudentMatrix.deleteProperty('StudentMatrixMenu', 'install4');
+        StudentMatrix.deleteProperty('StudentMatrixMenu', 'install5');
+        StudentMatrix.deleteProperty('StudentMatrixMenu', 'installwizard_break');
+        StudentMatrix.modules.menu.buildMenuEntries();
       },
     },
   },
@@ -127,4 +154,8 @@ function StudentMatrixMenu_install3() {
 
 function StudentMatrixMenu_install4() {
   StudentMatrix.modules.menu.callMenuItem('install4');
+}
+
+function StudentMatrixMenu_install5() {
+  StudentMatrix.modules.menu.callMenuItem('install5');
 }
