@@ -7,7 +7,7 @@
 StudentMatrix.plugins.matrixtemplate = {
   name : 'Matrix template plugin',
   description : 'Allows creating and setting access to student sheets.',
-  version : '1.1',
+  version : '1.2',
   updateUrl : 'https://raw.github.com/Itangalo/studentmatrix/3.x/studentmatrix-matrixtemplate.js',
   cell : 'D4',
   dependencies : {
