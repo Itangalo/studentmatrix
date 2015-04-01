@@ -1,3 +1,6 @@
+THIS PROJECT HAS BEEN REPLACED BY SPREADSHEET ACTIONS, FOUND AT
+https://github.com/Itangalo/SpreadsheetActions
+
 studentmatrix
 =============
 
