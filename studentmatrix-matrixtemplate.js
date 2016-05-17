@@ -285,7 +285,7 @@ StudentMatrix.plugins.matrixtemplate = {
     showFilePicker : function(eventInfo) {
       var app = UiApp.getActiveApplication();
       var handler = StudentMatrix.addPluginHandler('matrixtemplate', 'closeFilePicker');
-      app.createDocsListDialog().setDialogTitle('Select spreadsheet to use as matrix template').setInitialView(UiApp.FileType.SPREADSHEETS).addSelectionHandler(handler).showDocsPicker();
+      app.createDocsListDialog().setDialogTitle('Select spreadsheet to use as matrix template').addSelectionHandler(handler).setOAuthToken(ScriptApp.getOAuthToken()).showDocsPicker();
       return app;
     },
     closeFilePicker : function(eventInfo) {
